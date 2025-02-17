@@ -17,20 +17,22 @@ jobs:
   run:
     name: Run
 
-    # one of target frameworks is net462
-    runs-on: windows-latest
-
     permissions:
+      # Basic permission for workflow to get sources
+      contents: read
+      # Required
       checks: write
+      # Required to write test results into the pull-request
       pull-requests: write
       # Required for CodeQL
       security-events: write
 
+    # one of target frameworks is net462
+    runs-on: windows-latest
+
     env:
       # Configuration type to build.
       BUILD_CONFIGURATION: Release
-      # Language to analyze
-      LANGUAGE: csharp
       # Path to the solution file relative to the root of the project.
       SOLUTION_FILE: .\Azure.Monitor.Telemetry.sln
       # Path to the coverage report directory relative to the root of the project.
@@ -69,7 +71,7 @@ jobs:
         --verbosity ${{ env.VERBOSITY }}
 
     - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action/windows@v2
+      uses: EnricoMi/publish-unit-test-result-action/windows@170bf24d20d201b842d7a52403b73ed297e6645b #v2.18.0
       if: always()
       with:
         files: |
@@ -81,24 +83,10 @@ jobs:
         reportgenerator -reports:${{ env.TESTS_RESULTS_DIRECTORY }}\*\coverage.cobertura.xml -targetdir:${{ env.TESTS_COVERAGE_DIRECTORY }} -reporttypes:'MarkdownSummaryGithub'
 
     - name: Publish Coverage Report
-      uses: LouisBrunner/checks-action@v1.2.0
+      uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23 #v2.0.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         name: Test Coverage
         conclusion: ${{ job.status }}
         output: "{\"summary\":\"Coverage\"}"
         output_text_description_file: ${{ env.TESTS_COVERAGE_DIRECTORY }}\SummaryGithub.md
-
-    # Initializes the CodeQL tools for scanning
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ env.LANGUAGE }}
-        # For C#, the CodeQL database is generated directly from the codebase without requiring a build
-        build-mode: none
-  
-    # Initializes the CodeQL tools for scanning
-    - name: Run CodeQL
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{ env.LANGUAGE }}"
