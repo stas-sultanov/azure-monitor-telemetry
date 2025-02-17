@@ -60,8 +60,15 @@ jobs:
         -p:RepositoryCommit=${{ github.sha }}
         -p:RepositoryUrl=${{ env.REPO_URL }}
 
-    - name: Upload Package
+    - name: Upload Packages
+      id: upload-artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: package
+        name: packages.zip
         path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+
+    - name: Attest Packages
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-name: packages.zip
+        subject-digest: sha256:${{ steps.upload-artifacts.outputs.artifact-digest }}
