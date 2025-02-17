@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<AssemblyName>Azure.Monitor.Telemetry</AssemblyName>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+		<RootNamespace>Azure.Monitor.Telemetry</RootNamespace>
+		<TargetFrameworks>net462;net8.0;net9.0</TargetFrameworks>
+	</PropertyGroup>
+
+	<Choose>
+		<When Condition=" '$(TargetFramework)' == 'net462' ">
+			<ItemGroup>
+				<!--Add dependency only if target framework is .NET 4.6.2-->
+				<Reference Include="System.Net.Http" />
+			</ItemGroup>
+		</When>
+		<When Condition=" '$(TargetFramework)' != 'net462' ">
+			<ItemGroup Condition=" '$(TargetFramework)' != 'net462' ">
+				<!--Remove file if target frame work is not .NET 4.6.2-->
+				<Compile Remove="NET462\IsExternalInit.cs" />
+			</ItemGroup>
+		</When>
+	</Choose>
+
+	<Choose>
+		<!--Add properties, items and references if packing-->
+		<When Condition=" '$(_IsPacking)' == 'true' ">
+			<PropertyGroup>
+				<Authors>Stas Sultanov</Authors>
+				<Company>Stas Sultanov</Company>
+				<Copyright>Copyright © Stas Sultanov</Copyright>
+				<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+				<Description>A lightweight, high-performance library for tracking and publishing telemetry.</Description>
+				<EmbedUntrackedSources>true</EmbedUntrackedSources>
+				<IncludeSymbols>true</IncludeSymbols>
+				<PackageIcon>icon.png</PackageIcon>
+				<PackageLicenseFile>license.md</PackageLicenseFile>
+				<PackageReadmeFile>readme.md</PackageReadmeFile>
+				<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+				<PackageTags>Azure;Azure Monitor;Azure Monitor Telemetry;Telemetry;ApplicationInsights;</PackageTags>
+				<Product>AzureTinyClient.NET</Product>
+				<RepositoryType>git</RepositoryType>
+				<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+				<Title>Azure Monitor Telemetry</Title>
+				<Version>$(AssemblyVersion)</Version>
+			</PropertyGroup>
+			<ItemGroup>
+				<None Include="icon.png" Pack="True" PackagePath="\" />
+				<None Include="readme.md" Pack="True" PackagePath="\" />
+				<None Include="..\license.md" Pack="True" PackagePath="\" />
+			</ItemGroup>
+			<ItemGroup>
+				<PackageReference Include="Microsoft.SourceLink.GitHub" Version="*" PrivateAssets="All" />
+			</ItemGroup>
+		</When>
+	</Choose>
+
+</Project>

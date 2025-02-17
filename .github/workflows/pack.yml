@@ -1,0 +1,64 @@
+# The workflow to compile main project and pack it as NuGet package.
+
+name: Pack
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionMajor:
+        description: 'Version Major'
+        required: true
+        type: number
+      versionMinor:
+        description: 'Version Minor'
+        required: true
+        type: number
+
+run-name: ${{ format('Pack {0}.{1}.{2}{3}', inputs.versionMajor, inputs.versionMinor, github.run_number, github.ref_name == 'name' && '-pre' || '') }}
+
+jobs:
+  run:
+    name: Run
+
+    # one of target frameworks is net462
+    runs-on: windows-latest
+
+    env:
+      # Configuration type to build.
+      BUILD_CONFIGURATION: Release
+      # Path to the project file relative to the root of the project.
+      MAIN_PROJECT_FILE: .\src\Azure.Monitor.Telemetry.csproj
+      # Package identifier
+      PACKAGE_ID: Stas.Azure.Monitor.Telemetry
+      # Package output directory
+      PACKAGE_OUTPUT_DIRECTORY: .\out
+      # Package Version
+      PACKAGE_VERSION: ${{ format('{0}.{1}.{2}{3}', inputs.versionMajor, inputs.versionMinor, github.run_number, github.ref_name == 'name' && '-pre' || '') }}
+
+      # Repo url
+      REPO_URL: ${{ format('{0}/{1}', github.server_url, github.repository) }}
+      # Verbosity level
+      VERBOSITY: quiet
+
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v4
+
+    - name: Pack Project
+      run: >-
+        dotnet pack ${{ env.MAIN_PROJECT_FILE }}
+        --configuration ${{ env.BUILD_CONFIGURATION }}
+        --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+        --verbosity ${{ env.VERBOSITY }}
+        -p:PackageId=${{ env.PACKAGE_ID }}
+        -p:PackageProjectUrl=${{ env.REPO_URL }}
+        -p:PackageVersion=${{ env.PACKAGE_VERSION }}
+        -p:RepositoryBranch=${{ github.ref_name }}
+        -p:RepositoryCommit=${{ github.sha }}
+        -p:RepositoryUrl=${{ env.REPO_URL }}
+
+    - name: Upload Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: package
+        path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}

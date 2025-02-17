@@ -1,0 +1,34 @@
+# Visual Studio cache/options directory
+.vs/
+
+# misc files
+*.user
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Dd]ebug/
+[Rr]elease/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Tt]ests[Rr]esult*/
+
+# Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+# The packages folder can be ignored because of Package Restore
+**/[Pp]ackages/*
+# except build/, which is used as an MSBuild target.
+!**/[Pp]ackages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/[Pp]ackages/repositories.config
+# NuGet v3's project.json files produces more ignorable files
+*.nuget.props
+*.nuget.targets

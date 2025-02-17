@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure.Monitor.Telemetry", "src\Azure.Monitor.Telemetry.csproj", "{CEEBC43E-3177-675B-1122-B721BE8717E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure.Monitor.Telemetry.Tests", "tests\Azure.Monitor.Telemetry.Tests.csproj", "{668A9A48-0682-4F36-ABC1-DEF6FBE66532}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6A34A12B-A4C1-430C-827F-1380924633F8}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CEEBC43E-3177-675B-1122-B721BE8717E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEEBC43E-3177-675B-1122-B721BE8717E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEEBC43E-3177-675B-1122-B721BE8717E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEEBC43E-3177-675B-1122-B721BE8717E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{668A9A48-0682-4F36-ABC1-DEF6FBE66532}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{668A9A48-0682-4F36-ABC1-DEF6FBE66532}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{668A9A48-0682-4F36-ABC1-DEF6FBE66532}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{668A9A48-0682-4F36-ABC1-DEF6FBE66532}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DD99A4BB-B7D9-4E58-8665-DD90C9269DFE}
+	EndGlobalSection
+EndGlobal

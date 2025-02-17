@@ -1,0 +1,104 @@
+# The workflow to check if source code meets the following criteria:
+# - compiles successfully for all target frameworks
+# - unit tests runs successfully
+# - code is compliant with codeQL rules
+
+name: Check
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths: 
+      - ".github/workflows/check.yml"
+      - "src/**"
+      - "test/**"
+
+jobs:
+  run:
+    name: Run
+
+    # one of target frameworks is net462
+    runs-on: windows-latest
+
+    permissions:
+      checks: write
+      pull-requests: write
+      # Required for CodeQL
+      security-events: write
+
+    env:
+      # Configuration type to build.
+      BUILD_CONFIGURATION: Release
+      # Language to analyze
+      LANGUAGE: csharp
+      # Path to the solution file relative to the root of the project.
+      SOLUTION_FILE: .\Azure.Monitor.Telemetry.sln
+      # Path to the coverage report directory relative to the root of the project.
+      TESTS_COVERAGE_DIRECTORY: .\testsCoverage
+      # Path to the test results directory relative to the root of the project.
+      TESTS_RESULTS_DIRECTORY: .\testsResults
+      # Verbosity level
+      VERBOSITY: quiet
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Restore
+      run: >-
+        dotnet restore ${{ env.SOLUTION_FILE }}
+        --verbosity ${{ env.VERBOSITY }}
+
+    - name: Build
+      run: >-
+        dotnet build ${{ env.SOLUTION_FILE }}
+        --configuration ${{ env.BUILD_CONFIGURATION }}
+        --no-restore
+        --verbosity ${{ env.VERBOSITY }}
+
+    - name: Test
+      run: >-
+        dotnet test ${{ env.SOLUTION_FILE }}
+        --collect:"XPlat Code Coverage"
+        --configuration ${{ env.BUILD_CONFIGURATION }}
+        --filter TestCategory=UnitTests
+        --framework net9.0
+        --logger:"trx"
+        --no-build
+        --results-directory ${{ env.TESTS_RESULTS_DIRECTORY }}
+        --verbosity ${{ env.VERBOSITY }}
+
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action/windows@v2
+      if: always()
+      with:
+        files: |
+          ${{ env.TESTS_RESULTS_DIRECTORY }}\**\*.trx
+
+    - name: Convert Coverage Report
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:${{ env.TESTS_RESULTS_DIRECTORY }}\*\coverage.cobertura.xml -targetdir:${{ env.TESTS_COVERAGE_DIRECTORY }} -reporttypes:'MarkdownSummaryGithub'
+
+    - name: Publish Coverage Report
+      uses: LouisBrunner/checks-action@v1.2.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        name: Test Coverage
+        conclusion: ${{ job.status }}
+        output: "{\"summary\":\"Coverage\"}"
+        output_text_description_file: ${{ env.TESTS_COVERAGE_DIRECTORY }}\SummaryGithub.md
+
+    # Initializes the CodeQL tools for scanning
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ env.LANGUAGE }}
+        # For C#, the CodeQL database is generated directly from the codebase without requiring a build
+        build-mode: none
+  
+    # Initializes the CodeQL tools for scanning
+    - name: Run CodeQL
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{ env.LANGUAGE }}"
