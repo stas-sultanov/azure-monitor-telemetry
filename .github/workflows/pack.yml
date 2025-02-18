@@ -5,39 +5,41 @@ name: Pack
 on:
   workflow_dispatch:
     inputs:
-      versionMajor:
-        description: 'Version Major'
+      version:
+        description: 'Version in format X.Y.Z'
         required: true
-        type: number
-      versionMinor:
-        description: 'Version Minor'
-        required: true
-        type: number
+        type: string
 
-run-name: ${{ format('Pack {0}.{1}.{2}{3}', inputs.versionMajor, inputs.versionMinor, github.run_number, github.ref_name == 'name' && '-pre' || '') }}
+run-name: ${{ format('Pack {0}{1}', inputs.version, github.ref_name != 'main' && '-pre' || '') }}
 
 jobs:
   run:
     name: Run
 
     permissions:
-      # Basic permission for workflow to get sources
+      # Required by Attestation action to persist the attestation
+      attestations: write
+      # Required to checkout the repo
       contents: read
+      # Required by Attestation action to mint the OIDC token necessary to request a Sigstore signing certificate
+      id-token: write
 
     # one of target frameworks is net462
     runs-on: windows-latest
 
     env:
-      # Configuration type to build
+      # Assembly Sign Certificate
+      ASSEMBLY_SIGN_CERTIFICATE_FILE_NAME: 'assembly.snk'
+      # Configuration type to build.
       BUILD_CONFIGURATION: Release
-      # Path to the project file relative to the root of the project
+      # Path to the project file relative to the root of the project.
       MAIN_PROJECT_FILE: .\src\Azure.Monitor.Telemetry.csproj
       # Package identifier
       PACKAGE_ID: Stas.Azure.Monitor.Telemetry
       # Package output directory
       PACKAGE_OUTPUT_DIRECTORY: .\out
       # Package Version
-      PACKAGE_VERSION: ${{ format('{0}.{1}.{2}{3}', inputs.versionMajor, inputs.versionMinor, github.run_number, github.ref_name == 'name' && '-pre' || '') }}
+      PACKAGE_VERSION: ${{ format('{0}{1}', inputs.version, github.ref_name != 'main' && '-pre' || '') }}
       # Repo url
       REPO_URL: ${{ format('{0}/{1}', github.server_url, github.repository) }}
       # Verbosity level
@@ -47,12 +49,21 @@ jobs:
     - name: Checkout Sources
       uses: actions/checkout@v4
 
+    - name: Get Sign Certificate
+      run: |
+        echo -n $ASSEMBLY_SIGN_CERTIFICATE_SNK_BASE64 | base64 -d >> ./src/${{ env.ASSEMBLY_SIGN_CERTIFICATE_FILE_NAME }}
+      shell: bash
+      env:
+        ASSEMBLY_SIGN_CERTIFICATE_SNK_BASE64: ${{ secrets.ASSEMBLY_SIGN_CERTIFICATE_SNK_BASE64 }}
+
     - name: Pack Project
       run: >-
         dotnet pack ${{ env.MAIN_PROJECT_FILE }}
         --configuration ${{ env.BUILD_CONFIGURATION }}
         --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
         --verbosity ${{ env.VERBOSITY }}
+        -p:AssemblyOriginatorKeyFile=${{ env.ASSEMBLY_SIGN_CERTIFICATE_FILE_NAME }}
+        -p:AssemblyVersion=${{ inputs.version }}
         -p:PackageId=${{ env.PACKAGE_ID }}
         -p:PackageProjectUrl=${{ env.REPO_URL }}
         -p:PackageVersion=${{ env.PACKAGE_VERSION }}
@@ -60,15 +71,14 @@ jobs:
         -p:RepositoryCommit=${{ github.sha }}
         -p:RepositoryUrl=${{ env.REPO_URL }}
 
-    - name: Upload Packages
+    - name: Attest Build Provenance
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: "${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.*pkg"
+
+    - name: Upload Package
       id: upload-artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: packages.zip
+        name: packages
         path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
-
-    - name: Attest Packages
-      uses: actions/attest-build-provenance@v2
-      with:
-        subject-name: packages.zip
-        subject-digest: sha256:${{ steps.upload-artifacts.outputs.artifact-digest }}

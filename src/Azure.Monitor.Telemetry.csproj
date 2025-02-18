@@ -7,17 +7,21 @@
 		<LangVersion>latest</LangVersion>
 		<RootNamespace>Azure.Monitor.Telemetry</RootNamespace>
 		<TargetFrameworks>net462;net8.0;net9.0</TargetFrameworks>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<Choose>
 		<When Condition=" '$(TargetFramework)' == 'net462' ">
+			<PropertyGroup>
+				<WarningLevel>9999</WarningLevel>
+			</PropertyGroup>
 			<ItemGroup>
 				<!--Add dependency only if target framework is .NET 4.6.2-->
 				<Reference Include="System.Net.Http" />
 			</ItemGroup>
 		</When>
 		<When Condition=" '$(TargetFramework)' != 'net462' ">
-			<ItemGroup Condition=" '$(TargetFramework)' != 'net462' ">
+			<ItemGroup>
 				<!--Remove file if target frame work is not .NET 4.6.2-->
 				<Compile Remove="NET462\IsExternalInit.cs" />
 			</ItemGroup>
@@ -30,8 +34,8 @@
 			<PropertyGroup>
 				<Authors>Stas Sultanov</Authors>
 				<Company>Stas Sultanov</Company>
-				<Copyright>Copyright © Stas Sultanov</Copyright>
 				<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+				<Copyright>Copyright © Stas Sultanov</Copyright>
 				<Description>A lightweight, high-performance library for tracking and publishing telemetry.</Description>
 				<EmbedUntrackedSources>true</EmbedUntrackedSources>
 				<IncludeSymbols>true</IncludeSymbols>
@@ -40,8 +44,9 @@
 				<PackageReadmeFile>readme.md</PackageReadmeFile>
 				<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 				<PackageTags>Azure;Azure Monitor;Azure Monitor Telemetry;Telemetry;ApplicationInsights;</PackageTags>
-				<Product>AzureTinyClient.NET</Product>
+				<Product>Azure Light Client</Product>
 				<RepositoryType>git</RepositoryType>
+				<SignAssembly>True</SignAssembly>
 				<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 				<Title>Azure Monitor Telemetry</Title>
 				<Version>$(AssemblyVersion)</Version>

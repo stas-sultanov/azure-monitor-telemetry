@@ -18,11 +18,11 @@ jobs:
     name: Run
 
     permissions:
-      # Basic permission for workflow to get sources
+      # Required to checkout the repo
       contents: read
-      # Required
+      # Required to write test results
       checks: write
-      # Required to write test results into the pull-request
+      # Required to write test results
       pull-requests: write
       # Required for CodeQL
       security-events: write
