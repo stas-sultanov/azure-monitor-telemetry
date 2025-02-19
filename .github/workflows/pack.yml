@@ -6,11 +6,16 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version in format X.Y.Z'
+        description: Version in format X.Y.Z
         required: true
         type: string
+      isPreRelease:
+        default: true
+        description: Is pre-release
+        required: true
+        type: boolean
 
-run-name: ${{ format('Pack {0}{1}', inputs.version, github.ref_name != 'main' && '-pre' || '') }}
+run-name: ${{ format('Pack {0}{1}', inputs.version, inputs.isPreRelease && '-pre' || '') }}
 
 jobs:
   run:
@@ -39,7 +44,7 @@ jobs:
       # Package output directory
       PACKAGE_OUTPUT_DIRECTORY: .\out
       # Package Version
-      PACKAGE_VERSION: ${{ format('{0}{1}', inputs.version, github.ref_name != 'main' && '-pre' || '') }}
+      PACKAGE_VERSION: ${{ format('{0}{1}', inputs.version, inputs.isPreRelease && '-pre' || '') }}
       # Repo url
       REPO_URL: ${{ format('{0}/{1}', github.server_url, github.repository) }}
       # Verbosity level
@@ -71,7 +76,8 @@ jobs:
         -p:RepositoryCommit=${{ github.sha }}
         -p:RepositoryUrl=${{ env.REPO_URL }}
 
-    - name: Attest Build Provenance
+    - name: Attest Package Provenance
+      if: ${{ !inputs.isPreRelease }}
       uses: actions/attest-build-provenance@v2
       with:
         subject-path: "${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.*pkg"
