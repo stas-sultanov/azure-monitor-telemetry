@@ -113,21 +113,6 @@ public sealed class TelemetryTracker
 
 	#region Methods: Track
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public OperationContext TrackBegin
-	(
-		String id
-	)
-	{
-		// get operation info
-		var operation = Operation;
-
-		// update tracker operation
-		Operation = operation with { ParentId = id };
-
-		return operation;
-	}
-
 	/// <summary>
 	/// Tracks availability by creating an instance of <see cref="AvailabilityTelemetry"/> and calling the <see cref="Add(Telemetry)"/> method.
 	/// </summary>
