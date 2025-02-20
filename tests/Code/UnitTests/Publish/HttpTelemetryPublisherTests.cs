@@ -101,7 +101,7 @@ public sealed partial class HttpTelemetryPublisherTests
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey);
 
 		var telemetryList = new[] { new TraceTelemetry(DateTime.UtcNow, @"test", SeverityLevel.Information) };
-		var tags = new List<KeyValuePair<String, String>>();
+		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 
 		var result = (await publisher.PublishAsync(telemetryList, tags, cancellationToken)) as HttpTelemetryPublishResult;
@@ -132,7 +132,7 @@ public sealed partial class HttpTelemetryPublisherTests
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken);
 
 		var telemetryList = new[] { new TraceTelemetry(DateTime.UtcNow, @"test", SeverityLevel.Information) };
-		var tags = new List<KeyValuePair<String, String>>();
+		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 
 		// initiate publish, token will expire right after the call

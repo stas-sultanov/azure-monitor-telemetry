@@ -23,10 +23,10 @@ public sealed class TelemetryTrackerTests
 {
 	#region Fields
 
-	private readonly MeasurementList measurements = [new("m", 0)];
+	private readonly KeyValuePair<String, Double> [] measurements = [new("m", 0)];
 	private readonly OperationContext operation = new() { Id = new Guid().ToString("N"), Name = "Test" };
-	private readonly PropertyList properties = [new("a", "b")];
-	private readonly TagList tags = [new(TelemetryTagKey.CloudRole, "role")];
+	private readonly KeyValuePair<String, String> [] properties = [new("a", "b")];
+	private readonly KeyValuePair<String, String> [] tags = [new(TelemetryTagKey.CloudRole, "role")];
 
 	#endregion
 
@@ -41,7 +41,7 @@ public sealed class TelemetryTrackerTests
 		{
 			Id = operationId
 		};
-		var tags = new List<KeyValuePair<String, String>>
+		var tags = new KeyValuePair<String, String> []
 		{
 			new(TelemetryTagKey.CloudRole, "tester")
 		};

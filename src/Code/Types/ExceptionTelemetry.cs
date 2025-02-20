@@ -32,13 +32,13 @@ public sealed class ExceptionTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public MeasurementList Measurements { get; init; }
+	public KeyValuePair<String, Double> [] Measurements { get; init; }
 
 	/// <inheritdoc/>
 	public OperationContext Operation { get; init; }
 
 	/// <inheritdoc/>
-	public PropertyList Properties { get; init; }
+	public KeyValuePair<String, String> [] Properties { get; init; }
 
 	/// <summary>
 	/// The severity level.
@@ -46,7 +46,7 @@ public sealed class ExceptionTelemetry
 	public SeverityLevel? SeverityLevel { get; init; }
 
 	/// <inheritdoc/>
-	public TagList Tags { get; init; }
+	public KeyValuePair<String, String>[] Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the exception has occurred.

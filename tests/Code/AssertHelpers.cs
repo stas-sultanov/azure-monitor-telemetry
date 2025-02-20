@@ -81,8 +81,8 @@ internal static class AssertHelpers
 	(
 		Telemetry telemetry,
 		OperationContext operation,
-		PropertyList properties,
-		TagList tags,
+		KeyValuePair<String, String> [] properties,
+		KeyValuePair<String, String>[] tags,
 		DateTime? time = null
 	)
 	{
@@ -104,7 +104,7 @@ internal static class AssertHelpers
 		AvailabilityTelemetry telemetry,
 		TimeSpan duration,
 		String id,
-		MeasurementList measurements,
+		KeyValuePair<String, Double> [] measurements,
 		String message,
 		String name,
 		String runLocation,
@@ -135,7 +135,7 @@ internal static class AssertHelpers
 		String data,
 		TimeSpan duration,
 		String id,
-		MeasurementList measurements,
+		KeyValuePair<String, Double> [] measurements,
 		String name,
 		String resultCode,
 		Boolean success,
@@ -168,7 +168,7 @@ internal static class AssertHelpers
 	public static void PropertiesAreEqual
 	(
 		EventTelemetry telemetry,
-		MeasurementList measurements,
+		KeyValuePair<String, Double> [] measurements,
 		String name
 	)
 	{
@@ -184,7 +184,7 @@ internal static class AssertHelpers
 	(
 		ExceptionTelemetry telemetry,
 		Exception exception,
-		MeasurementList measurements,
+		KeyValuePair<String, Double> [] measurements,
 		SeverityLevel? severityLevel
 	)
 	{
@@ -233,7 +233,7 @@ internal static class AssertHelpers
 		RequestTelemetry telemetry,
 		TimeSpan duration,
 		String id,
-		MeasurementList measurements,
+		KeyValuePair<String, Double> [] measurements,
 		String name,
 		String responseCode,
 		Boolean success,

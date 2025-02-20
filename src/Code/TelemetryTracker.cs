@@ -12,24 +12,60 @@ using System.Runtime.CompilerServices;
 /// Providing functionality to collect and publish telemetry items.
 /// </summary>
 /// <remarks>
-/// Provides thread-safe collection of telemetry items and supports batch publishing
-/// through configured telemetry publishers. It allows attaching common tags that will be included with all telemetry items.
+/// Provides thread-safe collection of telemetry items and supports batch publishing through configured telemetry publishers.
+/// Allows specifying common tags that will be attached to each telemetry item during publish operation.
 /// </remarks>
-/// <param name="tags">A list of tags to attach to each telemetry item. Is optional.</param>
-/// <param name="telemetryPublishers">An array of telemetry publishers to publish the telemetry data.</param>
 public sealed class TelemetryTracker
-(
-	TagList tags = null,
-	params TelemetryPublisher[] telemetryPublishers
-)
 {
 	#region Fields
 
 	private static readonly TelemetryPublishResult[] emptySuccess = [];
-	private readonly ConcurrentQueue<Telemetry> items = new();
-	private readonly TagList tags = tags;
-	private readonly AsyncLocal<OperationContext> operation = new();
-	private readonly TelemetryPublisher[] telemetryPublishers = telemetryPublishers;
+	private readonly ConcurrentQueue<Telemetry> items;
+	private readonly KeyValuePair<String, String> [] tags;
+	private readonly AsyncLocal<OperationContext> operation;
+	private readonly TelemetryPublisher[] telemetryPublishers;
+
+	#endregion
+
+	#region Constructor
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="TelemetryTracker"/> class.
+	/// </summary>
+	/// <param name="tags">An array of tags to attach to each telemetry item. Is optional.</param>
+	/// <param name="telemetryPublishers">An array of telemetry publishers to publish the telemetry data.</param>
+	public TelemetryTracker
+	(
+		KeyValuePair<String, String>[] tags = null,
+		params TelemetryPublisher[] telemetryPublishers
+	)
+	{
+		if (tags != null)
+		{
+			for (var index = 0; index < tags.Length; index++)
+			{
+				var tag = tags[index];
+
+				if (String.IsNullOrWhiteSpace(tag.Key))
+				{
+					throw new ArgumentException("Contains an item with Key which is null or whitespace.", nameof(tags));
+				}
+
+				if (String.IsNullOrWhiteSpace(tag.Value))
+				{
+					throw new ArgumentException("Contains an item with Value which is null or whitespace.", nameof(tags));
+				}
+			}
+		}
+
+		this.tags = tags;
+
+		this.telemetryPublishers = telemetryPublishers;
+
+		items = new();
+
+		operation = new();
+	}
 
 	#endregion
 
@@ -136,9 +172,9 @@ public sealed class TelemetryTracker
 		TimeSpan duration,
 		Boolean success,
 		String runLocation = null,
-		MeasurementList measurements = null,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, Double> [] measurements = null,
+		KeyValuePair<String, String> [] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		var telemetry = new AvailabilityTelemetry(time, id, name, message)
@@ -176,9 +212,9 @@ public sealed class TelemetryTracker
 		Uri uri,
 		HttpStatusCode statusCode,
 		TimeSpan duration,
-		MeasurementList measurements = null,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, Double> [] measurements = null,
+		KeyValuePair<String, String> [] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		var name = String.Concat(httpMethod.Method, " ", uri.AbsolutePath);
@@ -223,9 +259,9 @@ public sealed class TelemetryTracker
 		Boolean success,
 		TimeSpan duration,
 		String typeName = null,
-		MeasurementList measurements = null,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, Double> [] measurements = null,
+		KeyValuePair<String, String> [] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyType.InProc : DependencyType.InProc + " | " + typeName;
@@ -255,9 +291,9 @@ public sealed class TelemetryTracker
 	public void TrackEvent
 	(
 		String name,
-		MeasurementList measurements = null,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, Double> [] measurements = null,
+		KeyValuePair<String, String> [] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -286,9 +322,9 @@ public sealed class TelemetryTracker
 	(
 		Exception exception,
 		SeverityLevel? severityLevel = null,
-		MeasurementList measurements = null,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, Double> [] measurements = null,
+		KeyValuePair<String, String> [] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -321,8 +357,8 @@ public sealed class TelemetryTracker
 		String name,
 		Double value,
 		MetricValueAggregation valueAggregation = null,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, String> [] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -349,8 +385,8 @@ public sealed class TelemetryTracker
 	(
 		String message,
 		SeverityLevel severityLevel,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, String> [] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		var time = DateTime.UtcNow;

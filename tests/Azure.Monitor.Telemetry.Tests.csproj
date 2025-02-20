@@ -12,10 +12,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Include="Code\UnitTests\Publish\ExtensionsTests.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Azure.Identity" Version="1.*" />
 		<PackageReference Include="Azure.Storage.Queues" Version="12.*" />
 		<PackageReference Include="coverlet.collector" Version="6.*" />
