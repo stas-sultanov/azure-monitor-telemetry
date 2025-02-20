@@ -37,10 +37,10 @@ public sealed class MetricTelemetry
 	public OperationContext Operation { get; init; }
 
 	/// <inheritdoc/>
-	public PropertyList Properties { get; init; }
+	public KeyValuePair<String, String> [] Properties { get; init; }
 
 	/// <inheritdoc/>
-	public TagList Tags { get; init; }
+	public KeyValuePair<String, String> [] Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the metric was recorded.

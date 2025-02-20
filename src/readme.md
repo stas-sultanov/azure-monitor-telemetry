@@ -9,15 +9,19 @@ A lightweight, high-performance library for tracking and publishing telemetry.
 
 ### Get an Ingestion Endpoint and an Instrumentation Key
 
-To use the library you will need to provide it with an Ingestion Endpoint and an Instrumentation Key which can be obtained from the properties of the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka Application Insights. 
+To use the library you will need to provide it with an Ingestion Endpoint and an Instrumentation Key which can be obtained from the ConnectionString property of the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka Application Insights. 
 
 ### Initialize a TelemetryTracker
 
-The `TelemetryTracker` is the primary root object for the library.
+The **TelemetryTracker** is the primary root object for the library.
 All functionality around telemetry tracking and publishing is located on this object.
-You must initialize an instance of this object.
 
-To initialize instance of `TelemetryTracker` type you should provide an instance of the type that implements `TelemetryPublisher` interface.
+To initialize instance of **TelemetryTracker** type you should provide an instance of the type that implements **TelemetryPublisher** interface.
+
+**HttpTelemetryPublisher** type implements **TelemetryPublisher** interface and provides an ability to publish telemetry data via HTTP protocol both with and without Entra based authentication.
+
+It is possible to configure **TelemetryTracker** to publish telemetry
+**TelemetryTracker** accepts array of instances of of the type that implements **TelemetryPublisher** interface, in this way it is possible to configure
 
 #### One Publisher without Entra based Authentication
 

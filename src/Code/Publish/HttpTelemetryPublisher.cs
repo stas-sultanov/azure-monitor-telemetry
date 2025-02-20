@@ -3,8 +3,10 @@
 
 namespace Azure.Monitor.Telemetry.Publish;
 
+using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 
 /// <summary>
 /// Provides telemetry publishing using HTTP protocol.
@@ -21,26 +23,33 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	#region Constants
 
 	/// <summary>
+	/// Name of the HTTP Authorization header.
+	/// </summary>
+	private const String AuthorizationHeaderName = @"Authorization";
+
+	/// <summary>
 	/// Prefix for the HTTP Authorization header value.
 	/// </summary>
 	private const String AuthorizationHeaderValuePrefix = @"Bearer ";
 
 	/// <summary>
-	/// Name of the HTTP Authorization header.
+	/// Value of the Content-Encoding header.
 	/// </summary>
-	private const String AuthorizationHeaderName = @"Authorization";
+	private const String ContentEncodingHeaderValue = "gzip";
 
 	/// <summary>
 	/// The authorization scope for the Azure Monitor.
 	/// </summary>
 	public const String AuthorizationScope = "https://monitor.azure.com//.default";
 
+	private static readonly UTF8Encoding encoding = new(false);
+
+	private static readonly MediaTypeHeaderValue contentTypeHeaderValue = MediaTypeHeaderValue.Parse(@"application/x-json-stream");
+
 	/// <summary>
 	/// The <see cref="AuthorizationScope"/> as array.
 	/// </summary>
 	public static String[] AuthorizationScopes { get; } = [AuthorizationScope];
-
-	private static MediaTypeHeaderValue ContentTypeHeaderValue { get; } = MediaTypeHeaderValue.Parse(@"application/x-json-stream");
 
 	#endregion
 
@@ -52,7 +61,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	private readonly HttpClient httpClient;
 	private readonly Uri ingestionEndpoint;
 	private readonly String instrumentationKey;
-	private readonly TagList tags;
+	private readonly KeyValuePair<String, String>[] tags;
 
 	#endregion
 
@@ -64,17 +73,20 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <param name="httpClient">The HTTP client to publish telemetry data.</param>
 	/// <param name="ingestionEndpoint">The URI endpoint where telemetry data will be sent. Must be an absolute, non-file, non-UNC URI.</param>
 	/// <param name="instrumentationKey">The instrumentation key used to authenticate with the telemetry service. Cannot be an empty GUID.</param>
-	/// <param name="getAccessToken">Optional function to get a bearer token for authentication. If not provided, no token will be used.</param>
-	/// <param name="tags">A list of tags to attach to each telemetry item. Is optional.</param>
-	/// <exception cref="ArgumentNullException">If <paramref name="httpClient"/> or <paramref name="ingestionEndpoint"/> is null.</exception>
-	/// <exception cref="ArgumentException">If <paramref name="ingestionEndpoint"/> is not valid or <paramref name="instrumentationKey"/> is empty.</exception>
+	/// <param name="getAccessToken">Function to get a bearer token for authentication. If not provided, no authentication will be used. Is optional.</param>
+	/// <param name="tags">An array of tags to attach to each telemetry item. Is optional.</param>
+	/// <exception cref="ArgumentNullException">If <paramref name="httpClient"/> is null.</exception>
+	/// <exception cref="ArgumentNullException">If <paramref name="ingestionEndpoint"/> is null.</exception>
+	/// <exception cref="ArgumentException">If <paramref name="ingestionEndpoint"/> is not valid absolute uri.</exception>
+	/// <exception cref="ArgumentException">If <paramref name="instrumentationKey"/> is empty.</exception>
+	/// <exception cref="ArgumentException">If <paramref name="tags"/> contains an item which key or value is null or whitespace.</exception>
 	public HttpTelemetryPublisher
 	(
 		HttpClient httpClient,
 		Uri ingestionEndpoint,
 		Guid instrumentationKey,
 		Func<CancellationToken, Task<BearerToken>> getAccessToken = null,
-		TagList tags = null
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
 		if (ingestionEndpoint == null)
@@ -92,9 +104,27 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			throw new ArgumentException("Not valid.", nameof(instrumentationKey));
 		}
 
-		this.getAccessToken = getAccessToken;
+		if (tags != null)
+		{
+			for (var index = 0; index < tags.Length; index++)
+			{
+				var tag = tags[index];
+
+				if (String.IsNullOrWhiteSpace(tag.Key))
+				{
+					throw new ArgumentException("Contains an item with Key which is null or whitespace.", nameof(tags));
+				}
+
+				if (String.IsNullOrWhiteSpace(tag.Value))
+				{
+					throw new ArgumentException("Contains an item with Value which is null or whitespace.", nameof(tags));
+				}
+			}
+		}
 
 		this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+
+		this.getAccessToken = getAccessToken;
 
 		this.ingestionEndpoint = new Uri(ingestionEndpoint, getAccessToken == null ? @"v2/track" : @"v2.1/track");
 
@@ -111,16 +141,19 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryList,
-		TagList trackerTags,
+		KeyValuePair<String, String>[] trackerTags,
 		CancellationToken cancellationToken
 	)
 	{
 		// create memory stream to write request
 		using var memoryStream = new MemoryStream();
 
-		// create stream writer based on memory stream as we want to write text in JSON format
-		using (var streamWriter = new StreamWriter(memoryStream, System.Text.Encoding.UTF8, 32768, true))
+		// we must keep open memory stream to read from it after write
+		using (var compressedStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
 		{
+			// create stream writer based on memory stream as we want to write text in JSON format
+			using var streamWriter = new StreamWriter(compressedStream, encoding);
+
 			for (var index = 0; index < telemetryList.Count; index++)
 			{
 				var telemetryItem = telemetryList[index];
@@ -155,9 +188,11 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			_ = request.Headers.TryAddWithoutValidation(AuthorizationHeaderName, authorizationHeaderValue);
 		}
 
-		// set content type
-		// actually works without it, but we should be consistent
-		request.Content.Headers.ContentType = ContentTypeHeaderValue;
+		// set Content-Type. actually works without it, but we should be consistent
+		request.Content.Headers.ContentType = contentTypeHeaderValue;
+
+		// set Content-Encoding.
+		request.Content.Headers.ContentEncoding.Add(ContentEncodingHeaderValue);
 
 		// record time
 		var httpRequestTime = DateTime.UtcNow;

@@ -43,7 +43,7 @@
 				<PackageLicenseFile>license.md</PackageLicenseFile>
 				<PackageReadmeFile>readme.md</PackageReadmeFile>
 				<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-				<PackageTags>Azure;Azure Monitor;Azure Monitor Telemetry;Telemetry;ApplicationInsights;</PackageTags>
+				<PackageTags>Azure;Monitor;Telemetry;ApplicationInsights;</PackageTags>
 				<Product>Azure Light Client</Product>
 				<RepositoryType>git</RepositoryType>
 				<SignAssembly>True</SignAssembly>

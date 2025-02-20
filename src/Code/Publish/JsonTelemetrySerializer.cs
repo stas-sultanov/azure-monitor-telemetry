@@ -60,8 +60,8 @@ public static class JsonTelemetrySerializer
 		StreamWriter streamWriter,
 		String instrumentationKey,
 		Telemetry telemetry,
-		TagList trackerTags,
-		TagList publisherTags
+		KeyValuePair<String, String>[] trackerTags,
+		KeyValuePair<String, String>[] publisherTags
 	)
 	{
 		String name;
@@ -147,7 +147,7 @@ public static class JsonTelemetrySerializer
 		streamWriter.Write("\"");
 
 		// serialize properties
-		if (writeProperties && telemetry.Properties != null && telemetry.Properties.Count != 0)
+		if (writeProperties && telemetry.Properties != null && telemetry.Properties.Length != 0)
 		{
 			streamWriter.Write(",\"properties\":{");
 
@@ -399,7 +399,7 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("}]");
 
-		if (metricTelemetry.Properties != null && metricTelemetry.Properties.Count != 0)
+		if (metricTelemetry.Properties != null && metricTelemetry.Properties.Length != 0)
 		{
 			streamWriter.Write(",\"properties\":{");
 
@@ -497,9 +497,9 @@ public static class JsonTelemetrySerializer
 	(
 		StreamWriter writer,
 		OperationContext telemetryOperation,
-		TagList telemetryTags,
-		TagList trackerTags,
-		TagList publisherTags
+		KeyValuePair<String, String>[] telemetryTags,
+		KeyValuePair<String, String>[] trackerTags,
+		KeyValuePair<String, String>[] publisherTags
 	)
 	{
 		var scopeHasItems = false;
@@ -530,13 +530,13 @@ public static class JsonTelemetrySerializer
 	private static void WriteListIfValid
 	(
 		StreamWriter streamWriter,
-		MeasurementList list,
+		KeyValuePair<String, Double>[] list,
 		String pre,
 		String post
 	)
 	{
 		// serialize measurements
-		if (list == null || list.Count == 0)
+		if (list == null || list.Length == 0)
 		{
 			return;
 		}
@@ -557,16 +557,16 @@ public static class JsonTelemetrySerializer
 	private static Boolean WriteList
 	(
 		StreamWriter streamWriter,
-		PropertyList list,
+		KeyValuePair<String, String>[] list,
 		Boolean scopeHasItems
 	)
 	{
-		if (list == null || list.Count == 0)
+		if (list == null || list.Length == 0)
 		{
 			return false;
 		}
 
-		for (var index = 0; index < list.Count; index++)
+		for (var index = 0; index < list.Length; index++)
 		{
 			var pair = list[index];
 
@@ -583,10 +583,10 @@ public static class JsonTelemetrySerializer
 	private static void WriteList
 	(
 		StreamWriter streamWriter,
-		MeasurementList list
+		KeyValuePair<String, Double>[] list
 	)
 	{
-		for (var index = 0; index < list.Count; index++)
+		for (var index = 0; index < list.Length; index++)
 		{
 			var pair = list[index];
 

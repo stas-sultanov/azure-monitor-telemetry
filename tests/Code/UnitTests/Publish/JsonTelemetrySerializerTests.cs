@@ -22,8 +22,8 @@ public class JsonTelemetrySerializerTests
 	private sealed class UnknownTelemetry(DateTime time) : Telemetry
 	{
 		public OperationContext Operation { get; set; } = null;
-		public PropertyList Properties { get; set; } = null;
-		public TagList Tags { get; set; } = null;
+		public KeyValuePair<String, String>[] Properties { get; set; } = null;
+		public KeyValuePair<String, String>[] Tags { get; set; } = null;
 		public DateTime Time { get; init; } = time;
 	}
 
@@ -31,12 +31,12 @@ public class JsonTelemetrySerializerTests
 
 	#region Fields
 
-	private static readonly TagList publisherTags =
+	private static readonly KeyValuePair<String, String> [] publisherTags =
 	[
 		new(TelemetryTagKey.InternalSdkVersion, "test"),
 	];
 
-	private static readonly TagList trackerTags =
+	private static readonly KeyValuePair<String, String> [] trackerTags =
 	[
 		new(TelemetryTagKey.CloudRole, "TestMachine"),
 	];
@@ -301,13 +301,13 @@ public class JsonTelemetrySerializerTests
 
 		var telemetry = new PageViewTelemetry(DateTime.UtcNow, "id", "name");
 
-		TagList trackerTags =
+		KeyValuePair<String, String> [] trackerTags =
 		[
 			new KeyValuePair<String, String>(null, "value"),
 			new KeyValuePair<String, String>("", "value")
 		];
 
-		TagList publisherTags =
+		KeyValuePair<String, String> [] publisherTags =
 		[
 			new KeyValuePair<String, String>("key0", null),
 			new KeyValuePair<String, String>("key1", "")
@@ -347,8 +347,8 @@ public class JsonTelemetrySerializerTests
 	(
 		String instrumentationKey,
 		Telemetry telemetry,
-		TagList trackerTags,
-		TagList publisherTags
+		KeyValuePair<String, String>[] trackerTags,
+		KeyValuePair<String, String>[] publisherTags
 	)
 	{
 		var memoryStream = new MemoryStream();
@@ -408,7 +408,7 @@ public class JsonTelemetrySerializerTests
 		return dataElement;
 	}
 
-	private static KeyValuePair<String, String>[] GetTags(Telemetry telemetry, TagList trackerTags, TagList publisherTags)
+	private static KeyValuePair<String, String>[] GetTags(Telemetry telemetry, KeyValuePair<String, String>[] trackerTags, KeyValuePair<String, String>[] publisherTags)
 	{
 		var tags = new List<KeyValuePair<String, String>>();
 
@@ -477,9 +477,9 @@ public class JsonTelemetrySerializerTests
 		return jsonElement.GetProperty(@"message").Deserialize<String>();
 	}
 
-	private static MeasurementList GetMeasurements(JsonElement jsonElement)
+	private static KeyValuePair<String, Double>[] GetMeasurements(JsonElement jsonElement)
 	{
-		return jsonElement.GetProperty(@"measurements").Deserialize<Dictionary<String, Double>>().ToList();
+		return [.. jsonElement.GetProperty(@"measurements").Deserialize<Dictionary<String, Double>>()];
 	}
 
 	private static String GetName(JsonElement jsonElement)

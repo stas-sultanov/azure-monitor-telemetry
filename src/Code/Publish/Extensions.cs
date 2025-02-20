@@ -30,16 +30,14 @@ public static class Extensions
 		this TelemetryTracker telemetryTracker,
 		String id,
 		HttpTelemetryPublishResult publishResult,
-		MeasurementList measurements = null,
-		PropertyList properties = null,
-		TagList tags = null
+		KeyValuePair<String, Double>[] measurements = null,
+		KeyValuePair<String, String>[] properties = null,
+		KeyValuePair<String, String>[] tags = null
 	)
 	{
-		var adjustedMeasurements = measurements == null
-			? []
-			: measurements is List<KeyValuePair<String, Double>> measurementsAsList
-				? measurementsAsList
-				: [.. measurements];
+		List<KeyValuePair<String, Double>> adjustedMeasurements = measurements == null
+			? new()
+			: new(measurements);
 
 		adjustedMeasurements.Add(new KeyValuePair<String, Double>(nameof(HttpTelemetryPublishResult.Count), publishResult.Count));
 
@@ -49,7 +47,7 @@ public static class Extensions
 		{
 			Data = publishResult.Url.ToString(),
 			Duration = publishResult.Duration,
-			Measurements = adjustedMeasurements,
+			Measurements = [.. adjustedMeasurements],
 			Properties = properties,
 			Operation = telemetryTracker.Operation,
 			ResultCode = publishResult.StatusCode.ToString(),

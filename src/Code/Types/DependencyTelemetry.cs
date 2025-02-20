@@ -49,7 +49,7 @@ public sealed class DependencyTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public MeasurementList Measurements { get; init; }
+	public KeyValuePair<String, Double> [] Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the command initiated with this dependency call.
@@ -66,7 +66,7 @@ public sealed class DependencyTelemetry
 	public String ResultCode { get; init; }
 
 	/// <inheritdoc/>
-	public PropertyList Properties { get; init; }
+	public KeyValuePair<String, String> [] Properties { get; init; }
 
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.
@@ -74,7 +74,7 @@ public sealed class DependencyTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public TagList Tags { get; init; }
+	public KeyValuePair<String, String> [] Tags { get; init; }
 
 	/// <summary>
 	/// This field is the target site of a dependency call.

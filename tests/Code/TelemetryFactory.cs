@@ -13,12 +13,12 @@ internal sealed class TelemetryFactory
 	#region Properties
 
 	private Random Random { get; }
-	public MeasurementList Measurements { get; set; }
+	public KeyValuePair<String, Double> [] Measurements { get; set; }
 	public String Message { get; set; }
 	public String Name { get; set; }
 	public OperationContext Operation { get; set; }
-	public PropertyList Properties { get; set; }
-	public PropertyList Tags { get; set; }
+	public KeyValuePair<String, String> [] Properties { get; set; }
+	public KeyValuePair<String, String> [] Tags { get; set; }
 	public Uri Url { get; set; }
 
 	#endregion

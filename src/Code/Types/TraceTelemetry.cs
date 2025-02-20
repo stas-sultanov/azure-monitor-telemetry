@@ -29,7 +29,7 @@ public sealed class TraceTelemetry
 	public OperationContext Operation { get; init; }
 
 	/// <inheritdoc/>
-	public PropertyList Properties { get; init; }
+	public KeyValuePair<String, String> [] Properties { get; init; }
 
 	/// <summary>
 	/// The severity level.
@@ -37,7 +37,7 @@ public sealed class TraceTelemetry
 	public SeverityLevel SeverityLevel { get; } = severityLevel;
 
 	/// <inheritdoc/>
-	public TagList Tags { get; init; }
+	public KeyValuePair<String, String> [] Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the trace has occurred.
