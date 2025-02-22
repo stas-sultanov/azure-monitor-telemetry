@@ -30,7 +30,7 @@ public sealed class EventTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double> [] Measurements { get; init; } = null;
+	public KeyValuePair<String, Double>[] Measurements { get; init; } = null;
 
 	/// <summary>
 	/// The name.
@@ -42,7 +42,7 @@ public sealed class EventTelemetry
 	public OperationContext Operation { get; init; } = null;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String> [] Properties { get; init; } = null;
+	public KeyValuePair<String, String>[] Properties { get; init; } = null;
 
 	/// <inheritdoc/>
 	public KeyValuePair<String, String>[] Tags { get; init; } = null;

@@ -41,7 +41,7 @@ public sealed class RequestTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double> [] Measurements { get; init; }
+	public KeyValuePair<String, Double>[] Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the request.
@@ -52,7 +52,7 @@ public sealed class RequestTelemetry
 	public OperationContext Operation { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String> [] Properties { get; init; }
+	public KeyValuePair<String, String>[] Properties { get; init; }
 
 	/// <summary>
 	/// The result of an operation execution.

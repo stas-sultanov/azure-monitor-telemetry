@@ -38,7 +38,7 @@ public sealed class AvailabilityTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double> [] Measurements { get; init; }
+	public KeyValuePair<String, Double>[] Measurements { get; init; }
 
 	/// <summary>
 	/// The message.
@@ -54,7 +54,7 @@ public sealed class AvailabilityTelemetry
 	public OperationContext Operation { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String> [] Properties { get; init; }
+	public KeyValuePair<String, String>[] Properties { get; init; }
 
 	/// <summary>
 	/// Location from where the operation has been performed.

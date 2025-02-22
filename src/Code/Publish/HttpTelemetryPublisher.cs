@@ -61,7 +61,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	private readonly HttpClient httpClient;
 	private readonly Uri ingestionEndpoint;
 	private readonly String instrumentationKey;
-	private readonly KeyValuePair<String, String>[] tags;
+	private readonly KeyValuePair<String, String> [] tags;
 
 	#endregion
 
@@ -177,6 +177,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			// check if token has been ever requested or already has expired
 			if (authorizationHeaderValue == null || DateTimeOffset.UtcNow > authorizationTokenExpiresOn)
 			{
+				// get token
 				var token = await getAccessToken(cancellationToken);
 
 				authorizationTokenExpiresOn = token.ExpiresOn;
@@ -207,10 +208,11 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		httpRequestTimer.Stop();
 
 		// read response content as string
-#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods, not supported in .net462
+#if NET462
 		var responseContentAsString = await response.Content.ReadAsStringAsync();
-#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
-
+#else
+		var responseContentAsString = await response.Content.ReadAsStringAsync(cancellationToken);
+#endif
 		// create result
 		var result = new HttpTelemetryPublishResult
 		(

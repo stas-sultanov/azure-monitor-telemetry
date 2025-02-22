@@ -23,7 +23,7 @@ public interface Telemetry
 	/// Maximum key length: 150 characters, Maximum value length: 8192 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, String> [] Properties { get; }
+	public KeyValuePair<String, String>[] Properties { get; }
 
 	/// <summary>
 	/// A collection of tags in a name-value format.
@@ -31,7 +31,7 @@ public interface Telemetry
 	/// <remarks>
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, String> [] Tags { get; }
+	public KeyValuePair<String, String>[] Tags { get; }
 
 	/// <summary>
 	/// The UTC timestamp.
