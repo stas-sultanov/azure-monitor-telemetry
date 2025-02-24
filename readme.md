@@ -1,7 +1,9 @@
 # Azure Monitor Telemetry 
 [![CodeQL](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/github-code-scanning/codeql)
 [![Check](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/check.yml/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/check.yml)
-[![Pack](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/pack.yml/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/pack.yml)
+[![Publish](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/publish.yml/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/publish.yml)
+![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)
+![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)
 
 A lightweight, high-performance library for tracking and publishing telemetry to [Azure Monitor](https://docs.microsoft.com/azure/azure-monitor/overview) / [Application Insights](https://docs.microsoft.com/azure/azure-monitor/app/app-insights-overview).
 
