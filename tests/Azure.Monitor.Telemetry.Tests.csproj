@@ -5,10 +5,12 @@
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 		<RootNamespace>Azure.Monitor.Telemetry.Tests</RootNamespace>
 		<TargetFramework>net9.0</TargetFramework>
 		<TestingExtensionsProfile>None</TestingExtensionsProfile>
 		<TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>

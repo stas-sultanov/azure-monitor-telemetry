@@ -5,6 +5,7 @@
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 		<RootNamespace>Azure.Monitor.Telemetry</RootNamespace>
 		<TargetFrameworks>net462;net8.0;net9.0</TargetFrameworks>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>

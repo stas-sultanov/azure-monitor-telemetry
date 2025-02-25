@@ -22,7 +22,7 @@ public interface TelemetryPublisher
 	public Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryList,
-		KeyValuePair<String, String>[] trackerTags,
+		KeyValuePair<String, String>[]? trackerTags,
 		CancellationToken cancellationToken
 	);
 }

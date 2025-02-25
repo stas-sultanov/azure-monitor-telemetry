@@ -56,12 +56,12 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	#region Fields
 
 	private DateTimeOffset authorizationTokenExpiresOn;
-	private String authorizationHeaderValue;
-	private readonly Func<CancellationToken, Task<BearerToken>> getAccessToken;
+	private String? authorizationHeaderValue;
+	private readonly Func<CancellationToken, Task<BearerToken>>? getAccessToken;
 	private readonly HttpClient httpClient;
 	private readonly Uri ingestionEndpoint;
 	private readonly String instrumentationKey;
-	private readonly KeyValuePair<String, String> [] tags;
+	private readonly KeyValuePair<String, String>[]? tags;
 
 	#endregion
 
@@ -75,25 +75,17 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <param name="instrumentationKey">The instrumentation key used to authenticate with the telemetry service. Cannot be an empty GUID.</param>
 	/// <param name="getAccessToken">Function to get a bearer token for authentication. If not provided, no authentication will be used. Is optional.</param>
 	/// <param name="tags">An array of tags to attach to each telemetry item. Is optional.</param>
-	/// <exception cref="ArgumentNullException">If <paramref name="httpClient"/> is null.</exception>
-	/// <exception cref="ArgumentNullException">If <paramref name="ingestionEndpoint"/> is null.</exception>
 	/// <exception cref="ArgumentException">If <paramref name="ingestionEndpoint"/> is not valid absolute uri.</exception>
 	/// <exception cref="ArgumentException">If <paramref name="instrumentationKey"/> is empty.</exception>
-	/// <exception cref="ArgumentException">If <paramref name="tags"/> contains an item which key or value is null or whitespace.</exception>
 	public HttpTelemetryPublisher
 	(
 		HttpClient httpClient,
 		Uri ingestionEndpoint,
 		Guid instrumentationKey,
-		Func<CancellationToken, Task<BearerToken>> getAccessToken = null,
-		KeyValuePair<String, String>[] tags = null
+		Func<CancellationToken, Task<BearerToken>>? getAccessToken = null,
+		KeyValuePair<String, String>[]? tags = null
 	)
 	{
-		if (ingestionEndpoint == null)
-		{
-			throw new ArgumentNullException(nameof(ingestionEndpoint));
-		}
-
 		if (!ingestionEndpoint.IsAbsoluteUri || ingestionEndpoint.IsFile || ingestionEndpoint.IsUnc)
 		{
 			throw new ArgumentException("Not valid.", nameof(ingestionEndpoint));
@@ -102,24 +94,6 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		if (instrumentationKey == Guid.Empty)
 		{
 			throw new ArgumentException("Not valid.", nameof(instrumentationKey));
-		}
-
-		if (tags != null)
-		{
-			for (var index = 0; index < tags.Length; index++)
-			{
-				var tag = tags[index];
-
-				if (String.IsNullOrWhiteSpace(tag.Key))
-				{
-					throw new ArgumentException("Contains an item with Key which is null or whitespace.", nameof(tags));
-				}
-
-				if (String.IsNullOrWhiteSpace(tag.Value))
-				{
-					throw new ArgumentException("Contains an item with Value which is null or whitespace.", nameof(tags));
-				}
-			}
 		}
 
 		this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -141,7 +115,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryList,
-		KeyValuePair<String, String>[] trackerTags,
+		KeyValuePair<String, String>[]? trackerTags,
 		CancellationToken cancellationToken
 	)
 	{

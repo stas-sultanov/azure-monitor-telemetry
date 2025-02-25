@@ -30,9 +30,9 @@ public static class Extensions
 		this TelemetryTracker telemetryTracker,
 		String id,
 		HttpTelemetryPublishResult publishResult,
-		KeyValuePair<String, Double>[] measurements = null,
-		KeyValuePair<String, String>[] properties = null,
-		KeyValuePair<String, String>[] tags = null
+		KeyValuePair<String, Double>[]? measurements = null,
+		KeyValuePair<String, String>[]? properties = null,
+		KeyValuePair<String, String>[]? tags = null
 	)
 	{
 		List<KeyValuePair<String, Double>> adjustedMeasurements = measurements == null
@@ -43,13 +43,12 @@ public static class Extensions
 
 		var name = String.Concat("POST ", publishResult.Url.AbsolutePath);
 
-		var telemetry = new DependencyTelemetry(publishResult.Time, id, name)
+		var telemetry = new DependencyTelemetry(telemetryTracker.Operation, publishResult.Time, id, name)
 		{
 			Data = publishResult.Url.ToString(),
 			Duration = publishResult.Duration,
 			Measurements = [.. adjustedMeasurements],
 			Properties = properties,
-			Operation = telemetryTracker.Operation,
 			ResultCode = publishResult.StatusCode.ToString(),
 			Success = publishResult.Success,
 			Target = publishResult.Url.Host,

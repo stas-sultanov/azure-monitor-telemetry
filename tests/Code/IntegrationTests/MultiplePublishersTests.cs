@@ -18,7 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
-public sealed class DependencyTrackingTests : AzureIntegrationTestsBase
+public sealed class MultiplePublishersTests : AzureIntegrationTestsBase
 {
 	private const String QueueName = "commands";
 
@@ -38,13 +38,14 @@ public sealed class DependencyTrackingTests : AzureIntegrationTestsBase
 	/// Initializes a new instance of the <see cref="DependencyTrackingTests"/> class.
 	/// </summary>
 	/// <param name="testContext">The test context.</param>
-	public DependencyTrackingTests(TestContext testContext)
+	public MultiplePublishersTests(TestContext testContext)
 		: base
 		(
 			testContext,
 			[],
 			[
 				Tuple.Create(@"Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>()),
+				Tuple.Create(@"Azure.Monitor.AuthOff.", false, Array.Empty<KeyValuePair<String, String>>())
 			]
 		)
 	{
@@ -81,11 +82,7 @@ public sealed class DependencyTrackingTests : AzureIntegrationTestsBase
 		// execute
 		await SendMessageTrackedAsync("begin", cancellationToken);
 
-		await Task.Delay(500);
-
-		await SendMessageTrackedAsync("middle", cancellationToken);
-
-		await Task.Delay(500);
+		await Task.Delay(random.Next(300));
 
 		await SendMessageTrackedAsync("end", cancellationToken);
 

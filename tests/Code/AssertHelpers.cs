@@ -103,11 +103,11 @@ internal static class AssertHelpers
 	(
 		AvailabilityTelemetry telemetry,
 		TimeSpan duration,
-		String id,
+		String? id,
 		KeyValuePair<String, Double>[] measurements,
-		String message,
-		String name,
-		String runLocation,
+		String? message,
+		String? name,
+		String? runLocation,
 		Boolean success
 	)
 	{
@@ -132,15 +132,15 @@ internal static class AssertHelpers
 	public static void PropertiesAreEqual
 	(
 		DependencyTelemetry telemetry,
-		String data,
+		String? data,
 		TimeSpan duration,
-		String id,
+		String? id,
 		KeyValuePair<String, Double>[] measurements,
-		String name,
-		String resultCode,
+		String? name,
+		String? resultCode,
 		Boolean success,
-		String target,
-		String type
+		String? target,
+		String? type
 	)
 	{
 		Assert.AreEqual(data, telemetry.Data, nameof(DependencyTelemetry.Data));
@@ -169,7 +169,7 @@ internal static class AssertHelpers
 	(
 		EventTelemetry telemetry,
 		KeyValuePair<String, Double>[] measurements,
-		String name
+		String? name
 	)
 	{
 		CollectionAssert.AreEquivalent(measurements, telemetry.Measurements, measurementComparer, nameof(EventTelemetry.Measurements));
@@ -201,10 +201,10 @@ internal static class AssertHelpers
 	public static void PropertiesAreEqual
 	(
 		MetricTelemetry telemetry,
-		String name,
-		String @namespace,
+		String? name,
+		String? @namespace,
 		Double value,
-		MetricValueAggregation valueAggregation = null
+		MetricValueAggregation? valueAggregation = null
 	)
 	{
 		Assert.AreEqual(name, telemetry.Name, nameof(MetricTelemetry.Name));

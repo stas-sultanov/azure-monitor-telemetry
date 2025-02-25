@@ -60,8 +60,8 @@ public static class JsonTelemetrySerializer
 		StreamWriter streamWriter,
 		String instrumentationKey,
 		Telemetry telemetry,
-		KeyValuePair<String, String>[] trackerTags,
-		KeyValuePair<String, String>[] publisherTags
+		KeyValuePair<String, String>[]? trackerTags,
+		KeyValuePair<String, String>[]? publisherTags
 	)
 	{
 		String name;
@@ -314,7 +314,7 @@ public static class JsonTelemetrySerializer
 
 				streamWriter.Write("{\"assembly\":\"");
 
-				streamWriter.Write(methodInfo.Module.Assembly.FullName);
+				streamWriter.Write(methodInfo?.Module.Assembly.FullName);
 
 				streamWriter.Write("\",\"level\":");
 
@@ -326,14 +326,14 @@ public static class JsonTelemetrySerializer
 
 				streamWriter.Write(",\"method\":\"");
 
-				if (methodInfo.DeclaringType != null)
+				if (methodInfo?.DeclaringType != null)
 				{
 					streamWriter.Write(methodInfo.DeclaringType.FullName);
 
 					streamWriter.Write('.');
 				}
 
-				streamWriter.Write(methodInfo.Name);
+				streamWriter.Write(methodInfo?.Name);
 
 				streamWriter.Write("\"}");
 			}
@@ -497,24 +497,21 @@ public static class JsonTelemetrySerializer
 	(
 		StreamWriter writer,
 		OperationContext telemetryOperation,
-		KeyValuePair<String, String>[] telemetryTags,
-		KeyValuePair<String, String>[] trackerTags,
-		KeyValuePair<String, String>[] publisherTags
+		KeyValuePair<String, String>[]? telemetryTags,
+		KeyValuePair<String, String>[]? trackerTags,
+		KeyValuePair<String, String>[]? publisherTags
 	)
 	{
 		var scopeHasItems = false;
 
 		// serialize operation-specific tags
-		if (telemetryOperation != null)
-		{
-			scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationId, telemetryOperation.Id, scopeHasItems);
+		scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationId, telemetryOperation.Id, scopeHasItems);
 
-			scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationName, telemetryOperation.Name, scopeHasItems);
+		scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationName, telemetryOperation.Name, scopeHasItems);
 
-			scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationParentId, telemetryOperation.ParentId, scopeHasItems);
+		scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationParentId, telemetryOperation.ParentId, scopeHasItems);
 
-			scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationSyntheticSource, telemetryOperation.SyntheticSource, scopeHasItems);
-		}
+		scopeHasItems |= WriteKeyValue(writer, TelemetryTagKey.OperationSyntheticSource, telemetryOperation.SyntheticSource, scopeHasItems);
 
 		// serialize telemetry item tags
 		scopeHasItems |= WriteList(writer, telemetryTags, scopeHasItems);
@@ -530,7 +527,7 @@ public static class JsonTelemetrySerializer
 	private static void WriteListIfValid
 	(
 		StreamWriter streamWriter,
-		KeyValuePair<String, Double>[] list,
+		KeyValuePair<String, Double>[]? list,
 		String pre,
 		String post
 	)
@@ -557,7 +554,7 @@ public static class JsonTelemetrySerializer
 	private static Boolean WriteList
 	(
 		StreamWriter streamWriter,
-		KeyValuePair<String, String>[] list,
+		KeyValuePair<String, String>[]? list,
 		Boolean scopeHasItems
 	)
 	{
@@ -607,11 +604,11 @@ public static class JsonTelemetrySerializer
 	(
 		StreamWriter streamWriter,
 		String key,
-		String value,
+		String? value,
 		Boolean scopeHasItems
 	)
 	{
-		if (String.IsNullOrWhiteSpace(key) || String.IsNullOrWhiteSpace(value))
+		if (String.IsNullOrEmpty(value))
 		{
 			return false;
 		}
@@ -666,7 +663,7 @@ public static class JsonTelemetrySerializer
 	private static void WriteValueIfValid
 	(
 		StreamWriter streamWriter,
-		String value,
+		String? value,
 		String pre,
 		String post
 	)
@@ -683,7 +680,7 @@ public static class JsonTelemetrySerializer
 	private static void WriteValueIfValid
 	(
 		StreamWriter streamWriter,
-		Uri value,
+		Uri? value,
 		String pre,
 		String post
 	)
@@ -700,7 +697,7 @@ public static class JsonTelemetrySerializer
 	private static void WriteValue
 	(
 		StreamWriter streamWriter,
-		String value,
+		String? value,
 		String pre,
 		String post
 	)

@@ -12,10 +12,12 @@ namespace Azure.Monitor.Telemetry;
 /// Semantically, events might or might not be correlated to requests.
 /// If used properly, event telemetry is more important than requests or traces.
 /// </remarks>
+/// <param name="operation">The distributed operation context.</param>
 /// <param name="time">The UTC timestamp when the event has occurred.</param>
 /// <param name="name">The name.</param>
 public sealed class EventTelemetry
 (
+	OperationContext operation,
 	DateTime time,
 	String name
 )
@@ -30,7 +32,7 @@ public sealed class EventTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double>[] Measurements { get; init; } = null;
+	public KeyValuePair<String, Double>[]? Measurements { get; init; } = null;
 
 	/// <summary>
 	/// The name.
@@ -39,13 +41,13 @@ public sealed class EventTelemetry
 	public String Name { get; } = name;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; init; } = null;
+	public OperationContext Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[] Properties { get; init; } = null;
+	public KeyValuePair<String, String>[]? Properties { get; init; } = null;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[] Tags { get; init; } = null;
+	public KeyValuePair<String, String>[]? Tags { get; init; } = null;
 
 	/// <summary>
 	/// The UTC timestamp when the event has occurred.

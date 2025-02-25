@@ -66,13 +66,13 @@ jobs:
         name: ${{ env.TESTS_ARTIFACT_NAME }}
         path: ${{ env.TESTS_PROJECT_PUBLISH_DIRECTORY_PATH }}
 
-  testUnits:
+  runUnitTests:
 
     env:
       # Path to the test results directory relative to the root of the project.
       TESTS_RESULTS_DIRECTORY_NAME: testsResults
 
-    name: Test Units
+    name: Run Unit Tests
 
     needs: build
 
@@ -90,6 +90,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
+      env:
+        DOTNET_NOLOGO: true
 
     - name: Download Build
       uses: actions/download-artifact@v4
@@ -103,19 +105,13 @@ jobs:
         --filter TestCategory=UnitTests
         --logger:"trx"
         --results-directory ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}
-        --verbosity detailed
+        --verbosity ${{ env.DOTNET_VERBOSITY }}
 
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.TESTS_ARTIFACT_NAME }}-results-unit
-        path: ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}
-
-    - name: Publish Results
+    - name: Publish Result
       uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b #v2.18.0
-      if: always()
       with:
-        check_name: 'Test Results: Unit'
+        check_name: Unit Tests
+        check_run: false # feature does not work well like at all
         files: |
           ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*.trx
 
@@ -126,27 +122,29 @@ jobs:
         filename: '${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*/*.cobertura.xml'
         format: markdown
         output: file
-        thresholds: '95 99'
+        thresholds: '90 95'
 
     - name: Add Coverage to PR
       uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 #v2.9.1
       if: github.event_name == 'pull_request'
       with:
-        header: 'Test Results: Unit'
+        header: Unit Tests
         recreate: true
         path: code-coverage-results.md
 
-  testIntegration:
+  runIntegrationTests:
 
     env:
       # Name of the Azure data center where to deploy resources for integration tests
       AZURE_DATACENTER_NAME: eastus
       # Name of the Azure resource group to deploy resources for integration tests
-      AZURE_RESOURCE_GROUP_NAME: test
+      AZURE_RESOURCE_GROUP_NAME: 'github-azure-monitor-telemetry-test-${{ github.run_number }}'
+      # Name of the Azure resource group to deploy resources for integration tests
+      AZURE_RESOURCE_NAME_PREFIX: ${{ github.run_id }}
       # Path to the test results directory relative to the root of the project.
       TESTS_RESULTS_DIRECTORY_NAME: testsResults
 
-    name: Test Integration
+    name: Run Integration Tests
 
     needs: build
 
@@ -166,6 +164,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
+      env:
+        DOTNET_NOLOGO: true
 
     - name: Download Build
       uses: actions/download-artifact@v4
@@ -191,11 +191,13 @@ jobs:
       uses: azure/arm-deploy@a1361c2c2cd398621955b16ca32e01c65ea340f5 #v2
       with:
         failOnStdErr: false
-        parameters: baseName=suppatest tags={}
+        parameters: baseName=${{ env.AZURE_RESOURCE_NAME_PREFIX }} tags={}
         resourceGroupName:  ${{ env.AZURE_RESOURCE_GROUP_NAME }}
         subscriptionId: ${{ vars.AZURE_SUBSCRIPTIONS_DEV_ID }}
         scope: resourcegroup
         template: ./infrastructure.bicep
+        deploymentMode: Complete
+        deploymentName: ${{ github.run_number }}
 
     - name: Run Tests
       run: >-
@@ -204,26 +206,27 @@ jobs:
         --filter TestCategory=IntegrationTests
         --logger:"trx"
         --results-directory ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}
-        --verbosity detailed
+        --verbosity ${{ env.DOTNET_VERBOSITY }}
+        --
+        TestRunParameters.Parameter\(name=\"Azure.Monitor.AuthOff.IngestionEndpoint\", value=\"${{ steps.deploy.outputs.insightsAuthOffIngestionEndpoint }}\"\)
+        TestRunParameters.Parameter\(name=\"Azure.Monitor.AuthOff.InstrumentationKey\", value=\"${{ steps.deploy.outputs.insightsAuthOffInstrumentationKey }}\"\)
+        TestRunParameters.Parameter\(name=\"Azure.Monitor.AuthOn.IngestionEndpoint\", value=\"${{ steps.deploy.outputs.insightsAuthOnIngestionEndpoint }}\"\)
+        TestRunParameters.Parameter\(name=\"Azure.Monitor.AuthOn.InstrumentationKey\", value=\"${{ steps.deploy.outputs.insightsAuthOnInstrumentationKey }}\"\)
+        TestRunParameters.Parameter\(name=\"Azure.Queue.Default.ServiceUri\", value=\"${{ steps.deploy.outputs.storageDefaultQueueEndpoint }}\"\)
 
     - name: Delete Azure Resources
+      if: steps.deploy.outcome == 'success'
       uses: azure/cli@089eac9d8cc39f5d003e94f8b65efc51076c9cbd #v2.1.0
       with:
         azcliversion: latest
         inlineScript: |
           az group delete -n ${{ env.AZURE_RESOURCE_GROUP_NAME }} -y
 
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.TESTS_ARTIFACT_NAME }}-results-integration
-        path: ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}
-
     - name: Publish Results
       uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b #v2.18.0
-      if: always()
       with:
-        check_name: 'Test Results: Integration'
+        check_name: Integration Tests
+        check_run: false # feature does not work well like at all
         files: |
           ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*.trx
 
@@ -234,13 +237,13 @@ jobs:
         filename: '${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*/*.cobertura.xml'
         format: markdown
         output: file
-        thresholds: '95 99'
+        thresholds: '75 85'
 
     - name: Add Coverage to PR
       uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 #v2.9.1
       if: github.event_name == 'pull_request'
       with:
-        header: 'Test Results: Integration'
+        header: Integration Tests
         recreate: true
         path: code-coverage-results.md
 

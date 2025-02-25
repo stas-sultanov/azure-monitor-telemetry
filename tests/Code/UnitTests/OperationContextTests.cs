@@ -23,37 +23,14 @@ public sealed class OperationContextTests
 
 		// act
 		var operation = new OperationContext
-		{
-			Id = id,
-			Name = name,
-			ParentId = parentId,
-			SyntheticSource = syntheticSource
-		};
+		(
+			id,
+			name,
+			parentId,
+			syntheticSource
+		);
 
 		// assert
 		AssertHelpers.PropertiesAreEqual(operation, id, name, parentId, syntheticSource);
-	}
-
-	[TestMethod]
-	public void Constructor_Copy()
-	{
-		// arrange
-		var newParentId = "newTestParentId";
-		var operation = new OperationContext
-		{
-			Id = "testId",
-			Name = "testName",
-			ParentId = "testParentId",
-			SyntheticSource = "testSyntheticSource"
-		};
-
-		// act
-		var newOperation = operation with
-		{
-			ParentId = newParentId
-		};
-
-		// assert
-		AssertHelpers.PropertiesAreEqual(newOperation, operation.Id, operation.Name, newParentId, operation.SyntheticSource);
 	}
 }

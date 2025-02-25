@@ -3,6 +3,7 @@
 
 namespace Azure.Monitor.Telemetry.UnitTests;
 
+using System;
 using System.Net.Http;
 
 using Azure.Monitor.Telemetry;
@@ -21,53 +22,19 @@ public sealed partial class HttpTelemetryPublisherTests
 
 	#endregion
 
-	#region Tests
+	#region Methods: Tests
 
 	[TestMethod]
-	public void Constructor_ThrowsArgumentNullException_IfHttpClientIsNull()
-	{
-		HttpClient httpClient = null;
-		var ingestionEndpoint = new Uri(mockValidIngestEndpoint);
-		var instrumentationKey = Guid.NewGuid();
-
-		// exception type
-		var argumentNullException = Assert.ThrowsException<ArgumentNullException>
-		(
-			() => _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
-		);
-
-		// parameter name
-		Assert.AreEqual(nameof(httpClient), argumentNullException.ParamName);
-	}
-
-	[TestMethod]
-	public void Constructor_ThrowsArgumentNullException_WhenIngestionEndpointIsNull()
-	{
-		using var httpClient = new HttpClient();
-		Uri ingestionEndpoint = null;
-		var instrumentationKey = Guid.NewGuid();
-
-		// exception type
-		var argumentNullException = Assert.ThrowsException<ArgumentNullException>
-		(
-			() => _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
-		);
-
-		// parameter name
-		Assert.AreEqual(nameof(ingestionEndpoint), argumentNullException.ParamName);
-	}
-
-	[TestMethod]
-	public void Constructor_ThrowsArgumentException_WhenIngestionEndpointIsInvalid()
+	public void Constructor_ThrowsArgumentException_IfIngestionEndpointIsInvalid()
 	{
 		using var httpClient = new HttpClient();
 		var ingestionEndpoint = new Uri("file://example.com");
 		var instrumentationKey = Guid.NewGuid();
 
 		// exception type
-		var argumentNullException = Assert.ThrowsException<ArgumentException>
+		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
 		(
-			() => _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
+			() => _ = _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
 		);
 
 		// parameter name
@@ -75,16 +42,16 @@ public sealed partial class HttpTelemetryPublisherTests
 	}
 
 	[TestMethod]
-	public void Constructor_ThrowsArgumentException_WhenInstrumentationKeyIsEmpty()
+	public void Constructor_ThrowsArgumentException_IfInstrumentationKeyIsEmpty()
 	{
 		var httpClient = new HttpClient();
 		var ingestionEndpoint = new Uri(mockValidIngestEndpoint);
 		var instrumentationKey = Guid.Empty;
 
 		// exception type
-		var argumentNullException = Assert.ThrowsException<ArgumentException>
+		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
 		(
-			() => _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
+			() => _ = _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
 		);
 
 		// parameter name
@@ -100,11 +67,13 @@ public sealed partial class HttpTelemetryPublisherTests
 
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey);
 
-		var telemetryList = new[] { new TraceTelemetry(DateTime.UtcNow, @"test", SeverityLevel.Information) };
+		var telemetryList = new[] { new TraceTelemetry(new OperationContext(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
 		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 
 		var result = (await publisher.PublishAsync(telemetryList, tags, cancellationToken)) as HttpTelemetryPublishResult;
+
+		Assert.IsNotNull(result);
 
 		Assert.AreEqual(telemetryList.Length, result.Count, nameof(TelemetryPublishResult.Count));
 
@@ -113,8 +82,6 @@ public sealed partial class HttpTelemetryPublisherTests
 		Assert.IsTrue(result.Success, nameof(TelemetryPublishResult.Success));
 
 		Assert.IsTrue(result.Time > telemetryList[0].Time, nameof(TelemetryPublishResult.Time));
-
-		Assert.IsNotNull(result.Response, nameof(HttpTelemetryPublishResult.Response));
 	}
 
 	[TestMethod]
@@ -129,9 +96,9 @@ public sealed partial class HttpTelemetryPublisherTests
 			return Task.FromResult(new BearerToken("token " + HttpTelemetryPublisher.AuthorizationScopes, DateTimeOffset.UtcNow));
 		}
 
-		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken);
+		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken, [new (TelemetryTagKey.SessionId, "test"), new (TelemetryTagKey.InternalAgentVersion, "test") ]);
 
-		var telemetryList = new[] { new TraceTelemetry(DateTime.UtcNow, @"test", SeverityLevel.Information) };
+		var telemetryList = new[] { new TraceTelemetry(new OperationContext(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
 		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 

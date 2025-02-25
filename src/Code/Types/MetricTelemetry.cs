@@ -6,17 +6,19 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of an aggregated metric data.
 /// </summary>
+/// <param name="operation">The distributed operation context.</param>
 /// <param name="time">The UTC timestamp when the trace has occurred.</param>
 /// <param name="namespace">The namespace.</param>
 /// <param name="name">The name.</param>
 /// <param name="value">The value.</param>
 public sealed class MetricTelemetry
 (
+	OperationContext operation,
 	DateTime time,
 	String @namespace,
 	String name,
 	Double value,
-	MetricValueAggregation valueAggregation = null
+	MetricValueAggregation? valueAggregation = null
 )
 	: Telemetry
 {
@@ -34,13 +36,13 @@ public sealed class MetricTelemetry
 	public String Namespace { get; } = @namespace;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; init; }
+	public OperationContext Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[] Properties { get; init; }
+	public KeyValuePair<String, String>[]? Properties { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[] Tags { get; init; }
+	public KeyValuePair<String, String>[]? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the metric was recorded.
@@ -52,7 +54,7 @@ public sealed class MetricTelemetry
 	/// </summary>
 	public Double Value { get; } = value;
 
-	public MetricValueAggregation ValueAggregation { get; } = valueAggregation;
+	public MetricValueAggregation? ValueAggregation { get; } = valueAggregation;
 
 	#endregion
 }
