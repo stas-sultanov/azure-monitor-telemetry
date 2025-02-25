@@ -27,7 +27,7 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 	public Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryList,
-		KeyValuePair<String, String>[] tags,
+		KeyValuePair<String, String>[]? tags,
 		CancellationToken cancellationToken
 	)
 	{

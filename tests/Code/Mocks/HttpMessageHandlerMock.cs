@@ -6,7 +6,7 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 using System.Net;
 using System.Net.Http;
 
-public sealed class HttpMessageHandlerMock : HttpMessageHandler
+internal sealed class HttpMessageHandlerMock : HttpMessageHandler
 {
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
@@ -14,5 +14,10 @@ public sealed class HttpMessageHandlerMock : HttpMessageHandler
 		{
 			Content = new StringContent("OK")
 		});
+	}
+
+	public Task<HttpResponseMessage> FakeSendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+	{
+		return SendAsync(request, cancellationToken);
 	}
 }

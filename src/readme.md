@@ -1,36 +1,49 @@
-# Azure Monitor Telemetry
+Azure Monitor Telemetry
+=======================
 
 ![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)
 
 A lightweight, high-performance library for tracking and publishing telemetry.
 
+## Table of Contents  
+- [Azure Monitor Telemetry](#azure-monitor-telemetry)
+	- [Table of Contents](#table-of-contents)
+	- [Getting Started](#getting-started)
+		- [Prerequisites](#prerequisites)
+		- [Initialization](#initialization)
+			- [Single Publisher](#single-publisher)
+			- [Single Publisher With Entra Authentication](#single-publisher-with-entra-authentication)
+			- [Multiple Publishers](#multiple-publishers)
+		- [Tracking](#tracking)
+		- [Publishing](#publishing)
+- [Dependency Tracking](#dependency-tracking)
+- [Extensibility](#extensibility)
+	- [Adding Tags](#adding-tags)
+		- [TelemetryPublisher](#telemetrypublisher)
+
 ## Getting Started
 
-### Get an Ingestion Endpoint and an Instrumentation Key
+The library is designed to work with the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka [Application Insights][AppInsights]. 
 
-To use the library you will need to provide it with an Ingestion Endpoint and an Instrumentation Key which can be obtained from the ConnectionString property of the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka Application Insights. 
+### Prerequisites
+To use this library, required:
+- An instance of **Application Insights** in the same region as services for optimal performance and cost efficiency.
+- An **Ingestion Endpoint and** an **Instrumentation Key**, available in the **Connection String** property of **Application Insights** resource.
 
-### Initialize a TelemetryTracker
+### Initialization
 
-The **TelemetryTracker** is the primary root object for the library.
-All functionality around telemetry tracking and publishing is located on this object.
+The `TelemetryTracker` class is the core component for tracking and publishing telemetry.  
 
-To initialize instance of **TelemetryTracker** type you should provide an instance of the type that implements **TelemetryPublisher** interface.
+To publish telemetry to **Application Insights**, the constructor of `TelemetryPublisher` must be provided with an instance of a class that implements `TelemetryPublisher` interface.
 
-**HttpTelemetryPublisher** type implements **TelemetryPublisher** interface and provides an ability to publish telemetry data via HTTP protocol both with and without Entra based authentication.
+The library supports multiple telemetry publishers, enabling collected telemetry to be published to multiple **Application Insights** instances.
 
-It is possible to configure **TelemetryTracker** to publish telemetry
-**TelemetryTracker** accepts array of instances of of the type that implements **TelemetryPublisher** interface, in this way it is possible to configure
+The library includes `HttpTelemetryPublisher`, the default implementation of `TelemetryPublisher` interface. 
 
-#### One Publisher without Entra based Authentication
+#### Single Publisher
 
-Constructor of `TelemetryTracker` type requires to provide an Ingestion Endpoint Uri and Instrumentation Key to identify your application.
-
-The code sample below demonstrates initialization of `TelemetryTracker` to work with the instance of Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type which does not require Entra authentication.
-
-<details>
-  <summary>Code sample.</summary>
+Example demonstrates initialization with a single publisher:  
 
 ```C#
 using Azure.Monitor.Telemetry;
@@ -47,21 +60,23 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	new Guid("INSERT INSTRUMENTATION KEY HERE")
 );
 
+// create tags collection
+KeyValuePair<String, String> [] tags = [new (TelemetryTagKey.CloudRole, "local")];
+
 // create telemetry tracker
-var telemetryTracker = new TelemetryTracker(telemetryPublishers: telemetryPublisher);
+var telemetryTracker = new TelemetryTracker(tags, telemetryPublishers: telemetryPublisher);
 ```
-</details>
 
-#### One Publisher with Entra based Authentication
+#### Single Publisher With Entra Authentication
 
-The code sample below demonstrates initialization of `TelemetryTracker` to work with the instance of Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type which require Entra authentication.
+Application Insights supports secure access via Entra based authentication, more info [here][AppInsightsEntraAuth].
 
-In this scenario the Entra Identity, on behalf of which the code will run, must be granted with the [Monitoring Metrics Publisher](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher) role.
+The Identity, on behalf of which the code will run, must be granted with the [Monitoring Metrics Publisher](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher) role.
 
-<details>
-  <summary>Code sample.</summary>
+Code sample below demonstrates initialization of TelemetryTracker with Entra based authentication.
 
 ```C#
+using Azure.Core;
 using Azure.Identity;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
@@ -72,18 +87,16 @@ using var httpClient = new HttpClient();
 // create authorization token source
 var tokenCredential = new DefaultAzureCredential();
 
-// create telemetry publisher
+// Create telemetry publisher with Entra authentication
 var telemetryPublisher = new HttpTelemetryPublisher
 (
-	telemetrySenderHttpClient,
+	httpClient,
 	new Uri("INSERT INGESTION ENDPOINT HERE"),
 	new Guid("INSERT INSTRUMENTATION KEY HERE"),
 	async (cancellationToken) =>
 	{
-		var tokenRequestContext = new TokenRequestContext(HttpTelemetrySender.AuthorizationScopes);
-
+		var tokenRequestContext = new TokenRequestContext(HttpTelemetryPublisher.AuthorizationScopes);
 		var token = await tokenCredential.GetTokenAsync(tokenRequestContext, cancellationToken);
-
 		return new BearerToken(token.Token, token.ExpiresOn);
 	}
 );
@@ -91,19 +104,14 @@ var telemetryPublisher = new HttpTelemetryPublisher
 // create telemetry tracker
 var telemetryTracker = new TelemetryTracker(telemetryPublishers: telemetryPublisher);
 ```
-</details>
 
-#### Many publishers
+#### Multiple Publishers
 
-The library supports publishing of telemetry data to many Azure resources of [Microsoft.Insights/components][AzureInsightsComponentsResource] type.
-
-The code sample below demonstrates initialization of the `TelemetryTracker` for the scenario where it is required to publish data to two different Azure resources of [Microsoft.Insights/components][AzureInsightsComponentsResource] type.
-The first one uses Entra based authentication the second does not.
-
-<details>
-  <summary>Code sample.</summary>
+The code sample below demonstrates initialization of the `TelemetryTracker` for the scenario
+where it is required to publish telemetry data into multiple instances of **Application Insights**.
 
 ```C#
+using Azure.Core;
 using Azure.Identity;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
@@ -114,15 +122,15 @@ using var httpClient = new HttpClient();
 // create authorization token source
 var tokenCredential = new DefaultAzureCredential();
 
-// create first telemetry publisher
+// create first telemetry publisher with Entra based authentication
 var firstTelemetryPublisher = new HttpTelemetryPublisher
 (
-	telemetrySenderHttpClient,
-	new Uri("INSERT HERE: INGESTION ENDPOINT FOR FIRST"),
-	new Guid("INSERT HERE: INSTRUMENTATION FOR FIRST"),
+	httpClient,
+	new Uri("INSERT INGESTION ENDPOINT 1 HERE"),
+	new Guid("INSERT INSTRUMENTATION KEY 1 HERE"),
 	async (cancellationToken) =>
 	{
-		var tokenRequestContext = new TokenRequestContext(HttpTelemetrySender.AuthorizationScopes);
+		var tokenRequestContext = new TokenRequestContext(HttpTelemetryPublisher.AuthorizationScopes);
 
 		var token = await tokenCredential.GetTokenAsync(tokenRequestContext, cancellationToken);
 
@@ -130,43 +138,42 @@ var firstTelemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// create second telemetry publisher
+// create second telemetry publisher without Entra based authentication
 var secondTelemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
-	new Uri("INSERT INGESTION ENDPOINT HERE"),
-	new Guid("INSERT INSTRUMENTATION KEY HERE")
+	new Uri("INSERT INGESTION ENDPOINT 2 HERE"),
+	new Guid("INSERT INSTRUMENTATION KEY 2 HERE")
 );
 
 // create telemetry tracker
-var telemetryTracker = new TelemetryTracker(telemetryPublishers: firstTelemetryPublisher, secondTelemetryPublisher);
+var telemetryTracker = new TelemetryTracker(telemetryPublishers: [firstTelemetryPublisher, secondTelemetryPublisher]);
 ```
-</details>
 
-### Use the TelemetryTracker to track telemetry
+### Tracking
 
-This library does not provide any automatic telemetry collection.
-You can populate common context by using `tags` argument of the `TelemetryTracker` constructor which will be automatically attached to each telemetry item sent. You can also attach additional property data to each telemetry item sent by using `Telemetry.Tags` property. The `TelemetryClient` exposes a method Add that adds telemetry information into the processing queue.
+To add telemetry to instance of `TelemetryTracker` use `TelemetryTracker.Add` method.
 
 ```C#
+// create telemetry item
+var telemetry = new EventTelemetry(DateTime.UtcNow, @"start");
 
+// add to the tracker
+telemetryTracker.Add(telemetry);
+```
 
-``` 
+### Publishing
 
-## Publishing Telemetry data
+To publish collected telemetry use `TelemetryTracker.PublishAsync` method.
 
-To publish telemetry data to all configured instance of `TelemetryPublisher` type, you should call `TelemetryTracker.PublishAsync` method.
-
-<details>
-  <summary>Code sample.</summary>
+The collected telemetry data will be published in parallel using all configured instances of `TelemetryPublisher` interface.
 
 ```C#
-
-// create telemetry tracker
+// publish collected telemetry
 await telemetryTracker.PublishAsync(cancellationToken);
-
 ```
-</details>
+
+# Dependency Tracking
 
 The library does not provide any automatic publishing of the data. 
 
@@ -175,4 +182,18 @@ As a result, if the process is terminated suddenly, you could lose telemetry tha
 It is recommended to track the closing of your process and call the `TelemetryTracker.PublishAsync()` method to ensure no telemetry is lost.
 
 
+# Extensibility
+
+The library provides several points of potential extensibility.
+
+## Adding Tags
+You can populate common context by using `tags` argument of the `TelemetryTracker` constructor which will be automatically attached to each telemetry item sent. You can also attach additional property data to each telemetry item sent by using `Telemetry.Tags` property. The ```TelemetryClient``` exposes a method Add that adds telemetry information into the processing queue.
+
+### TelemetryPublisher
+If needed it is possible to implement own 
+
+[AppInsights]: https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview
+[AppInsightsEntraAuth]: https://learn.microsoft.com/azure/azure-monitor/app/azure-ad-authentication
+[AzureCLI]: https://learn.microsoft.com/cli/azure/
 [AzureInsightsComponentsResource]: https://learn.microsoft.com/azure/templates/microsoft.insights/components
+[AzurePortal]: https://portal.azure.com

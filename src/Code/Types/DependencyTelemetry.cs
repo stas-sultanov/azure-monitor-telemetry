@@ -13,11 +13,13 @@ namespace Azure.Monitor.Telemetry;
 /// - Azure storage operations
 /// - Custom dependencies
 /// </remarks>
+/// <param name="operation">The distributed operation context.</param>
 /// <param name="time">The UTC timestamp when the dependency call was initiated.</param>
 /// <param name="id">The unique identifier.</param>
-/// <param name="name">The name of the command initiated with this dependency call.</param>
+/// <param name="name">The name of the command initiated the dependency call.</param>
 public sealed class DependencyTelemetry
 (
+	OperationContext operation,
 	DateTime time,
 	String id,
 	String name
@@ -30,7 +32,7 @@ public sealed class DependencyTelemetry
 	/// This field is the command initiated by this dependency call.
 	/// </summary>
 	/// <example>SQL statement and HTTP URL with all query parameters.</example>
-	public String Data { get; init; }
+	public String? Data { get; init; }
 
 	/// <summary>
 	/// The time taken to complete the dependency call.
@@ -49,24 +51,24 @@ public sealed class DependencyTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double> [] Measurements { get; init; }
+	public KeyValuePair<String, Double>[]? Measurements { get; init; }
 
 	/// <summary>
-	/// The name of the command initiated with this dependency call.
+	/// The name of the command initiated the dependency call.
 	/// </summary>
 	public String Name { get; } = name;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; init; }
+	public OperationContext Operation { get; } = operation;
 
 	/// <summary>
 	/// This field is the result code of a dependency call.
 	/// </summary>
 	/// <example>SQL error code, HTTP status code.</example>
-	public String ResultCode { get; init; }
+	public String? ResultCode { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String> [] Properties { get; init; }
+	public KeyValuePair<String, String>[]? Properties { get; init; }
 
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.
@@ -74,13 +76,13 @@ public sealed class DependencyTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String> [] Tags { get; init; }
+	public KeyValuePair<String, String>[]? Tags { get; init; }
 
 	/// <summary>
 	/// This field is the target site of a dependency call.
 	/// </summary>
 	/// <example>Server name, host address.</example>
-	public String Target { get; init; }
+	public String? Target { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the dependency call was initiated.
@@ -92,7 +94,7 @@ public sealed class DependencyTelemetry
 	/// It has a low cardinality value for logical grouping of dependencies and interpretation of other fields like commandName and resultCode.
 	/// </summary>
 	/// <example>SQL, Azure table, HTTP.</example>
-	public String Type { get; init; }
+	public String? Type { get; init; }
 
 	#endregion
 }

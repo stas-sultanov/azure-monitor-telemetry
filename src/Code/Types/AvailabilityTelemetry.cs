@@ -6,12 +6,14 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of an availability test.
 /// </summary>
+/// <param name="operation">The distributed operation context.</param>
 /// <param name="time">The UTC timestamp when the test was initiated.</param>
 /// <param name="id">The unique identifier.</param>
 /// <param name="name">The name of the telemetry instance.</param>
 /// <param name="message">The message associated with the telemetry instance.</param>
 public sealed class AvailabilityTelemetry
 (
+	OperationContext operation,
 	DateTime time,
 	String id,
 	String name,
@@ -38,7 +40,7 @@ public sealed class AvailabilityTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double> [] Measurements { get; init; }
+	public KeyValuePair<String, Double>[]? Measurements { get; init; }
 
 	/// <summary>
 	/// The message.
@@ -51,15 +53,15 @@ public sealed class AvailabilityTelemetry
 	public String Name { get; } = name;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; init; }
+	public OperationContext Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String> [] Properties { get; init; }
+	public KeyValuePair<String, String>[]? Properties { get; init; }
 
 	/// <summary>
-	/// Location from where the operation has been performed.
+	/// Location from where the test has been performed.
 	/// </summary>
-	public String RunLocation { get; init; }
+	public String? RunLocation { get; init; }
 
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.
@@ -67,7 +69,7 @@ public sealed class AvailabilityTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[] Tags { get; init; }
+	public KeyValuePair<String, String>[]? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the test was initiated.

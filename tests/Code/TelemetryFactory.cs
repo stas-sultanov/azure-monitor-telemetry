@@ -13,12 +13,12 @@ internal sealed class TelemetryFactory
 	#region Properties
 
 	private Random Random { get; }
-	public KeyValuePair<String, Double> [] Measurements { get; set; }
+	public KeyValuePair<String, Double>[] Measurements { get; set; }
 	public String Message { get; set; }
 	public String Name { get; set; }
 	public OperationContext Operation { get; set; }
-	public KeyValuePair<String, String> [] Properties { get; set; }
-	public KeyValuePair<String, String> [] Tags { get; set; }
+	public KeyValuePair<String, String>[] Properties { get; set; }
+	public KeyValuePair<String, String>[] Tags { get; set; }
 	public Uri Url { get; set; }
 
 	#endregion
@@ -33,13 +33,12 @@ internal sealed class TelemetryFactory
 
 		Name = "name";
 
-		Operation = new OperationContext()
-		{
-			Id = Guid.NewGuid().ToString("N"),
-			ParentId = null,
-			Name = "Test #" + DateTime.Now.ToString("yyMMddhhmm"),
-			SyntheticSource = "TestFramework"
-		};
+		Operation = new OperationContext
+		(
+			id: Guid.NewGuid().ToString("N"),
+			name: "Test #" + DateTime.Now.ToString("yyMMddhhmm"),
+			syntheticSource: "TestFramework"
+		);
 
 		Properties = [new("key", "value")];
 
@@ -66,12 +65,12 @@ internal sealed class TelemetryFactory
 		return TimeSpan.FromMilliseconds(milliseconds);
 	}
 
-	internal static void Simulate_ExceptionThrow(String param1)
+	internal static void Simulate_ExceptionThrow(String? param1)
 	{
 		throw new ArgumentNullException(nameof(param1), "L1");
 	}
 
-	internal static void Simulate_ExceptionThrow_WithInnerException(String paramL2)
+	internal static void Simulate_ExceptionThrow_WithInnerException(String? paramL2)
 	{
 		try
 		{
@@ -96,11 +95,10 @@ internal sealed class TelemetryFactory
 
 		var duration = GetRandomDuration(100, 2000);
 
-		var result = new AvailabilityTelemetry(DateTime.UtcNow, id, Name, Message)
+		var result = new AvailabilityTelemetry(Operation, DateTime.UtcNow, id, Name, Message)
 		{
 			Duration = duration,
 			Measurements = Measurements,
-			Operation = Operation,
 			Properties = Properties,
 			RunLocation = "Earth",
 			Success = true,
@@ -117,7 +115,7 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new AvailabilityTelemetry(DateTime.UtcNow, id, Name, Message);
+		var result = new AvailabilityTelemetry(Operation, DateTime.UtcNow, id, Name, Message);
 
 		return result;
 	}
@@ -133,12 +131,11 @@ internal sealed class TelemetryFactory
 
 		var duration = GetRandomDuration(200, 800);
 
-		var result = new DependencyTelemetry(DateTime.UtcNow, id, Name)
+		var result = new DependencyTelemetry(Operation, DateTime.UtcNow, id, Name)
 		{
 			Measurements = Measurements,
 			Data = "data",
 			Duration = duration,
-			Operation = Operation,
 			Properties = Properties,
 			Success = false,
 			Tags = Tags,
@@ -157,7 +154,7 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new DependencyTelemetry(DateTime.UtcNow, id, Name);
+		var result = new DependencyTelemetry(Operation, DateTime.UtcNow, id, Name);
 
 		return result;
 	}
@@ -167,10 +164,9 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public EventTelemetry Create_EventTelemetry_Max()
 	{
-		var result = new EventTelemetry(DateTime.UtcNow, Name)
+		var result = new EventTelemetry(Operation, DateTime.UtcNow, Name)
 		{
 			Measurements = Measurements,
-			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags
 		};
@@ -183,7 +179,7 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public EventTelemetry Create_EventTelemetry_Min()
 	{
-		var result = new EventTelemetry(DateTime.UtcNow, Name);
+		var result = new EventTelemetry(Operation, DateTime.UtcNow, Name);
 
 		return result;
 	}
@@ -193,25 +189,24 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public ExceptionTelemetry Create_ExceptionTelemetry_Max()
 	{
-		ExceptionTelemetry result = null;
-
 		try
 		{
 			Simulate_ExceptionThrow_WithInnerException(null);
+
+			throw new Exception();
 		}
 		catch (Exception exception)
 		{
-			result = new ExceptionTelemetry(DateTime.UtcNow, exception)
+			var result = new ExceptionTelemetry(Operation, DateTime.UtcNow, exception)
 			{
 				Measurements = Measurements,
-				Operation = Operation,
 				Properties = Properties,
 				SeverityLevel = SeverityLevel.Critical,
 				Tags = Tags
 			};
-		}
 
-		return result;
+			return result;
+		}
 	}
 
 	/// <summary>
@@ -219,18 +214,18 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public ExceptionTelemetry Create_ExceptionTelemetry_Min()
 	{
-		ExceptionTelemetry result = null;
-
 		try
 		{
 			Simulate_ExceptionThrow(null);
+
+			throw new Exception();
 		}
 		catch (Exception exception)
 		{
-			result = new ExceptionTelemetry(DateTime.UtcNow, exception);
-		}
+			var result = new ExceptionTelemetry(Operation, DateTime.UtcNow, exception);
 
-		return result;
+			return result;
+		}
 	}
 
 	/// <summary>
@@ -243,9 +238,8 @@ internal sealed class TelemetryFactory
 		MetricValueAggregation aggregation
 	)
 	{
-		var result = new MetricTelemetry(DateTime.UtcNow, @namespace, Name, value, aggregation)
+		var result = new MetricTelemetry(Operation, DateTime.UtcNow, @namespace, Name, value, aggregation)
 		{
-			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags
 		};
@@ -262,7 +256,7 @@ internal sealed class TelemetryFactory
 		Double value
 	)
 	{
-		var result = new MetricTelemetry(DateTime.UtcNow, @namespace, Name, value);
+		var result = new MetricTelemetry(Operation, DateTime.UtcNow, @namespace, Name, value);
 
 		return result;
 	}
@@ -276,11 +270,10 @@ internal sealed class TelemetryFactory
 
 		var duration = GetRandomDuration(300, 700);
 
-		var result = new PageViewTelemetry(DateTime.UtcNow, id, Name)
+		var result = new PageViewTelemetry(Operation, DateTime.UtcNow, id, Name)
 		{
 			Measurements = Measurements,
 			Duration = duration,
-			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags,
 			Url = Url
@@ -296,7 +289,7 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new PageViewTelemetry(DateTime.UtcNow, id, Name);
+		var result = new PageViewTelemetry(Operation, DateTime.UtcNow, id, Name);
 
 		return result;
 	}
@@ -308,12 +301,11 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new RequestTelemetry(DateTime.UtcNow, id, Url, "200")
+		var result = new RequestTelemetry(Operation, DateTime.UtcNow, id, Url, "200")
 		{
 			Measurements = Measurements,
 			Name = Name,
 			Duration = TimeSpan.FromSeconds(1),
-			Operation = Operation,
 			Properties = Properties,
 			Success = true,
 			Tags = Tags
@@ -329,7 +321,7 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new RequestTelemetry(DateTime.UtcNow, id, Url, "1");
+		var result = new RequestTelemetry(Operation, DateTime.UtcNow, id, Url, "1");
 
 		return result;
 	}
@@ -339,9 +331,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public TraceTelemetry Create_TraceTelemetry_Max()
 	{
-		var result = new TraceTelemetry(DateTime.UtcNow, Message, SeverityLevel.Information)
+		var result = new TraceTelemetry(Operation, DateTime.UtcNow, Message, SeverityLevel.Information)
 		{
-			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags
 		};
@@ -354,7 +345,7 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public TraceTelemetry Create_TraceTelemetry_Min()
 	{
-		var result = new TraceTelemetry(DateTime.UtcNow, Message, SeverityLevel.Verbose);
+		var result = new TraceTelemetry(Operation, DateTime.UtcNow, Message, SeverityLevel.Verbose);
 
 		return result;
 	}

@@ -9,12 +9,14 @@ namespace Azure.Monitor.Telemetry;
 /// <remarks>
 /// Every request execution is identified by a unique <see cref="Id"/> and <see cref="Url"/> that contain all the execution parameters.
 /// </remarks>
+/// <param name="operation">The distributed operation context.</param>
 /// <param name="time">The UTC timestamp when the request was initiated.</param>
 /// <param name="id">The unique identifier.</param>
 /// <param name="url">The request url.</param>
 /// <param name="responseCode">The result of an operation execution.</param>
 public sealed class RequestTelemetry
 (
+	OperationContext operation,
 	DateTime time,
 	String id,
 	Uri url,
@@ -41,18 +43,18 @@ public sealed class RequestTelemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double> [] Measurements { get; init; }
+	public KeyValuePair<String, Double>[]? Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the request.
 	/// </summary>
-	public String Name { get; init; }
+	public String? Name { get; init; }
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; init; }
+	public OperationContext Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String> [] Properties { get; init; }
+	public KeyValuePair<String, String>[]? Properties { get; init; }
 
 	/// <summary>
 	/// The result of an operation execution.
@@ -68,7 +70,7 @@ public sealed class RequestTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[] Tags { get; init; }
+	public KeyValuePair<String, String>[]? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the request was initiated.
