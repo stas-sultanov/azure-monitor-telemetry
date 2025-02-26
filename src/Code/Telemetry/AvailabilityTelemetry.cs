@@ -13,7 +13,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="message">The message associated with the telemetry instance.</param>
 public sealed class AvailabilityTelemetry
 (
-	OperationContext operation,
+	TelemetryOperation operation,
 	DateTime time,
 	String id,
 	String name,
@@ -53,10 +53,10 @@ public sealed class AvailabilityTelemetry
 	public String Name { get; } = name;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public TelemetryOperation Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>
 	/// Location from where the test has been performed.
@@ -69,7 +69,7 @@ public sealed class AvailabilityTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the test was initiated.

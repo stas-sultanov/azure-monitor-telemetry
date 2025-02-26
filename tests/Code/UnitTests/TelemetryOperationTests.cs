@@ -6,11 +6,11 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 using Azure.Monitor.Telemetry.Tests;
 
 /// <summary>
-/// Tests for <see cref="OperationContext"/> class.
+/// Tests for <see cref="TelemetryOperation"/> class.
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public sealed class OperationContextTests
+public sealed class TelemetryOperationTests
 {
 	[TestMethod]
 	public void Constructor()
@@ -22,7 +22,7 @@ public sealed class OperationContextTests
 		var syntheticSource = "testSyntheticSource";
 
 		// act
-		var operation = new OperationContext
+		var operation = new TelemetryOperation
 		(
 			id,
 			name,

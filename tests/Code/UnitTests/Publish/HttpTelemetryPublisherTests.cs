@@ -61,13 +61,14 @@ public sealed partial class HttpTelemetryPublisherTests
 	[TestMethod]
 	public async Task Method_PublishAsync_WithoutAuthentication()
 	{
+		var time = DateTime.UtcNow;
 		var httpClient = new HttpClient(new HttpMessageHandlerMock());
 		var ingestionEndpoint = new Uri(mockValidIngestEndpoint);
 		var instrumentationKey = Guid.NewGuid();
 
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey);
 
-		var telemetryList = new[] { new TraceTelemetry(new OperationContext(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
+		var telemetryList = new[] { new TraceTelemetry(new TelemetryOperation(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
 		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 
@@ -75,13 +76,15 @@ public sealed partial class HttpTelemetryPublisherTests
 
 		Assert.IsNotNull(result);
 
-		Assert.AreEqual(telemetryList.Length, result.Count, nameof(TelemetryPublishResult.Count));
+		Assert.AreEqual(telemetryList.Length, result.Count, nameof(HttpTelemetryPublishResult.Count));
 
-		Assert.IsTrue(result.Duration > TimeSpan.Zero, nameof(TelemetryPublishResult.Duration));
+		Assert.IsTrue(result.Duration > TimeSpan.Zero, nameof(HttpTelemetryPublishResult.Duration));
 
-		Assert.IsTrue(result.Success, nameof(TelemetryPublishResult.Success));
+		Assert.IsTrue(result.Response.Length > 0, nameof(HttpTelemetryPublishResult.Response));
 
-		Assert.IsTrue(result.Time > telemetryList[0].Time, nameof(TelemetryPublishResult.Time));
+		Assert.IsTrue(result.Success, nameof(HttpTelemetryPublishResult.Success));
+
+		Assert.IsTrue(result.Time > time, nameof(HttpTelemetryPublishResult.Time));
 	}
 
 	[TestMethod]
@@ -98,7 +101,7 @@ public sealed partial class HttpTelemetryPublisherTests
 
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken, [new (TelemetryTagKey.SessionId, "test"), new (TelemetryTagKey.InternalAgentVersion, "test") ]);
 
-		var telemetryList = new[] { new TraceTelemetry(new OperationContext(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
+		var telemetryList = new[] { new TraceTelemetry(new TelemetryOperation(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
 		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 

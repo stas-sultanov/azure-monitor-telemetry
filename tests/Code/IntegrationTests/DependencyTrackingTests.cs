@@ -74,7 +74,7 @@ public sealed class DependencyTrackingTests : AzureIntegrationTestsBase
 	[TestMethod]
 	public async Task AzureQueue_Success()
 	{
-		TelemetryTracker.TrackRequestBegin(GettTraceId, out var previousParentId, out var time, out var id);
+		TelemetryTracker.TrackRequestBegin(GetOperationId, out var previousParentId, out var time, out var id);
 
 		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
@@ -109,7 +109,7 @@ public sealed class DependencyTrackingTests : AzureIntegrationTestsBase
 
 	private async Task SendMessageTrackedAsync(String message, CancellationToken cancellationToken)
 	{
-		TelemetryTracker.TrackDependencyInProcBegin(GettTraceId, out var previousParentId, out var time, out var id);
+		TelemetryTracker.TrackDependencyInProcBegin(GetOperationId, out var previousParentId, out var time, out var id);
 
 		_ = await queueClient.SendMessageAsync(message, cancellationToken);
 

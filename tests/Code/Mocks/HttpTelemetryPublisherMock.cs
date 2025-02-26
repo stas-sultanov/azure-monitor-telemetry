@@ -27,7 +27,7 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 	public Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryList,
-		KeyValuePair<String, String>[]? tags,
+		IReadOnlyList<KeyValuePair<String, String>>? tags,
 		CancellationToken cancellationToken
 	)
 	{
@@ -35,7 +35,16 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 
 		Buffer.AddRange(telemetryList);
 
-		var publishResult = (TelemetryPublishResult)new HttpTelemetryPublishResult(telemetryList.Count, DateTime.UtcNow.Subtract(time), true, time, MockValidIngestEndpointUri, HttpStatusCode.OK, "OK");
+		var publishResult = (TelemetryPublishResult) new HttpTelemetryPublishResult
+		(
+			telemetryList.Count,
+			DateTime.UtcNow.Subtract(time),
+			true,
+			time,
+			MockValidIngestEndpointUri,
+			HttpStatusCode.OK,
+			"OK"
+		);
 
 		var result = Task.FromResult(publishResult);
 

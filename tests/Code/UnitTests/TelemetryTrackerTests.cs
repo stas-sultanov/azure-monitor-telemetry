@@ -24,7 +24,7 @@ public sealed class TelemetryTrackerTests
 	#region Fields
 
 	private readonly KeyValuePair<String, Double> [] measurements = [new("m", 0)];
-	private readonly OperationContext operation = new(new Guid().ToString("N"), "Test");
+	private readonly TelemetryOperation operation = new(new Guid().ToString("N"), "Test");
 	private readonly KeyValuePair<String, String> [] properties = [new("a", "b")];
 	private readonly KeyValuePair<String, String> [] tags = [new(TelemetryTagKey.CloudRole, "role")];
 
@@ -37,7 +37,7 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var operationId = Guid.NewGuid().ToString("N");
-		var operation = new OperationContext(operationId);
+		var operation = new TelemetryOperation(operationId);
 		var tags = new KeyValuePair<String, String> []
 		{
 			new(TelemetryTagKey.CloudRole, "tester")
@@ -45,7 +45,13 @@ public sealed class TelemetryTrackerTests
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
 
 		// act
-		_ = new TelemetryTracker(telemetryPublisher, operation, tags);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher, tags)
+		{
+			Operation = operation
+		};
+
+		// assert
+		Assert.AreEqual(operation, telemetryTracker.Operation, nameof(telemetryTracker.Operation));
 	}
 
 	#endregion
@@ -74,9 +80,12 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var operationId = Guid.NewGuid().ToString("N");
-		var operation = new OperationContext(operationId);
+		var operation = new TelemetryOperation(operationId);
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var telemetry = new TraceTelemetry(operation, DateTime.UtcNow, "test", SeverityLevel.Information);
 
 		// act
@@ -97,7 +106,10 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var id = "test-id";
 		var name = "name";
 		var message = "ok";
@@ -124,7 +136,10 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var id = "test-id";
 		var time = DateTime.UtcNow;
 		var httpMethod = HttpMethod.Post;
@@ -154,7 +169,10 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var expectedId = Guid.NewGuid().ToString();
 		var name = "name";
 		var typeName = "Service";
@@ -187,7 +205,10 @@ public sealed class TelemetryTrackerTests
 		// arrange
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
 		var name = "test";
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 
 		// act
 		telemetryTracker.TrackEvent(name, measurements, properties, tags);
@@ -207,7 +228,10 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var exception = new Exception("Test exception");
 		var severityLevel = SeverityLevel.Error;
 
@@ -229,7 +253,10 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var name = "test";
 		var @namespace = "tests";
 		var value = 6;
@@ -258,7 +285,10 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var expectedId = Guid.NewGuid().ToString();
 		var url = new Uri("tst:exe");
 		var responseCode = "1";
@@ -292,7 +322,10 @@ public sealed class TelemetryTrackerTests
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
 		var message = "test";
 		var severityLevel = SeverityLevel.Information;
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 
 		// act
 		telemetryTracker.TrackTrace(message, severityLevel, properties, tags);

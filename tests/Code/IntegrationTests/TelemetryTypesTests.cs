@@ -6,7 +6,7 @@ namespace Azure.Monitor.Telemetry.IntegrationTests;
 using Azure.Monitor.Telemetry.Tests;
 
 /// <summary>
-/// Set of integration tests for all telemetry types.
+/// Set of integration tests for all types of telemetry that implements <see cref="Telemetry"/>.
 /// The goal is to ensure that all telemetry types can be tracked and published successfully.
 /// </summary>
 /// <param name="testContext">The test context.</param>

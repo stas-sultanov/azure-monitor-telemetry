@@ -21,9 +21,8 @@ public sealed class TelemetryTracker
 
 	private static readonly TelemetryPublishResult[] emptySuccess = [];
 	private readonly ConcurrentQueue<Telemetry> items;
-	private readonly KeyValuePair<String, String>[]? tags;
-	private readonly AsyncLocal<OperationContext> operation;
-	private readonly OperationContext rootOperation;
+	private readonly IReadOnlyList<KeyValuePair<String, String>>? tags;
+	private readonly AsyncLocal<TelemetryOperation> operation;
 	private readonly TelemetryPublisher[] telemetryPublishers;
 
 	#endregion
@@ -34,15 +33,13 @@ public sealed class TelemetryTracker
 	/// Initializes a new instance of the <see cref="TelemetryTracker"/> class.
 	/// </summary>
 	/// <param name="telemetryPublisher">A telemetry publisher to publish the telemetry data.</param>
-	/// <param name="rootOperation">Root distributed operation. Is optional.</param>
 	/// <param name="tags">An array of tags to attach to each telemetry item. Is optional.</param>
 	public TelemetryTracker
 	(
 		TelemetryPublisher telemetryPublisher,
-		OperationContext? rootOperation = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
-		: this([telemetryPublisher], rootOperation, tags)
+		: this([telemetryPublisher], tags)
 	{
 	}
 
@@ -50,27 +47,20 @@ public sealed class TelemetryTracker
 	/// Initializes a new instance of the <see cref="TelemetryTracker"/> class.
 	/// </summary>
 	/// <param name="telemetryPublishers">An array of telemetry publishers to publish the telemetry data.</param>
-	/// <param name="rootOperation">Root distributed operation.</param>
 	/// <param name="tags">An array of tags to attach to each telemetry item. Is optional.</param>
 	public TelemetryTracker
 	(
 		TelemetryPublisher[] telemetryPublishers,
-		OperationContext? rootOperation = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		this.telemetryPublishers = telemetryPublishers;
-
-		this.rootOperation = rootOperation ?? new OperationContext();
 
 		this.tags = tags;
 
 		items = new();
 
-		operation = new()
-		{
-			Value = this.rootOperation
-		};
+		operation = new();
 	}
 
 	#endregion
@@ -78,13 +68,13 @@ public sealed class TelemetryTracker
 	#region Properties
 
 	/// <summary>
-	/// An asynchronous local storage for the current telemetry operation.
+	/// The distirbuted operation stored in asynchronous local storage.
 	/// </summary>
-	public OperationContext Operation
+	public TelemetryOperation Operation
 	{
-		get => operation.Value ?? rootOperation;
+		get => operation.Value ?? TelemetryOperation.Empty;
 
-		private set => operation.Value = value;
+		set => operation.Value = value;
 	}
 
 	#endregion
@@ -152,7 +142,7 @@ public sealed class TelemetryTracker
 	#region Methods: Track
 
 	/// <summary>
-	/// Tracks availability test result.
+	/// Tracks an availability test result.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="AvailabilityTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -177,8 +167,8 @@ public sealed class TelemetryTracker
 		Boolean success,
 		String? runLocation = null,
 		KeyValuePair<String, Double>[]? measurements = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var telemetry = new AvailabilityTelemetry(Operation, time, id, name, message)
@@ -195,7 +185,7 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Tracks dependency call.
+	/// Tracks a dependency call.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -218,8 +208,8 @@ public sealed class TelemetryTracker
 		HttpStatusCode statusCode,
 		TimeSpan duration,
 		KeyValuePair<String, Double>[]? measurements = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var name = String.Concat(httpMethod.Method, " ", uri.AbsolutePath);
@@ -273,7 +263,7 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Ends tracking of the InProc dependency.
+	/// Ends tracking of an InProc dependency.
 	/// </summary>
 	/// <remarks>
 	/// Reverts back <see cref="Operation"/> as it was before calling <see cref="TrackDependencyInProcBegin(Func{String}, out String?, out DateTime, out String)"/>
@@ -299,8 +289,8 @@ public sealed class TelemetryTracker
 		TimeSpan duration,
 		String? typeName = null,
 		KeyValuePair<String, Double>[]? measurements = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		// replace operation with in-proc dependency as parent id 
@@ -322,7 +312,7 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Tracks event.
+	/// Tracks an event.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -335,8 +325,8 @@ public sealed class TelemetryTracker
 	(
 		String name,
 		KeyValuePair<String, Double>[]? measurements = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -352,7 +342,7 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Tracks exception.
+	/// Tracks an exception.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -367,8 +357,8 @@ public sealed class TelemetryTracker
 		Exception exception,
 		SeverityLevel? severityLevel = null,
 		KeyValuePair<String, Double>[]? measurements = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -385,7 +375,7 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Tracks metric.
+	/// Tracks a metric.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -403,8 +393,8 @@ public sealed class TelemetryTracker
 		String name,
 		Double value,
 		MetricValueAggregation? valueAggregation = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -419,16 +409,41 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Begins tracking of an request execution.
+	/// Begins tracking the execution of a request.
 	/// </summary>
 	/// <remarks>
 	/// Replaces the <see cref="Operation"/> with a new object with parentId obtained with <paramref name="getId"/> call.
 	/// In this way all subsequent telemetry will refer to the request as parent operation.
 	/// </remarks>
-	/// <param name="getId">A function that returns the identifier for request.</param>
+	/// <param name="getId">A function that returns the identifier for the request.</param>
+	/// <param name="previousParentId">The previous Operation parent identifier.</param>
+	/// <param name="id">The generated identifier of the request.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackRequestBegin
+	(
+		Func<String> getId,
+		out String? previousParentId,
+		out String id
+	)
+	{
+		// get request id
+		id = getId();
+
+		// replace operation parent id with request id
+		Operation = Operation.CloneWithNewParentId(id, out previousParentId);
+	}
+
+	/// <summary>
+	/// Begins tracking the execution of a request.
+	/// </summary>
+	/// <remarks>
+	/// Replaces the <see cref="Operation"/> with a new object with parentId obtained with <paramref name="getId"/> call.
+	/// In this way all subsequent telemetry will refer to the request as parent operation untill <see cref="TrackRequestEnd"/> called.
+	/// </remarks>
+	/// <param name="getId">A function that returns the identifier for the request.</param>
 	/// <param name="previousParentId">The previous Operation parent identifier.</param>
 	/// <param name="time">The timestamp when the tracking hes begun.</param>
-	/// <param name="id">The generated identifier of in-process dependency.</param>
+	/// <param name="id">The generated identifier of the request.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackRequestBegin
 	(
@@ -441,15 +456,11 @@ public sealed class TelemetryTracker
 		// set time
 		time = DateTime.UtcNow;
 
-		// get in-proc dependency id
-		id = getId();
-
-		// replace operation with in-proc dependency as parent id 
-		Operation = Operation.CloneWithNewParentId(id, out previousParentId);
+		TrackRequestBegin(getId, out previousParentId, out id);
 	}
 
 	/// <summary>
-	/// Ends tracking of the request dependency.
+	/// Ends tracking the execution of a request.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="RequestTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -477,8 +488,8 @@ public sealed class TelemetryTracker
 		TimeSpan duration,
 		String? name = null,
 		KeyValuePair<String, Double>[]? measurements = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		// replace operation with in-proc dependency as parent id 
@@ -498,7 +509,7 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Tracks trace.
+	/// Tracks a trace.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -512,8 +523,8 @@ public sealed class TelemetryTracker
 	(
 		String message,
 		SeverityLevel severityLevel,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;

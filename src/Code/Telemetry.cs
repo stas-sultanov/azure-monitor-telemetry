@@ -13,7 +13,7 @@ public interface Telemetry
 	/// <summary>
 	/// The details about the telemetry operation being performed.
 	/// </summary>
-	public OperationContext Operation { get; }
+	public TelemetryOperation Operation { get; }
 
 	/// <summary>
 	/// A collection of custom properties in a name-value format.
@@ -23,7 +23,7 @@ public interface Telemetry
 	/// Maximum key length: 150 characters, Maximum value length: 8192 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, String>[]? Properties { get; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; }
 
 	/// <summary>
 	/// A collection of tags in a name-value format.
@@ -31,7 +31,7 @@ public interface Telemetry
 	/// <remarks>
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, String>[]? Tags { get; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; }
 
 	/// <summary>
 	/// The UTC timestamp.

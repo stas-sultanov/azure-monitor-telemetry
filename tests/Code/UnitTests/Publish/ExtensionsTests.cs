@@ -19,9 +19,12 @@ public sealed class ExtensionsTests
 	public void Method_TrackDependency()
 	{
 		// arrange
-		var operation = new OperationContext (new Guid().ToString("N"), "Test" );
+		var operation = new TelemetryOperation (new Guid().ToString("N"), "Test" );
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 		var id = "test-id";
 		var publishResult = new HttpTelemetryPublishResult
 		(
@@ -73,7 +76,7 @@ public sealed class ExtensionsTests
 		// arrange
 		var id = "test-id";
 		var measurements = new[] { new KeyValuePair<String, Double>("Number", 0) };
-		var operation = new OperationContext(new Guid().ToString("N"), "Test");
+		var operation = new TelemetryOperation(new Guid().ToString("N"), "Test");
 		var publishResult = new HttpTelemetryPublishResult
 		(
 			10,
@@ -85,7 +88,10 @@ public sealed class ExtensionsTests
 			""
 		);
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 
 		// act
 		telemetryTracker.TrackDependency(id, publishResult, measurements);
@@ -112,7 +118,7 @@ public sealed class ExtensionsTests
 		// arrange
 		var id = "test-id";
 		var measurements = new KeyValuePair<String, Double> [] { new("Number", 0) };
-		var operation = new OperationContext (new Guid().ToString("N"), "Test" );
+		var operation = new TelemetryOperation (new Guid().ToString("N"), "Test" );
 		var publishResult = new HttpTelemetryPublishResult
 		(
 			10,
@@ -124,7 +130,10 @@ public sealed class ExtensionsTests
 			""
 		);
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, operation);
+		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		{
+			Operation = operation
+		};
 
 		// act
 		telemetryTracker.TrackDependency(id, publishResult, measurements);

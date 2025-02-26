@@ -61,7 +61,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	private readonly HttpClient httpClient;
 	private readonly Uri ingestionEndpoint;
 	private readonly String instrumentationKey;
-	private readonly KeyValuePair<String, String>[]? tags;
+	private readonly IReadOnlyList<KeyValuePair<String, String>>? tags;
 
 	#endregion
 
@@ -83,7 +83,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		Uri ingestionEndpoint,
 		Guid instrumentationKey,
 		Func<CancellationToken, Task<BearerToken>>? getAccessToken = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		if (!ingestionEndpoint.IsAbsoluteUri || ingestionEndpoint.IsFile || ingestionEndpoint.IsUnc)
@@ -96,13 +96,13 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			throw new ArgumentException("Not valid.", nameof(instrumentationKey));
 		}
 
-		this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-
-		this.getAccessToken = getAccessToken;
+		this.httpClient = httpClient;
 
 		this.ingestionEndpoint = new Uri(ingestionEndpoint, getAccessToken == null ? @"v2/track" : @"v2.1/track");
 
 		this.instrumentationKey = instrumentationKey.ToString();
+
+		this.getAccessToken = getAccessToken;
 
 		this.tags = tags;
 	}
@@ -115,7 +115,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryList,
-		KeyValuePair<String, String>[]? trackerTags,
+		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
 		CancellationToken cancellationToken
 	)
 	{

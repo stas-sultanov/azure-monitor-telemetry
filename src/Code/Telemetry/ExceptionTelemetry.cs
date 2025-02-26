@@ -14,7 +14,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="exception">The exception object.</param>
 public sealed class ExceptionTelemetry
 (
-	OperationContext operation,
+	TelemetryOperation operation,
 	DateTime time,
 	Exception exception
 )
@@ -37,10 +37,10 @@ public sealed class ExceptionTelemetry
 	public KeyValuePair<String, Double>[]? Measurements { get; init; }
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public TelemetryOperation Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>
 	/// The severity level.
@@ -48,7 +48,7 @@ public sealed class ExceptionTelemetry
 	public SeverityLevel? SeverityLevel { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the exception has occurred.

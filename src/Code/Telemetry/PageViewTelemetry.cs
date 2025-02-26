@@ -15,7 +15,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="name">The name of the page.</param>
 public sealed class PageViewTelemetry
 (
-	OperationContext operation,
+	TelemetryOperation operation,
 	DateTime time,
 	String id,
 	String name
@@ -49,13 +49,13 @@ public sealed class PageViewTelemetry
 	public String Name { get; } = name;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public TelemetryOperation Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the operation was initiated.

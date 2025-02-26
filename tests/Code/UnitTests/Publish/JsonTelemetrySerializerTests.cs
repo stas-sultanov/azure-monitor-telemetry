@@ -21,9 +21,9 @@ public class JsonTelemetrySerializerTests
 
 	private sealed class UnknownTelemetry(DateTime time) : Telemetry
 	{
-		public OperationContext Operation { get; set; } = new OperationContext();
-		public KeyValuePair<String, String>[]? Properties { get; set; } = null;
-		public KeyValuePair<String, String>[]? Tags { get; set; } = null;
+		public TelemetryOperation Operation { get; set; } = new TelemetryOperation();
+		public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; set; } = null;
+		public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; set; } = null;
 		public DateTime Time { get; init; } = time;
 	}
 

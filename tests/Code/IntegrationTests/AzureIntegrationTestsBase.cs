@@ -99,15 +99,12 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 			telemetryPublishers.Add(publisher);
 		}
 
-		KeyValuePair<String, String>[] extraTrackerTags =
-		[
-			new (TelemetryTagKey.CloudRole, "Test Agent"),
-			new (TelemetryTagKey.CloudRoleInstance, Environment.MachineName)
-		];
+		var operation = new TelemetryOperation(ActivityTraceId.CreateRandom().ToString(), $"TEST #{DateTime.UtcNow:yyMMddHHmm}");
 
-		var operation = new OperationContext(ActivityTraceId.CreateRandom().ToString(), $"TEST #{DateTime.UtcNow:yyMMddHHmm}");
-
-		TelemetryTracker = new TelemetryTracker([.. telemetryPublishers], operation, [.. extraTrackerTags, .. trackerTags]);
+		TelemetryTracker = new TelemetryTracker([.. telemetryPublishers], [.. trackerTags])
+		{
+			Operation = operation
+		};
 	}
 
 	#endregion
@@ -126,9 +123,14 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 
 	#region Methods
 
-	protected static String GettTraceId()
+	protected static String GetOperationId()
 	{
 		return ActivityTraceId.CreateRandom().ToString();
+	}
+
+	protected static String GetTelemetryId()
+	{
+		return ActivitySpanId.CreateRandom().ToString();
 	}
 
 	protected static void AssertStandardSuccess(TelemetryPublishResult[] telemetryPublishResults)
@@ -156,11 +158,11 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 				return;
 			}
 
-			Assert.AreEqual(result.Count, response.ItemsAccepted);
+			Assert.AreEqual(result.Count, response.ItemsAccepted, nameof(HttpTelemetryPublishResponse.ItemsAccepted));
 
-			Assert.AreEqual(result.Count, response.ItemsReceived);
+			Assert.AreEqual(result.Count, response.ItemsReceived, nameof(HttpTelemetryPublishResponse.ItemsReceived));
 
-			Assert.AreEqual(0, response.Errors.Length);
+			Assert.AreEqual(0, response.Errors.Length, nameof(HttpTelemetryPublishResponse.Errors));
 		}
 	}
 

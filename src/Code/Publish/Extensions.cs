@@ -31,8 +31,8 @@ public static class Extensions
 		String id,
 		HttpTelemetryPublishResult publishResult,
 		KeyValuePair<String, Double>[]? measurements = null,
-		KeyValuePair<String, String>[]? properties = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		List<KeyValuePair<String, Double>> adjustedMeasurements = measurements == null

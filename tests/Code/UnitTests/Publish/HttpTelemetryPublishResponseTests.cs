@@ -21,7 +21,6 @@ public sealed class HttpTelemetryPublishResponseTests
 	public void Constructor()
 	{
 		// arrange
-		var appId = "test-app-id";
 		var errors = new[]
 		{
 			new HttpTelemetryPublishError(0, "Error message 1", HttpStatusCode.BadRequest),
@@ -31,11 +30,9 @@ public sealed class HttpTelemetryPublishResponseTests
 		var itemsReceived = (UInt16)15;
 
 		// act
-		var response = new HttpTelemetryPublishResponse(appId, errors, itemsAccepted, itemsReceived);
+		var response = new HttpTelemetryPublishResponse(errors, itemsAccepted, itemsReceived);
 
 		// assert
-		Assert.AreEqual(appId, response.AppId, nameof(HttpTelemetryPublishResponse.AppId));
-
 		CollectionAssert.AreEqual(errors, response.Errors, nameof(HttpTelemetryPublishResponse.Errors));
 
 		Assert.AreEqual(itemsAccepted, response.ItemsAccepted, nameof(HttpTelemetryPublishResponse.ItemsAccepted));

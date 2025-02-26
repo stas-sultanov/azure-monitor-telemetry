@@ -16,7 +16,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="responseCode">The result of an operation execution.</param>
 public sealed class RequestTelemetry
 (
-	OperationContext operation,
+	TelemetryOperation operation,
 	DateTime time,
 	String id,
 	Uri url,
@@ -51,10 +51,10 @@ public sealed class RequestTelemetry
 	public String? Name { get; init; }
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public TelemetryOperation Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>
 	/// The result of an operation execution.
@@ -70,7 +70,7 @@ public sealed class RequestTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the request was initiated.

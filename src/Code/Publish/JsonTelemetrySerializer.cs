@@ -60,8 +60,8 @@ public static class JsonTelemetrySerializer
 		StreamWriter streamWriter,
 		String instrumentationKey,
 		Telemetry telemetry,
-		KeyValuePair<String, String>[]? trackerTags,
-		KeyValuePair<String, String>[]? publisherTags
+		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
+		IReadOnlyList<KeyValuePair<String, String>>? publisherTags
 	)
 	{
 		String name;
@@ -147,7 +147,7 @@ public static class JsonTelemetrySerializer
 		streamWriter.Write("\"");
 
 		// serialize properties
-		if (writeProperties && telemetry.Properties != null && telemetry.Properties.Length != 0)
+		if (writeProperties && telemetry.Properties != null && telemetry.Properties.Count != 0)
 		{
 			streamWriter.Write(",\"properties\":{");
 
@@ -399,7 +399,7 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("}]");
 
-		if (metricTelemetry.Properties != null && metricTelemetry.Properties.Length != 0)
+		if (metricTelemetry.Properties != null && metricTelemetry.Properties.Count != 0)
 		{
 			streamWriter.Write(",\"properties\":{");
 
@@ -496,10 +496,10 @@ public static class JsonTelemetrySerializer
 	private static void WriteTags
 	(
 		StreamWriter writer,
-		OperationContext telemetryOperation,
-		KeyValuePair<String, String>[]? telemetryTags,
-		KeyValuePair<String, String>[]? trackerTags,
-		KeyValuePair<String, String>[]? publisherTags
+		TelemetryOperation telemetryOperation,
+		IReadOnlyList<KeyValuePair<String, String>>? telemetryTags,
+		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
+		IReadOnlyList<KeyValuePair<String, String>>? publisherTags
 	)
 	{
 		var scopeHasItems = false;
@@ -554,16 +554,16 @@ public static class JsonTelemetrySerializer
 	private static Boolean WriteList
 	(
 		StreamWriter streamWriter,
-		KeyValuePair<String, String>[]? list,
+		IReadOnlyList<KeyValuePair<String, String>>? list,
 		Boolean scopeHasItems
 	)
 	{
-		if (list == null || list.Length == 0)
+		if (list == null || list.Count == 0)
 		{
 			return false;
 		}
 
-		for (var index = 0; index < list.Length; index++)
+		for (var index = 0; index < list.Count; index++)
 		{
 			var pair = list[index];
 

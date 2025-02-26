@@ -16,7 +16,7 @@ internal sealed class TelemetryFactory
 	public KeyValuePair<String, Double>[] Measurements { get; set; }
 	public String Message { get; set; }
 	public String Name { get; set; }
-	public OperationContext Operation { get; set; }
+	public TelemetryOperation Operation { get; set; }
 	public KeyValuePair<String, String>[] Properties { get; set; }
 	public KeyValuePair<String, String>[] Tags { get; set; }
 	public Uri Url { get; set; }
@@ -33,7 +33,7 @@ internal sealed class TelemetryFactory
 
 		Name = "name";
 
-		Operation = new OperationContext
+		Operation = new TelemetryOperation
 		(
 			id: Guid.NewGuid().ToString("N"),
 			name: "Test #" + DateTime.Now.ToString("yyMMddhhmm"),

@@ -17,7 +17,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="name">The name.</param>
 public sealed class EventTelemetry
 (
-	OperationContext operation,
+	TelemetryOperation operation,
 	DateTime time,
 	String name
 )
@@ -41,13 +41,13 @@ public sealed class EventTelemetry
 	public String Name { get; } = name;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public TelemetryOperation Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; } = null;
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; } = null;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; } = null;
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; } = null;
 
 	/// <summary>
 	/// The UTC timestamp when the event has occurred.

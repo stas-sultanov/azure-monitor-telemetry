@@ -13,7 +13,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="name">The name of the topmost operation.</param>
 /// <param name="parentId">The identifier of the parent operation.</param>
 /// <param name="syntheticSource">The synthetic source.</param>
-public sealed class OperationContext
+public sealed class TelemetryOperation
 (
 	String? id = null,
 	String? name = null,
@@ -21,6 +21,15 @@ public sealed class OperationContext
 	String? syntheticSource = null
 )
 {
+	#region Static
+
+	/// <summary>
+	/// An empty instance of <see cref="TelemetryOperation"/>.
+	/// </summary>
+	public static TelemetryOperation Empty { get; } = new TelemetryOperation();
+
+	#endregion
+
 	#region Properties
 
 	/// <summary>The identifier of the topmost operation.</summary>
@@ -40,28 +49,28 @@ public sealed class OperationContext
 	#region Methods
 
 	/// <summary>
-	/// Creates a new instance of <see cref="OperationContext"/> with a new parent identifier.
+	/// Creates a new instance of <see cref="TelemetryOperation"/> with a new parent identifier.
 	/// </summary>
 	/// <param name="parentId">The new parent identifier to be set.</param>
-	/// <returns>A new instance of <see cref="OperationContext"/> with the specified parent identifier.</returns>
-	public OperationContext CloneWithNewParentId(String? parentId)
+	/// <returns>A new instance of <see cref="TelemetryOperation"/> with the specified parent identifier.</returns>
+	public TelemetryOperation CloneWithNewParentId(String? parentId)
 	{
-		return new OperationContext(Id, Name, parentId, SyntheticSource);
+		return new TelemetryOperation(Id, Name, parentId, SyntheticSource);
 	}
 
 	/// <summary>
-	/// Creates a new instance of <see cref="OperationContext"/> with a new parent identifier.
+	/// Creates a new instance of <see cref="TelemetryOperation"/> with a new parent identifier.
 	/// </summary>
 	/// <param name="parentId">The new parent identifier to be set.</param>
 	/// <param name="previousParentId">Outputs the previous parent identifier.</param>
-	/// <returns>A new instance of <see cref="OperationContext"/> with the specified parent identifier.</returns>
-	public OperationContext CloneWithNewParentId
+	/// <returns>A new instance of <see cref="TelemetryOperation"/> with the specified parent identifier.</returns>
+	public TelemetryOperation CloneWithNewParentId
 	(
 		String? parentId,
 		out String? previousParentId
 	)
 	{
-		var result = new OperationContext(Id, Name, parentId, SyntheticSource);
+		var result = new TelemetryOperation(Id, Name, parentId, SyntheticSource);
 
 		previousParentId = ParentId;
 

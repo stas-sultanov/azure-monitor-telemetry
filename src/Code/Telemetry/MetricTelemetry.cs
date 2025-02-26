@@ -13,7 +13,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="value">The value.</param>
 public sealed class MetricTelemetry
 (
-	OperationContext operation,
+	TelemetryOperation operation,
 	DateTime time,
 	String @namespace,
 	String name,
@@ -36,13 +36,13 @@ public sealed class MetricTelemetry
 	public String Namespace { get; } = @namespace;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public TelemetryOperation Operation { get; } = operation;
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the metric was recorded.

@@ -19,7 +19,7 @@ namespace Azure.Monitor.Telemetry;
 /// <param name="name">The name of the command initiated the dependency call.</param>
 public sealed class DependencyTelemetry
 (
-	OperationContext operation,
+	TelemetryOperation operation,
 	DateTime time,
 	String id,
 	String name
@@ -59,7 +59,7 @@ public sealed class DependencyTelemetry
 	public String Name { get; } = name;
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public TelemetryOperation Operation { get; } = operation;
 
 	/// <summary>
 	/// This field is the result code of a dependency call.
@@ -68,7 +68,7 @@ public sealed class DependencyTelemetry
 	public String? ResultCode { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.
@@ -76,7 +76,7 @@ public sealed class DependencyTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// This field is the target site of a dependency call.
