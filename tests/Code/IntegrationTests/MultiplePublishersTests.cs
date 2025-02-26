@@ -30,6 +30,8 @@ public sealed class MultiplePublishersTests : AzureIntegrationTestsBase
 
 	private readonly QueueClient queueClient;
 
+	private TelemetryTracker TelemetryTracker { get; }
+
 	#endregion
 
 	#region Constructors
@@ -42,13 +44,21 @@ public sealed class MultiplePublishersTests : AzureIntegrationTestsBase
 		: base
 		(
 			testContext,
-			[],
 			[
 				Tuple.Create(@"Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>()),
 				Tuple.Create(@"Azure.Monitor.AuthOff.", false, Array.Empty<KeyValuePair<String, String>>())
 			]
 		)
 	{
+		TelemetryTracker = new TelemetryTracker
+		(
+			TelemetryPublishers,
+			[
+				new (TelemetryTagKey.CloudRole, "Tester"),
+				new (TelemetryTagKey.CloudRoleInstance, Environment.MachineName)
+			]
+		);
+
 		var handler = new TelemetryTrackedHttpClientHandler(TelemetryTracker, () => ActivitySpanId.CreateRandom().ToString());
 
 		queueClientHttpClientTransport = new HttpClientTransport(handler);

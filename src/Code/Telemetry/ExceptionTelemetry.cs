@@ -28,13 +28,13 @@ public sealed class ExceptionTelemetry
 	public Exception Exception { get; } = exception;
 
 	/// <summary>
-	/// A collection of measurements.
+	/// A read-only list of measurements.
 	/// </summary>
 	/// <remarks>
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double>[]? Measurements { get; init; }
+	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <inheritdoc/>
 	public TelemetryOperation Operation { get; } = operation;

@@ -26,13 +26,13 @@ public sealed class EventTelemetry
 	#region Properties
 
 	/// <summary>
-	/// A collection of measurements.
+	/// A read-only list of measurements.
 	/// </summary>
 	/// <remarks>
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double>[]? Measurements { get; init; } = null;
+	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; } = null;
 
 	/// <summary>
 	/// The name.

@@ -9,22 +9,37 @@ using Azure.Monitor.Telemetry.Tests;
 /// Set of integration tests for all types of telemetry that implements <see cref="Telemetry"/>.
 /// The goal is to ensure that all telemetry types can be tracked and published successfully.
 /// </summary>
-/// <param name="testContext">The test context.</param>
 [TestCategory("IntegrationTests")]
 [TestClass]
-public sealed class TelemetryTypesTests(TestContext testContext)
-	: AzureIntegrationTestsBase
-	(
-		testContext,
-		[],
-		[
-			Tuple.Create("Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>())
-		]
-	)
+public sealed class TelemetryTypesTests : AzureIntegrationTestsBase
 {
 	#region Fields
 
 	private readonly TelemetryFactory telemetryFactory = new();
+
+	private TelemetryTracker TelemetryTracker { get; }
+
+	#endregion
+
+	#region Constructor
+
+	/// <param name="testContext">The test context.</param>
+	public TelemetryTypesTests(TestContext testContext) : base(
+		testContext,
+		[
+			Tuple.Create("Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>())
+		]
+	)
+	{
+		TelemetryTracker = new TelemetryTracker
+		(
+			TelemetryPublishers,
+			[
+				new (TelemetryTagKey.CloudRole, "Tester"),
+				new (TelemetryTagKey.CloudRoleInstance, Environment.MachineName)
+			]
+		);
+	}
 
 	#endregion
 

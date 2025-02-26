@@ -33,7 +33,7 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 
 	protected TestContext TestContext { get; }
 
-	protected TelemetryTracker TelemetryTracker { get; }
+	protected IReadOnlyList<TelemetryPublisher> TelemetryPublishers { get; }
 
 	protected DefaultAzureCredential TokenCredential { get; }
 
@@ -49,7 +49,6 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 	public AzureIntegrationTestsBase
 	(
 		TestContext testContext,
-		KeyValuePair<String, String>[] trackerTags,
 		params Tuple<String, Boolean, KeyValuePair<String, String>[]>[] configList
 	)
 	{
@@ -99,12 +98,7 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 			telemetryPublishers.Add(publisher);
 		}
 
-		var operation = new TelemetryOperation(ActivityTraceId.CreateRandom().ToString(), $"TEST #{DateTime.UtcNow:yyMMddHHmm}");
-
-		TelemetryTracker = new TelemetryTracker([.. telemetryPublishers], [.. trackerTags])
-		{
-			Operation = operation
-		};
+		TelemetryPublishers = telemetryPublishers.AsReadOnly();
 	}
 
 	#endregion

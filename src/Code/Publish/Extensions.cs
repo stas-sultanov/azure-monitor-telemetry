@@ -30,7 +30,7 @@ public static class Extensions
 		this TelemetryTracker telemetryTracker,
 		String id,
 		HttpTelemetryPublishResult publishResult,
-		KeyValuePair<String, Double>[]? measurements = null,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
 		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)

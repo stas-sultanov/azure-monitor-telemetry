@@ -74,7 +74,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <param name="ingestionEndpoint">The URI endpoint where telemetry data will be sent. Must be an absolute, non-file, non-UNC URI.</param>
 	/// <param name="instrumentationKey">The instrumentation key used to authenticate with the telemetry service. Cannot be an empty GUID.</param>
 	/// <param name="getAccessToken">Function to get a bearer token for authentication. If not provided, no authentication will be used. Is optional.</param>
-	/// <param name="tags">An array of tags to attach to each telemetry item. Is optional.</param>
+	/// <param name="tags">A read-only list of tags to attach to each telemetry item. Is optional.</param>
 	/// <exception cref="ArgumentException">If <paramref name="ingestionEndpoint"/> is not valid absolute uri.</exception>
 	/// <exception cref="ArgumentException">If <paramref name="instrumentationKey"/> is empty.</exception>
 	public HttpTelemetryPublisher

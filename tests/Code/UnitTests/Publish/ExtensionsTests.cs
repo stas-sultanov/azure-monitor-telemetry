@@ -103,7 +103,7 @@ public sealed class ExtensionsTests
 
 		Assert.IsNotNull(actualResult.Measurements);
 
-		Assert.AreEqual(2, actualResult.Measurements.Length);
+		Assert.AreEqual(2, actualResult.Measurements.Count);
 
 		Assert.AreEqual(measurements[0], actualResult.Measurements[0]);
 
@@ -145,7 +145,7 @@ public sealed class ExtensionsTests
 
 		Assert.IsNotNull(actualResult.Measurements);
 
-		Assert.AreEqual(2, actualResult.Measurements.Length);
+		Assert.AreEqual(2, actualResult.Measurements.Count);
 
 		Assert.AreEqual(measurements[0], actualResult.Measurements[0]);
 

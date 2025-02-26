@@ -16,7 +16,7 @@ public interface Telemetry
 	public TelemetryOperation Operation { get; }
 
 	/// <summary>
-	/// A collection of custom properties in a name-value format.
+	/// A read-only list of custom properties in a name-value format.
 	/// This collection is used to extend standard telemetry data with custom dimensions.
 	/// </summary>
 	/// <remarks>
@@ -26,7 +26,7 @@ public interface Telemetry
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; }
 
 	/// <summary>
-	/// A collection of tags in a name-value format.
+	/// A read-only list of tags in a name-value format.
 	/// </summary>
 	/// <remarks>
 	/// Is null by default.

@@ -35,13 +35,13 @@ public sealed class PageViewTelemetry
 	public String Id { get; } = id;
 
 	/// <summary>
-	/// A collection of measurements.
+	/// A read-only list of measurements.
 	/// </summary>
 	/// <remarks>
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double>[]? Measurements { get; init; }
+	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the page.

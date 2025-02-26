@@ -527,13 +527,13 @@ public static class JsonTelemetrySerializer
 	private static void WriteListIfValid
 	(
 		StreamWriter streamWriter,
-		KeyValuePair<String, Double>[]? list,
+		IReadOnlyList<KeyValuePair<String, Double>>? list,
 		String pre,
 		String post
 	)
 	{
 		// serialize measurements
-		if (list == null || list.Length == 0)
+		if (list == null || list.Count == 0)
 		{
 			return;
 		}
@@ -580,10 +580,10 @@ public static class JsonTelemetrySerializer
 	private static void WriteList
 	(
 		StreamWriter streamWriter,
-		KeyValuePair<String, Double>[] list
+		IReadOnlyList<KeyValuePair<String, Double>> list
 	)
 	{
-		for (var index = 0; index < list.Length; index++)
+		for (var index = 0; index < list.Count; index++)
 		{
 			var pair = list[index];
 
