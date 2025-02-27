@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 /// </remarks>
 /// <param name="telemetryTracker">The telemetry tracker.</param>
 /// <param name="getId">A function that returns a unique identifier for the telemetry operation.</param>
-/// <exception cref="ArgumentNullException">Thrown when <paramref name="telemetryTracker"/> or <paramref name="getId"/> is null.</exception>
 public class TelemetryTrackedHttpClientHandler
 (
 	TelemetryTracker telemetryTracker,

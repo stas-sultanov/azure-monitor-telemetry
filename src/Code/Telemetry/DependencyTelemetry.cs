@@ -13,18 +13,7 @@ namespace Azure.Monitor.Telemetry;
 /// - Azure storage operations
 /// - Custom dependencies
 /// </remarks>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the dependency call was initiated.</param>
-/// <param name="id">The unique identifier.</param>
-/// <param name="name">The name of the command initiated the dependency call.</param>
-public sealed class DependencyTelemetry
-(
-	TelemetryOperation operation,
-	DateTime time,
-	String id,
-	String name
-)
-	: Telemetry
+public sealed class DependencyTelemetry : Telemetry
 {
 	#region Properties
 
@@ -42,7 +31,7 @@ public sealed class DependencyTelemetry
 	/// <summary>
 	/// The unique identifier.
 	/// </summary>
-	public String Id { get; } = id;
+	public required String Id { get; init; }
 
 	/// <summary>
 	/// A read-only list of measurements.
@@ -56,10 +45,10 @@ public sealed class DependencyTelemetry
 	/// <summary>
 	/// The name of the command initiated the dependency call.
 	/// </summary>
-	public String Name { get; } = name;
+	public required String Name { get; init; }
 
 	/// <inheritdoc/>
-	public TelemetryOperation Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
 
 	/// <summary>
 	/// This field is the result code of a dependency call.
@@ -87,7 +76,7 @@ public sealed class DependencyTelemetry
 	/// <summary>
 	/// The UTC timestamp when the dependency call was initiated.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	/// <summary>
 	/// This field is the dependency type name.

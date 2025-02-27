@@ -87,7 +87,11 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 			{
 				Task<BearerToken> getAccessToken(CancellationToken cancellationToken)
 				{
-					var result = new BearerToken(token.Token, token.ExpiresOn);
+					var result = new BearerToken
+					{
+						ExpiresOn = token.ExpiresOn,
+						Value = token.Token
+					};
 
 					return Task.FromResult(result);
 				}

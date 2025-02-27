@@ -9,18 +9,7 @@ namespace Azure.Monitor.Telemetry;
 /// <remarks>
 /// The page is a logical unit that is defined by the developer to be an application tab or a screen.
 /// </remarks>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the operation was initiated.</param>
-/// <param name="id">The unique identifier.</param>
-/// <param name="name">The name of the page.</param>
-public sealed class PageViewTelemetry
-(
-	TelemetryOperation operation,
-	DateTime time,
-	String id,
-	String name
-)
-	: Telemetry
+public sealed class PageViewTelemetry : Telemetry
 {
 	#region Properties
 
@@ -32,7 +21,7 @@ public sealed class PageViewTelemetry
 	/// <summary>
 	/// The unique identifier.
 	/// </summary>
-	public String Id { get; } = id;
+	public required String Id { get; init; }
 
 	/// <summary>
 	/// A read-only list of measurements.
@@ -46,10 +35,10 @@ public sealed class PageViewTelemetry
 	/// <summary>
 	/// The name of the page.
 	/// </summary>
-	public String Name { get; } = name;
+	public required String Name { get; init; }
 
 	/// <inheritdoc/>
-	public TelemetryOperation Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
@@ -60,7 +49,7 @@ public sealed class PageViewTelemetry
 	/// <summary>
 	/// The UTC timestamp when the operation was initiated.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	/// <summary>
 	/// The request URL.

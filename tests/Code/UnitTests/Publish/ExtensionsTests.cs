@@ -19,7 +19,7 @@ public sealed class ExtensionsTests
 	public void Method_TrackDependency()
 	{
 		// arrange
-		var operation = new TelemetryOperation (new Guid().ToString("N"), "Test" );
+		var operation = new TelemetryOperation { Id = new Guid().ToString("N"), Name = "Test" };
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
 		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
 		{
@@ -27,15 +27,15 @@ public sealed class ExtensionsTests
 		};
 		var id = "test-id";
 		var publishResult = new HttpTelemetryPublishResult
-		(
-			10,
-			TimeSpan.FromSeconds(1),
-			true,
-			DateTime.UtcNow,
-			new Uri("http://example.com"),
-			HttpStatusCode.OK,
-			""
-		);
+		{
+			Count = 10,
+			Duration = TimeSpan.FromSeconds(1),
+			Response = "",
+			StatusCode = HttpStatusCode.OK,
+			Success = true,
+			Time = DateTime.UtcNow,
+			Url = new Uri("http://example.com")
+		};
 
 		// act
 		telemetryTracker.TrackDependency(id, publishResult);
@@ -71,64 +71,22 @@ public sealed class ExtensionsTests
 	}
 
 	[TestMethod]
-	public void Method_TrackDependency_WithMeasurementsIsArray()
+	public void Method_TrackDependency_WithMeasurements()
 	{
 		// arrange
 		var id = "test-id";
 		var measurements = new[] { new KeyValuePair<String, Double>("Number", 0) };
-		var operation = new TelemetryOperation(new Guid().ToString("N"), "Test");
+		var operation = new TelemetryOperation{ Id = new Guid().ToString("N"), Name = "Test" };
 		var publishResult = new HttpTelemetryPublishResult
-		(
-			10,
-			TimeSpan.FromSeconds(1),
-			true,
-			DateTime.UtcNow,
-			new Uri("http://example.com"),
-			HttpStatusCode.OK,
-			""
-		);
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
 		{
-			Operation = operation
+			Count = 10,
+			Duration = TimeSpan.FromSeconds(1),
+			Response = "",
+			StatusCode = HttpStatusCode.OK,
+			Success = true,
+			Time = DateTime.UtcNow,
+			Url = new Uri("http://example.com")
 		};
-
-		// act
-		telemetryTracker.TrackDependency(id, publishResult, measurements);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
-
-		// assert
-		Assert.IsNotNull(actualResult);
-
-		Assert.IsNotNull(actualResult.Measurements);
-
-		Assert.AreEqual(2, actualResult.Measurements.Count);
-
-		Assert.AreEqual(measurements[0], actualResult.Measurements[0]);
-
-		Assert.AreEqual(nameof(HttpTelemetryPublishResult.Count), actualResult.Measurements[1].Key);
-
-		Assert.AreEqual(publishResult.Count, actualResult.Measurements[1].Value);
-	}
-
-	[TestMethod]
-	public void Method_TrackDependency_WithMeasurementsIsList()
-	{
-		// arrange
-		var id = "test-id";
-		var measurements = new KeyValuePair<String, Double> [] { new("Number", 0) };
-		var operation = new TelemetryOperation (new Guid().ToString("N"), "Test" );
-		var publishResult = new HttpTelemetryPublishResult
-		(
-			10,
-			TimeSpan.FromSeconds(1),
-			true,
-			DateTime.UtcNow,
-			new Uri("http://example.com"),
-			HttpStatusCode.OK,
-			""
-		);
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
 		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
 		{

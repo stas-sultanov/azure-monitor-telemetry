@@ -6,18 +6,7 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents printf-style trace statements that are text searched.
 /// </summary>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the trace has occurred.</param>
-/// <param name="message">The message.</param>
-/// <param name="severityLevel">The severity level.</param>
-public sealed class TraceTelemetry
-(
-	TelemetryOperation operation,
-	DateTime time,
-	String message,
-	SeverityLevel severityLevel
-)
-	: Telemetry
+public sealed class TraceTelemetry : Telemetry
 {
 	#region Properties
 
@@ -25,10 +14,10 @@ public sealed class TraceTelemetry
 	/// The message.
 	/// </summary>
 	/// <remarks>Maximum length: 32768 characters.</remarks>
-	public String Message { get; } = message;
+	public required String Message { get; init; }
 
 	/// <inheritdoc/>
-	public TelemetryOperation Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
@@ -36,7 +25,7 @@ public sealed class TraceTelemetry
 	/// <summary>
 	/// The severity level.
 	/// </summary>
-	public SeverityLevel SeverityLevel { get; } = severityLevel;
+	public SeverityLevel SeverityLevel { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
@@ -44,7 +33,7 @@ public sealed class TraceTelemetry
 	/// <summary>
 	/// The UTC timestamp when the trace has occurred.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	#endregion
 }

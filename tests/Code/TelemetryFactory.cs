@@ -12,7 +12,6 @@ internal sealed class TelemetryFactory
 {
 	#region Properties
 
-	private Random Random { get; }
 	public KeyValuePair<String, Double>[] Measurements { get; set; }
 	public String Message { get; set; }
 	public String Name { get; set; }
@@ -34,15 +33,13 @@ internal sealed class TelemetryFactory
 		Name = "name";
 
 		Operation = new TelemetryOperation
-		(
-			id: Guid.NewGuid().ToString("N"),
-			name: "Test #" + DateTime.Now.ToString("yyMMddhhmm"),
-			syntheticSource: "TestFramework"
-		);
+		{
+			Id = Guid.NewGuid().ToString("N"),
+			Name = "Test #" + DateTime.Now.ToString("yyMMddhhmm"),
+			SyntheticSource = "TestFramework"
+		};
 
 		Properties = [new("key", "value")];
-
-		Random = new Random(DateTime.UtcNow.Millisecond);
 
 		Tags = [new(TelemetryTagKey.CloudRole, "TestMachine")];
 
@@ -58,9 +55,9 @@ internal sealed class TelemetryFactory
 		return Guid.NewGuid().ToString("N").Substring(0, 16);
 	}
 
-	internal TimeSpan GetRandomDuration(Int32 millisecondsMin, Int32 millisecondsMax)
+	internal static TimeSpan GetRandomDuration(Int32 millisecondsMin, Int32 millisecondsMax)
 	{
-		var milliseconds = Random.Next(millisecondsMin, millisecondsMax);
+		var milliseconds = Random.Shared.Next(millisecondsMin, millisecondsMax);
 
 		return TimeSpan.FromMilliseconds(milliseconds);
 	}
@@ -95,14 +92,19 @@ internal sealed class TelemetryFactory
 
 		var duration = GetRandomDuration(100, 2000);
 
-		var result = new AvailabilityTelemetry(Operation, DateTime.UtcNow, id, Name, Message)
+		var result = new AvailabilityTelemetry
 		{
 			Duration = duration,
+			Id = id,
 			Measurements = Measurements,
+			Message = Message,
+			Name = Name,
+			Operation = Operation,
 			Properties = Properties,
 			RunLocation = "Earth",
 			Success = true,
 			Tags = Tags,
+			Time = DateTime.UtcNow
 		};
 
 		return result;
@@ -115,7 +117,16 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new AvailabilityTelemetry(Operation, DateTime.UtcNow, id, Name, Message);
+		var result = new AvailabilityTelemetry
+		{
+			Duration = TimeSpan.Zero,
+			Id = id,
+			Message = Message,
+			Name = Name,
+			Operation = Operation,
+			Success = true,
+			Time = DateTime.UtcNow
+		};
 
 		return result;
 	}
@@ -131,17 +142,21 @@ internal sealed class TelemetryFactory
 
 		var duration = GetRandomDuration(200, 800);
 
-		var result = new DependencyTelemetry(Operation, DateTime.UtcNow, id, Name)
+		var result = new DependencyTelemetry
 		{
-			Measurements = Measurements,
 			Data = "data",
 			Duration = duration,
+			Id = id,
+			Measurements = Measurements,
+			Name = Name,
+			Operation = Operation,
 			Properties = Properties,
+			ResultCode = "401",
 			Success = false,
 			Tags = Tags,
-			ResultCode = "401",
-			Type = type,
-			Target = "target"
+			Target = "target",
+			Time = DateTime.UtcNow,
+			Type = type
 		};
 
 		return result;
@@ -154,7 +169,13 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new DependencyTelemetry(Operation, DateTime.UtcNow, id, Name);
+		var result = new DependencyTelemetry
+		{
+			Operation = Operation,
+			Time = DateTime.UtcNow,
+			Id = id,
+			Name = Name
+		};
 
 		return result;
 	}
@@ -164,11 +185,14 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public EventTelemetry Create_EventTelemetry_Max()
 	{
-		var result = new EventTelemetry(Operation, DateTime.UtcNow, Name)
+		var result = new EventTelemetry
 		{
 			Measurements = Measurements,
+			Name = Name,
+			Operation = Operation,
 			Properties = Properties,
-			Tags = Tags
+			Tags = Tags,
+			Time = DateTime.UtcNow
 		};
 
 		return result;
@@ -179,7 +203,12 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public EventTelemetry Create_EventTelemetry_Min()
 	{
-		var result = new EventTelemetry(Operation, DateTime.UtcNow, Name);
+		var result = new EventTelemetry
+		{
+			Operation = Operation,
+			Time = DateTime.UtcNow,
+			Name = Name
+		};
 
 		return result;
 	}
@@ -197,12 +226,15 @@ internal sealed class TelemetryFactory
 		}
 		catch (Exception exception)
 		{
-			var result = new ExceptionTelemetry(Operation, DateTime.UtcNow, exception)
+			var result = new ExceptionTelemetry
 			{
+				Exception = exception,
 				Measurements = Measurements,
+				Operation = Operation,
 				Properties = Properties,
 				SeverityLevel = SeverityLevel.Critical,
-				Tags = Tags
+				Tags = Tags,
+				Time = DateTime.UtcNow
 			};
 
 			return result;
@@ -222,7 +254,12 @@ internal sealed class TelemetryFactory
 		}
 		catch (Exception exception)
 		{
-			var result = new ExceptionTelemetry(Operation, DateTime.UtcNow, exception);
+			var result = new ExceptionTelemetry
+			{
+				Exception = exception,
+				Operation = Operation,
+				Time = DateTime.UtcNow
+			};
 
 			return result;
 		}
@@ -238,8 +275,14 @@ internal sealed class TelemetryFactory
 		MetricValueAggregation aggregation
 	)
 	{
-		var result = new MetricTelemetry(Operation, DateTime.UtcNow, @namespace, Name, value, aggregation)
+		var result = new MetricTelemetry
 		{
+			Operation = Operation,
+			Time = DateTime.UtcNow,
+			Namespace = @namespace,
+			Name = Name,
+			Value = value,
+			ValueAggregation = aggregation,
 			Properties = Properties,
 			Tags = Tags
 		};
@@ -256,7 +299,14 @@ internal sealed class TelemetryFactory
 		Double value
 	)
 	{
-		var result = new MetricTelemetry(Operation, DateTime.UtcNow, @namespace, Name, value);
+		var result = new MetricTelemetry
+		{
+			Name = Name,
+			Namespace = @namespace,
+			Operation = Operation,
+			Time = DateTime.UtcNow,
+			Value = value
+		};
 
 		return result;
 	}
@@ -270,12 +320,16 @@ internal sealed class TelemetryFactory
 
 		var duration = GetRandomDuration(300, 700);
 
-		var result = new PageViewTelemetry(Operation, DateTime.UtcNow, id, Name)
+		var result = new PageViewTelemetry
 		{
 			Measurements = Measurements,
 			Duration = duration,
+			Id = id,
+			Name = Name,
+			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags,
+			Time = DateTime.UtcNow,
 			Url = Url
 		};
 
@@ -289,7 +343,13 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new PageViewTelemetry(Operation, DateTime.UtcNow, id, Name);
+		var result = new PageViewTelemetry
+		{
+			Id = id,
+			Name = Name,
+			Operation = Operation,
+			Time = DateTime.UtcNow
+		};
 
 		return result;
 	}
@@ -301,14 +361,19 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new RequestTelemetry(Operation, DateTime.UtcNow, id, Url, "200")
+		var result = new RequestTelemetry
 		{
+			Duration = TimeSpan.FromSeconds(1),
+			Id = id,
 			Measurements = Measurements,
 			Name = Name,
-			Duration = TimeSpan.FromSeconds(1),
+			Operation = Operation,
 			Properties = Properties,
+			ResponseCode = "200",
 			Success = true,
-			Tags = Tags
+			Tags = Tags,
+			Time = DateTime.UtcNow,
+			Url = Url
 		};
 
 		return result;
@@ -321,7 +386,14 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetId();
 
-		var result = new RequestTelemetry(Operation, DateTime.UtcNow, id, Url, "1");
+		var result = new RequestTelemetry
+		{
+			Operation = Operation,
+			Time = DateTime.UtcNow,
+			Id = id,
+			Url = Url,
+			ResponseCode = "1"
+		};
 
 		return result;
 	}
@@ -331,10 +403,14 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public TraceTelemetry Create_TraceTelemetry_Max()
 	{
-		var result = new TraceTelemetry(Operation, DateTime.UtcNow, Message, SeverityLevel.Information)
+		var result = new TraceTelemetry
 		{
+			Message = Message,
+			Operation = Operation,
 			Properties = Properties,
-			Tags = Tags
+			SeverityLevel = SeverityLevel.Information,
+			Tags = Tags,
+			Time = DateTime.UtcNow
 		};
 
 		return result;
@@ -345,7 +421,13 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public TraceTelemetry Create_TraceTelemetry_Min()
 	{
-		var result = new TraceTelemetry(Operation, DateTime.UtcNow, Message, SeverityLevel.Verbose);
+		var result = new TraceTelemetry
+		{
+			Message = Message,
+			Operation = Operation,
+			SeverityLevel = SeverityLevel.Verbose,
+			Time = DateTime.UtcNow
+		};
 
 		return result;
 	}

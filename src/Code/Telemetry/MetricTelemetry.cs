@@ -6,21 +6,7 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of an aggregated metric data.
 /// </summary>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the trace has occurred.</param>
-/// <param name="namespace">The namespace.</param>
-/// <param name="name">The name.</param>
-/// <param name="value">The value.</param>
-public sealed class MetricTelemetry
-(
-	TelemetryOperation operation,
-	DateTime time,
-	String @namespace,
-	String name,
-	Double value,
-	MetricValueAggregation? valueAggregation = null
-)
-	: Telemetry
+public sealed class MetricTelemetry : Telemetry
 {
 	#region Properties
 
@@ -28,15 +14,15 @@ public sealed class MetricTelemetry
 	/// The name.
 	/// </summary>
 	/// <remarks>Maximum length: 512 characters.</remarks>
-	public String Name { get; } = name;
+	public required String Name { get; init; }
 
 	/// <summary>
 	/// The namespace.
 	/// </summary>
-	public String Namespace { get; } = @namespace;
+	public required String Namespace { get; init; }
 
 	/// <inheritdoc/>
-	public TelemetryOperation Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
@@ -47,14 +33,17 @@ public sealed class MetricTelemetry
 	/// <summary>
 	/// The UTC timestamp when the metric was recorded.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	/// <summary>
 	/// The value.
 	/// </summary>
-	public Double Value { get; } = value;
+	public required Double Value { get; init; }
 
-	public MetricValueAggregation? ValueAggregation { get; } = valueAggregation;
+	/// <summary>
+	/// The aggregation of metric values within a sample set.
+	/// </summary>
+	public MetricValueAggregation? ValueAggregation { get; init; }
 
 	#endregion
 }

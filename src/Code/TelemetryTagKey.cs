@@ -3,6 +3,9 @@
 
 namespace Azure.Monitor.Telemetry;
 
+/// <summary>
+/// Contains the names of tags which are supported by the telemetry service.
+/// </summary>
 public static class TelemetryTagKey
 {
 	public const String ApplicationVersion = @"ai.application.ver";

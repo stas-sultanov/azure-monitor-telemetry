@@ -68,7 +68,17 @@ public sealed partial class HttpTelemetryPublisherTests
 
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey);
 
-		var telemetryList = new[] { new TraceTelemetry(new TelemetryOperation(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
+		var telemetryList = new[]
+		{
+			new TraceTelemetry
+			{
+				Message = @"test",
+				Operation = TelemetryOperation.Empty,
+				SeverityLevel = SeverityLevel.Information,
+				Time = DateTime.UtcNow
+			}
+		};
+
 		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 
@@ -96,12 +106,21 @@ public sealed partial class HttpTelemetryPublisherTests
 
 		static Task<BearerToken> getAccessToken(CancellationToken _)
 		{
-			return Task.FromResult(new BearerToken("token " + HttpTelemetryPublisher.AuthorizationScopes, DateTimeOffset.UtcNow));
+			return Task.FromResult(new BearerToken { ExpiresOn = DateTimeOffset.UtcNow, Value = "token " + HttpTelemetryPublisher.AuthorizationScopes });
 		}
 
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken, [new (TelemetryTagKey.SessionId, "test"), new (TelemetryTagKey.InternalAgentVersion, "test") ]);
 
-		var telemetryList = new[] { new TraceTelemetry(new TelemetryOperation(), DateTime.UtcNow, @"test", SeverityLevel.Information) };
+		var telemetryList = new[]
+		{
+			new TraceTelemetry
+			{
+				Message = @"test",
+				Operation = TelemetryOperation.Empty,
+				SeverityLevel = SeverityLevel.Information,
+				Time = DateTime.UtcNow
+			}
+		};
 		var tags = Array.Empty<KeyValuePair<String, String>>();
 		var cancellationToken = CancellationToken.None;
 

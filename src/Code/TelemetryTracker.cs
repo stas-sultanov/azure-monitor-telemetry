@@ -226,14 +226,19 @@ public sealed class TelemetryTracker
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var telemetry = new AvailabilityTelemetry(Operation, time, id, name, message)
+		var telemetry = new AvailabilityTelemetry
 		{
 			Duration = duration,
+			Id = id,
 			Measurements = measurements,
+			Message = message,
+			Name = name,
+			Operation = Operation,
 			Properties = properties,
 			RunLocation = runLocation,
 			Success = success,
-			Tags = tags
+			Tags = tags,
+			Time = time
 		};
 
 		Add(telemetry);
@@ -271,17 +276,21 @@ public sealed class TelemetryTracker
 
 		var success = (Int32)statusCode is >= 200 and < 300;
 
-		var telemetry = new DependencyTelemetry(Operation, time, id, name)
+		var telemetry = new DependencyTelemetry
 		{
 			Duration = duration,
+			Id = id,
 			Measurements = measurements,
+			Name = name,
+			Operation = Operation,
 			Properties = properties,
 			ResultCode = statusCode.ToString(),
 			Success = success,
 			Tags = tags,
 			Target = uri.Host,
 			Type = DependencyType.DetectTypeFromHttp(uri),
-			Data = uri.ToString()
+			Data = uri.ToString(),
+			Time = time
 		};
 
 		Add(telemetry);
@@ -353,14 +362,18 @@ public sealed class TelemetryTracker
 
 		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyType.InProc : DependencyType.InProc + " | " + typeName;
 
-		var telemetry = new DependencyTelemetry(Operation, time, id, name)
+		var telemetry = new DependencyTelemetry
 		{
 			Duration = duration,
+			Id = id,
 			Measurements = measurements,
+			Name = name,
+			Operation = Operation,
 			Properties = properties,
 			Success = success,
 			Tags = tags,
-			Type = type
+			Type = type,
+			Time = time
 		};
 
 		Add(telemetry);
@@ -386,11 +399,14 @@ public sealed class TelemetryTracker
 	{
 		var time = DateTime.UtcNow;
 
-		var telemetry = new EventTelemetry(Operation, time, name)
+		var telemetry = new EventTelemetry
 		{
 			Measurements = measurements,
+			Name = name,
+			Operation = Operation,
 			Properties = properties,
-			Tags = tags
+			Tags = tags,
+			Time = time
 		};
 
 		Add(telemetry);
@@ -418,12 +434,15 @@ public sealed class TelemetryTracker
 	{
 		var time = DateTime.UtcNow;
 
-		var telemetry = new ExceptionTelemetry(Operation, time, exception)
+		var telemetry = new ExceptionTelemetry
 		{
+			Exception = exception,
 			Measurements = measurements,
+			Operation = Operation,
 			Properties = properties,
 			SeverityLevel = severityLevel,
-			Tags = tags
+			Tags = tags,
+			Time = time
 		};
 
 		Add(telemetry);
@@ -454,10 +473,16 @@ public sealed class TelemetryTracker
 	{
 		var time = DateTime.UtcNow;
 
-		var telemetry = new MetricTelemetry(Operation, time, @namespace, name, value, valueAggregation)
+		var telemetry = new MetricTelemetry
 		{
+			Namespace = @namespace,
+			Name = name,
+			Operation = Operation,
 			Properties = properties,
-			Tags = tags
+			Tags = tags,
+			Time = time,
+			Value = value,
+			ValueAggregation = valueAggregation
 		};
 
 		Add(telemetry);
@@ -550,14 +575,19 @@ public sealed class TelemetryTracker
 		// replace operation with in-proc dependency as parent id 
 		Operation = Operation.CloneWithNewParentId(previousParentId);
 
-		var telemetry = new RequestTelemetry(Operation, time, id, url, responseCode)
+		var telemetry = new RequestTelemetry
 		{
 			Duration = duration,
+			Id = id,
 			Measurements = measurements,
 			Name = name,
+			Operation = Operation,
 			Properties = properties,
+			ResponseCode = responseCode,
 			Success = success,
-			Tags = tags
+			Tags = tags,
+			Time = time,
+			Url = url
 		};
 
 		Add(telemetry);
@@ -584,10 +614,14 @@ public sealed class TelemetryTracker
 	{
 		var time = DateTime.UtcNow;
 
-		var telemetry = new TraceTelemetry(Operation, time, message, severityLevel)
+		var telemetry = new TraceTelemetry
 		{
+			Message = message,
+			Operation = Operation,
 			Properties = properties,
-			Tags = tags
+			SeverityLevel = severityLevel,
+			Tags = tags,
+			Time = time
 		};
 
 		Add(telemetry);

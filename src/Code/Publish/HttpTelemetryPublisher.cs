@@ -189,15 +189,15 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 #endif
 		// create result
 		var result = new HttpTelemetryPublishResult
-		(
-			telemetryList.Count,
-			httpRequestTimer.Elapsed,
-			response.IsSuccessStatusCode,
-			httpRequestTime,
-			ingestionEndpoint,
-			response.StatusCode,
-			responseContentAsString
-		);
+		{
+			Count = telemetryList.Count,
+			Duration = httpRequestTimer.Elapsed,
+			Response = responseContentAsString,
+			StatusCode = response.StatusCode,
+			Success = response.IsSuccessStatusCode,
+			Time = httpRequestTime,
+			Url = ingestionEndpoint
+		};
 
 		return result;
 	}

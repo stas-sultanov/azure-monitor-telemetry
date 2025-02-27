@@ -24,7 +24,9 @@
 		<When Condition=" '$(TargetFramework)' != 'net462' ">
 			<ItemGroup>
 				<!--Remove file if target frame work is not .NET 4.6.2-->
+				<Compile Remove="NET462\CompilerFeatureRequiredAttribute.cs" />
 				<Compile Remove="NET462\IsExternalInit.cs" />
+				<Compile Remove="NET462\RequiredMemberAttribute.cs" />
 			</ItemGroup>
 		</When>
 	</Choose>

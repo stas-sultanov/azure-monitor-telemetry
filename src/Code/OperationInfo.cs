@@ -15,7 +15,7 @@ public sealed class OperationInfo
 	/// <summary>
 	/// The unique identifier.
 	/// </summary>
-	public String? Id { get; }
+	public required String Id { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the trace has occurred.

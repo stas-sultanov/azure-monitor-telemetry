@@ -8,14 +8,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 /// <summary>
-/// Reserved to be used by the compiler for tracking metadata.
+/// Specifies that a type has required members or that a member is required.
 /// </summary>
 /// <remarks>
-/// This metadata class is required to use property init feature in .NET 4.6.2
+/// Required to use required feature in .NET 4.6.2
 /// </remarks>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 [DebuggerNonUserCode]
 [EditorBrowsable(EditorBrowsableState.Never)]
 [ExcludeFromCodeCoverage]
-internal static class IsExternalInit
+internal sealed class RequiredMemberAttribute : Attribute
 {
 }

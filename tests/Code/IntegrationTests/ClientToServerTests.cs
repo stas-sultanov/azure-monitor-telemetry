@@ -110,7 +110,11 @@ public sealed class ClientToServerTests : AzureIntegrationTestsBase
 	[TestMethod]
 	public async Task FromPageViewToRequestTo()
 	{
-		ClientTelemetryTracker.Operation = new TelemetryOperation(GetOperationId(), $"PageView #{DateTime.UtcNow:yyMMddHHmm}");
+		ClientTelemetryTracker.Operation = new TelemetryOperation
+		{
+			Id = GetOperationId(),
+			Name = $"PageView #{DateTime.UtcNow:yyMMddHHmm}"
+		};
 
 		ClientTelemetryTracker.OperationBegin(GetTelemetryId, out var previousParentId, out var pageViewStartTime, out var pageViewId);
 
@@ -130,9 +134,13 @@ public sealed class ClientToServerTests : AzureIntegrationTestsBase
 		ClientTelemetryTracker.OperationEnd(previousParentId, pageViewStartTime, out var pageViewDuration);
 
 		// track page view
-		var pageView = new PageViewTelemetry(ClientTelemetryTracker.Operation, pageViewStartTime, pageViewId, "Main")
+		var pageView = new PageViewTelemetry
 		{
 			Duration = pageViewDuration,
+			Id = pageViewId,
+			Name = "Main",
+			Operation = ClientTelemetryTracker.Operation,
+			Time = pageViewStartTime,
 			Url = new Uri("https://gostas.dev")
 		};
 
@@ -173,10 +181,15 @@ public sealed class ClientToServerTests : AzureIntegrationTestsBase
 
 		ServerTelemetryTracker.OperationEnd(previousParentId, serverRequestTime, out var serverDuration);
 
-		var request = new RequestTelemetry(ServerTelemetryTracker.Operation, serverRequestTime, serverRequestId, new Uri("https://gostas.dev/int.js"), "OK")
+		var request = new RequestTelemetry
 		{
 			Duration = serverDuration,
-			Success = true
+			Id = serverRequestId,
+			Operation = ServerTelemetryTracker.Operation,
+			ResponseCode = "OK",
+			Success = true,
+			Time = serverRequestTime,
+			Url = new Uri("https://gostas.dev/int.js")
 		};
 
 		// simulate Request End

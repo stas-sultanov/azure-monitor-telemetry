@@ -9,20 +9,7 @@ namespace Azure.Monitor.Telemetry;
 /// <remarks>
 /// Every request execution is identified by a unique <see cref="Id"/> and <see cref="Url"/> that contain all the execution parameters.
 /// </remarks>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the request was initiated.</param>
-/// <param name="id">The unique identifier.</param>
-/// <param name="url">The request url.</param>
-/// <param name="responseCode">The result of an operation execution.</param>
-public sealed class RequestTelemetry
-(
-	TelemetryOperation operation,
-	DateTime time,
-	String id,
-	Uri url,
-	String responseCode
-)
-	: Telemetry
+public sealed class RequestTelemetry : Telemetry
 {
 	#region Properties
 
@@ -34,7 +21,7 @@ public sealed class RequestTelemetry
 	/// <summary>
 	/// The unique identifier.
 	/// </summary>
-	public String Id { get; } = id;
+	public required String Id { get; init; }
 
 	/// <summary>
 	/// A read-only list of measurements.
@@ -51,7 +38,7 @@ public sealed class RequestTelemetry
 	public String? Name { get; init; }
 
 	/// <inheritdoc/>
-	public TelemetryOperation Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
@@ -62,7 +49,7 @@ public sealed class RequestTelemetry
 	/// It might be an HRESULT value or an exception type for other request types.
 	/// </summary>
 	/// <remarks>Maximum length: 1024 characters.</remarks>
-	public String ResponseCode { get; } = responseCode;
+	public required String ResponseCode { get; init; }
 
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.
@@ -75,13 +62,13 @@ public sealed class RequestTelemetry
 	/// <summary>
 	/// The UTC timestamp when the request was initiated.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	/// <summary>
 	/// The request URL.
 	/// </summary>
 	/// <remarks>Maximum length: 2048 characters.</remarks>
-	public Uri Url { get; } = url;
+	public required Uri Url { get; init; }
 
 	#endregion
 }

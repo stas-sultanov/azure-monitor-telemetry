@@ -36,15 +36,15 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 		Buffer.AddRange(telemetryList);
 
 		var publishResult = (TelemetryPublishResult) new HttpTelemetryPublishResult
-		(
-			telemetryList.Count,
-			DateTime.UtcNow.Subtract(time),
-			true,
-			time,
-			MockValidIngestEndpointUri,
-			HttpStatusCode.OK,
-			"OK"
-		);
+		{
+			Count = telemetryList.Count,
+			Duration = DateTime.UtcNow.Subtract(time),
+			Response = "OK",
+			StatusCode = HttpStatusCode.OK,
+			Success = true,
+			Time = time,
+			Url = MockValidIngestEndpointUri
+		};
 
 		var result = Task.FromResult(publishResult);
 

@@ -6,32 +6,19 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of an availability test.
 /// </summary>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the test was initiated.</param>
-/// <param name="id">The unique identifier.</param>
-/// <param name="name">The name of the telemetry instance.</param>
-/// <param name="message">The message associated with the telemetry instance.</param>
-public sealed class AvailabilityTelemetry
-(
-	TelemetryOperation operation,
-	DateTime time,
-	String id,
-	String name,
-	String message
-)
-	: Telemetry
+public sealed class AvailabilityTelemetry : Telemetry
 {
 	#region Properties
 
 	/// <summary>
 	/// The time taken to complete the test.
 	/// </summary>
-	public TimeSpan Duration { get; init; }
+	public required TimeSpan Duration { get; init; }
 
 	/// <summary>
 	/// The unique identifier.
 	/// </summary>
-	public String Id { get; } = id;
+	public required String Id { get; init; }
 
 	/// <summary>
 	/// A read-only list of measurements.
@@ -45,15 +32,15 @@ public sealed class AvailabilityTelemetry
 	/// <summary>
 	/// The message.
 	/// </summary>
-	public String Message { get; } = message;
+	public required String Message { get; init; }
 
 	/// <summary>
 	/// The name.
 	/// </summary>
-	public String Name { get; } = name;
+	public required String Name { get; init; }
 
 	/// <inheritdoc/>
-	public TelemetryOperation Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
@@ -66,7 +53,7 @@ public sealed class AvailabilityTelemetry
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.
 	/// </summary>
-	public Boolean Success { get; init; }
+	public required Boolean Success { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
@@ -74,7 +61,7 @@ public sealed class AvailabilityTelemetry
 	/// <summary>
 	/// The UTC timestamp when the test was initiated.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	#endregion
 }

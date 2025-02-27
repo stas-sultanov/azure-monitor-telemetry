@@ -26,7 +26,12 @@ public sealed class HttpTelemetryPublishErrorTests
 		var statusCode = HttpStatusCode.BadRequest;
 
 		// act
-		var error = new HttpTelemetryPublishError(index, message, statusCode);
+		var error = new HttpTelemetryPublishError
+		{
+			Index = index,
+			Message = message,
+			StatusCode = statusCode
+		};
 
 		// assert
 		Assert.AreEqual(index, error.Index, nameof(HttpTelemetryPublishError.Index));

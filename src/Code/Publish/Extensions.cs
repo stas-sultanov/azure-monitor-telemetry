@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using Azure.Monitor.Telemetry;
 
 /// <summary>
-/// Provides extension methods.
+/// Provides extension methods for the <see cref="TelemetryTracker"/> class.
 /// </summary>
 public static class Extensions
 {
@@ -35,25 +35,27 @@ public static class Extensions
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		List<KeyValuePair<String, Double>> adjustedMeasurements = measurements == null
-			? new()
-			: new(measurements);
+		var countMeasurement = new KeyValuePair<String, Double>(nameof(HttpTelemetryPublishResult.Count), publishResult.Count);
 
-		adjustedMeasurements.Add(new KeyValuePair<String, Double>(nameof(HttpTelemetryPublishResult.Count), publishResult.Count));
+		KeyValuePair<String, Double>[] measurementsWithCount = measurements == null ? [countMeasurement] : [countMeasurement, ..measurements];
 
 		var name = String.Concat("POST ", publishResult.Url.AbsolutePath);
 
-		var telemetry = new DependencyTelemetry(telemetryTracker.Operation, publishResult.Time, id, name)
+		var telemetry = new DependencyTelemetry
 		{
 			Data = publishResult.Url.ToString(),
 			Duration = publishResult.Duration,
-			Measurements = [.. adjustedMeasurements],
+			Id = id,
+			Measurements = measurementsWithCount,
+			Name = name,
+			Operation = telemetryTracker.Operation,
 			Properties = properties,
 			ResultCode = publishResult.StatusCode.ToString(),
 			Success = publishResult.Success,
 			Target = publishResult.Url.Host,
 			Tags = tags,
-			Type = DependencyType.AzureMonitor
+			Type = DependencyType.AzureMonitor,
+			Time = publishResult.Time
 		};
 
 		telemetryTracker.Add(telemetry);

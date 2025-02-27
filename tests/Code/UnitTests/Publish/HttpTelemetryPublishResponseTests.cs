@@ -23,14 +23,29 @@ public sealed class HttpTelemetryPublishResponseTests
 		// arrange
 		var errors = new[]
 		{
-			new HttpTelemetryPublishError(0, "Error message 1", HttpStatusCode.BadRequest),
-			new HttpTelemetryPublishError(1, "Error message 2", HttpStatusCode.InternalServerError)
+			new HttpTelemetryPublishError
+			{
+				Index = 0,
+				Message = "Error message 1",
+				StatusCode = HttpStatusCode.BadRequest
+			},
+			new HttpTelemetryPublishError
+			{
+				Index = 0,
+				Message = "Error message 2",
+				StatusCode = HttpStatusCode.InternalServerError
+			}
 		};
 		var itemsAccepted = (UInt16)10;
 		var itemsReceived = (UInt16)15;
 
 		// act
-		var response = new HttpTelemetryPublishResponse(errors, itemsAccepted, itemsReceived);
+		var response = new HttpTelemetryPublishResponse
+		{
+			Errors = errors,
+			ItemsAccepted = itemsAccepted,
+			ItemsReceived = itemsReceived
+		};
 
 		// assert
 		CollectionAssert.AreEqual(errors, response.Errors, nameof(HttpTelemetryPublishResponse.Errors));

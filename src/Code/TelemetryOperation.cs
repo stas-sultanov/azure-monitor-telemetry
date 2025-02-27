@@ -3,23 +3,15 @@
 
 namespace Azure.Monitor.Telemetry;
 
+using System.Runtime.CompilerServices;
+
 /// <summary>
 /// Represents a distributed operation containing information about operation hierarchy and synthetic sources.
 /// </summary>
 /// <remarks>
 /// This type is used to track and correlate telemetry data across different operations and their relationships.
 /// </remarks>
-/// <param name="id">The identifier of the topmost operation.</param>
-/// <param name="name">The name of the topmost operation.</param>
-/// <param name="parentId">The identifier of the parent operation.</param>
-/// <param name="syntheticSource">The synthetic source.</param>
 public sealed class TelemetryOperation
-(
-	String? id = null,
-	String? name = null,
-	String? parentId = null,
-	String? syntheticSource = null
-)
 {
 	#region Static
 
@@ -33,16 +25,16 @@ public sealed class TelemetryOperation
 	#region Properties
 
 	/// <summary>The identifier of the topmost operation.</summary>
-	public String? Id { get; } = id;
+	public String? Id { get; init; }
 
 	/// <summary>The name of the topmost operation.</summary>
-	public String? Name { get; } = name;
+	public String? Name { get; init; }
 
 	/// <summary>The identifier of the parent operation.</summary>
-	public String? ParentId { get; } = parentId;
+	public String? ParentId { get; init; }
 
 	/// <summary>The synthetic source.</summary>
-	public String? SyntheticSource { get; } = syntheticSource;
+	public String? SyntheticSource { get; init; }
 
 	#endregion
 
@@ -53,9 +45,18 @@ public sealed class TelemetryOperation
 	/// </summary>
 	/// <param name="parentId">The new parent identifier to be set.</param>
 	/// <returns>A new instance of <see cref="TelemetryOperation"/> with the specified parent identifier.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public TelemetryOperation CloneWithNewParentId(String? parentId)
 	{
-		return new TelemetryOperation(Id, Name, parentId, SyntheticSource);
+		var result = new TelemetryOperation
+		{
+			Id = Id,
+			Name = Name,
+			ParentId = parentId,
+			SyntheticSource = SyntheticSource
+		};
+
+		return result;
 	}
 
 	/// <summary>
@@ -64,15 +65,16 @@ public sealed class TelemetryOperation
 	/// <param name="parentId">The new parent identifier to be set.</param>
 	/// <param name="previousParentId">Outputs the previous parent identifier.</param>
 	/// <returns>A new instance of <see cref="TelemetryOperation"/> with the specified parent identifier.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public TelemetryOperation CloneWithNewParentId
 	(
 		String? parentId,
 		out String? previousParentId
 	)
 	{
-		var result = new TelemetryOperation(Id, Name, parentId, SyntheticSource);
-
 		previousParentId = ParentId;
+
+		var result = CloneWithNewParentId(parentId);
 
 		return result;
 	}

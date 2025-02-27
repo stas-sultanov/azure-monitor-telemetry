@@ -24,7 +24,11 @@ public sealed class TelemetryTrackerTests
 	#region Fields
 
 	private readonly KeyValuePair<String, Double> [] measurements = [new("m", 0)];
-	private readonly TelemetryOperation operation = new(new Guid().ToString("N"), "Test");
+	private readonly TelemetryOperation operation = new()
+	{
+		Id = new Guid().ToString("N"),
+		Name = "Test"
+	};
 	private readonly KeyValuePair<String, String> [] properties = [new("a", "b")];
 	private readonly KeyValuePair<String, String> [] tags = [new(TelemetryTagKey.CloudRole, "role")];
 
@@ -37,7 +41,7 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var operationId = Guid.NewGuid().ToString("N");
-		var operation = new TelemetryOperation(operationId);
+		var operation = new TelemetryOperation { Id = operationId };
 		var tags = new KeyValuePair<String, String> []
 		{
 			new(TelemetryTagKey.CloudRole, "tester")
@@ -80,13 +84,19 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var operationId = Guid.NewGuid().ToString("N");
-		var operation = new TelemetryOperation(operationId);
+		var operation = new TelemetryOperation { Id = operationId };
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
 		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
 		{
 			Operation = operation
 		};
-		var telemetry = new TraceTelemetry(operation, DateTime.UtcNow, "test", SeverityLevel.Information);
+		var telemetry = new TraceTelemetry
+		{
+			Message = "test",
+			Operation = operation,
+			SeverityLevel = SeverityLevel.Information,
+			Time = DateTime.UtcNow
+		};
 
 		// act
 		telemetryTracker.Add(telemetry);
