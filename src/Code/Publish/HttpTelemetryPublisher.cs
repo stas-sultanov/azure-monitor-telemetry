@@ -46,11 +46,6 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 
 	private static readonly MediaTypeHeaderValue contentTypeHeaderValue = MediaTypeHeaderValue.Parse(@"application/x-json-stream");
 
-	/// <summary>
-	/// The <see cref="AuthorizationScope"/> as array.
-	/// </summary>
-	public static String[] AuthorizationScopes { get; } = [AuthorizationScope];
-
 	#endregion
 
 	#region Fields
@@ -152,7 +147,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			if (authorizationHeaderValue == null || DateTimeOffset.UtcNow > authorizationTokenExpiresOn)
 			{
 				// get token
-				var token = await getAccessToken(cancellationToken);
+				var token = await getAccessToken(cancellationToken).ConfigureAwait(false);
 
 				authorizationTokenExpiresOn = token.ExpiresOn;
 
@@ -176,7 +171,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		var httpRequestTimer = System.Diagnostics.Stopwatch.StartNew();
 
 		// execute http request to the ingestion endpoint
-		using var response = await httpClient.SendAsync(request, cancellationToken);
+		using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
 		// stop timer
 		httpRequestTimer.Stop();
@@ -185,7 +180,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 #if NET462
 		var responseContentAsString = await response.Content.ReadAsStringAsync();
 #else
-		var responseContentAsString = await response.Content.ReadAsStringAsync(cancellationToken);
+		var responseContentAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #endif
 		// create result
 		var result = new HttpTelemetryPublishResult

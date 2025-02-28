@@ -35,8 +35,7 @@ internal sealed class TelemetryFactory
 		Operation = new TelemetryOperation
 		{
 			Id = Guid.NewGuid().ToString("N"),
-			Name = "Test #" + DateTime.Now.ToString("yyMMddhhmm"),
-			SyntheticSource = "TestFramework"
+			Name = "Test #" + DateTime.Now.ToString("yyMMddhhmm")
 		};
 
 		Properties = [new("key", "value")];

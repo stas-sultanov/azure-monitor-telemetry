@@ -406,11 +406,6 @@ public class JsonTelemetrySerializerTests
 			{
 				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationParentId, telemetry.Operation.ParentId));
 			}
-
-			if (!String.IsNullOrWhiteSpace(telemetry.Operation.SyntheticSource))
-			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationSyntheticSource, telemetry.Operation.SyntheticSource));
-			}
 		}
 
 		tags.AddRange(trackerTags);

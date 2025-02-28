@@ -23,7 +23,7 @@ public sealed class EventTelemetry : Telemetry
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; } = null;
+	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
 	/// The name.
@@ -35,10 +35,10 @@ public sealed class EventTelemetry : Telemetry
 	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
-	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; } = null;
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <inheritdoc/>
-	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; } = null;
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the event has occurred.

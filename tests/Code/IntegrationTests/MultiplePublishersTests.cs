@@ -18,7 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
-public sealed class MultiplePublishersTests : AzureIntegrationTestsBase
+public sealed class MultiplePublishersTests : IntegrationTestsBase
 {
 	private const String QueueName = "commands";
 
@@ -116,11 +116,11 @@ public sealed class MultiplePublishersTests : AzureIntegrationTestsBase
 
 	private async Task SendMessageTrackedAsync(String message, CancellationToken cancellationToken)
 	{
-		TelemetryTracker.TrackDependencyInProcBegin(GetOperationId, out var previousParentId, out var time, out var id);
+		var operationInfo = TelemetryTracker.TrackOperationBegin(GetOperationId);
 
 		_ = await queueClient.SendMessageAsync(message, cancellationToken);
 
-		TelemetryTracker.TrackDependencyInProcEnd(previousParentId, time, id, "Storage", true, DateTime.UtcNow - time);
+		TelemetryTracker.TrackDependencyInProcEnd(operationInfo, "Storage", true);
 	}
 
 	#endregion

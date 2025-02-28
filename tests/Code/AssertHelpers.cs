@@ -45,8 +45,6 @@ internal static class AssertHelpers
 		Assert.AreEqual(expected.Name, actual.Name, nameof(TelemetryOperation.Name));
 
 		Assert.AreEqual(expected.ParentId, actual.ParentId, nameof(TelemetryOperation.ParentId));
-
-		Assert.AreEqual(expected.SyntheticSource, actual.SyntheticSource, nameof(TelemetryOperation.SyntheticSource));
 	}
 
 	#endregion
@@ -61,8 +59,7 @@ internal static class AssertHelpers
 		TelemetryOperation actual,
 		String id,
 		String name,
-		String parentId,
-		String syntheticSource
+		String parentId
 	)
 	{
 		Assert.AreEqual(id, actual.Id, nameof(TelemetryOperation.Id));
@@ -70,8 +67,6 @@ internal static class AssertHelpers
 		Assert.AreEqual(name, actual.Name, nameof(TelemetryOperation.Name));
 
 		Assert.AreEqual(parentId, actual.ParentId, nameof(TelemetryOperation.ParentId));
-
-		Assert.AreEqual(syntheticSource, actual.SyntheticSource, nameof(TelemetryOperation.SyntheticSource));
 	}
 
 	/// <summary>

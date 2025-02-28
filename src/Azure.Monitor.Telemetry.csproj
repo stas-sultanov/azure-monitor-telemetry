@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<AssemblyName>Azure.Monitor.Telemetry</AssemblyName>
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>

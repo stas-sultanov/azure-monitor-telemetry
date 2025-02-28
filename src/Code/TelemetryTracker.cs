@@ -3,10 +3,14 @@
 
 namespace Azure.Monitor.Telemetry;
 
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+
+using Azure.Monitor.Telemetry.Code;
 
 /// <summary>
 /// Providing functionality to collect and publish telemetry items.
@@ -127,29 +131,113 @@ public sealed class TelemetryTracker
 
 	#region Methods: Operation
 
-	/// <summary>
-	/// Begins a nested operation.
-	/// </summary>
-	/// <remarks>
-	/// Replaces the <see cref="Operation"/> with a new object with parentId obtained with <paramref name="getId"/> call.
-	/// In this way all subsequent telemetry will refer to the request as parent operation.
-	/// </remarks>
-	/// <param name="getId">A function that returns the identifier for the request.</param>
-	/// <param name="previousParentId">The previous Operation parent identifier.</param>
-	/// <param name="id">The generated identifier of the request.</param>
+	//[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	//public OperationStartInfo TrackOperationBegin
+	//(
+	//	DateTime time,
+	//	Int64 timestamp,
+	//	String id,
+	//	String operationId,
+	//	String? operationName = null,
+	//	String? syntheticSource = null
+	//)
+	//{
+	//	// get current operation
+	//	var originalOperation = Operation;
+
+	//	// replace operation
+	//	Operation = new TelemetryOperation
+	//	{
+	//		Id = operationId,
+	//		Name = operationName,
+	//		ParentId = id,
+	//		SyntheticSource = syntheticSource,
+	//	};
+
+	//	var result = new OperationStartInfo
+	//	{
+	//		Id = id,
+	//		Operation = originalOperation,
+	//		Time = time,
+	//		Timestamp = timestamp
+	//	};
+
+	//	return result;
+	//}
+
+	//[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	//public OperationStartInfo TrackOperationBegin
+	//(
+	//	Func<String> getId,
+	//	String operationId,
+	//	String? operationName = null,
+	//	String? syntheticSource = null
+	//)
+	//{
+	//	// get time
+	//	var time = DateTime.UtcNow;
+
+	//	// get timestamp to calculate duration on end
+	//	var timestamp = Stopwatch.GetTimestamp();
+
+	//	// get id
+	//	var id = getId();
+
+	//	// call overload
+	//	var result = TrackOperationBegin(time, timestamp, id, operationId, operationName, syntheticSource);
+
+	//	return result;
+	//}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void OperationBegin
+	public OperationStartInfo TrackOperationBegin
 	(
-		Func<String> getId,
-		out String? previousParentId,
-		out String id
+		DateTime time,
+		Int64 timestamp,
+		String id
 	)
 	{
-		// get request id
-		id = getId();
+		// get current operation
+		var originalOperation = Operation;
 
-		// replace operation parent id with request id
-		Operation = Operation.CloneWithNewParentId(id, out previousParentId);
+		// replace operation
+		Operation = new TelemetryOperation
+		{
+			Id = originalOperation.Id,
+			Name = originalOperation.Name,
+			ParentId = id
+		};
+
+		var result = new OperationStartInfo
+		{
+			Id = id,
+			Operation = originalOperation,
+			Time = time,
+			Timestamp = timestamp
+		};
+
+		return result;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public OperationStartInfo TrackOperationBegin
+	(
+		Func<String> getId
+	)
+	{
+		// get time
+		var time = DateTime.UtcNow;
+
+		// get timestamp to calculate duration on end
+		var timestamp = Stopwatch.GetTimestamp();
+
+		// get id
+		var id = getId();
+
+		// call overload
+		var result = TrackOperationBegin(time, timestamp, id);
+
+		return result;
 	}
 
 	/// <summary>
@@ -297,89 +385,6 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Begins tracking of an InProc dependency execution.
-	/// </summary>
-	/// <remarks>
-	/// Replaces the <see cref="Operation"/> with a new object with parentId obtained with <paramref name="getId"/> call.
-	/// In this way all subsequent telemetry will refer to the InProc dependency execution as parent operation.
-	/// </remarks>
-	/// <param name="getId">A function that returns the identifier for in-process dependency.</param>
-	/// <param name="previousParentId">The previous Operation parent identifier.</param>
-	/// <param name="time">The timestamp when the tracking hes begun.</param>
-	/// <param name="id">The generated identifier of in-process dependency.</param>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void TrackDependencyInProcBegin
-	(
-		Func<String> getId,
-		out String? previousParentId,
-		out DateTime time,
-		out String id
-	)
-	{
-		// set time
-		time = DateTime.UtcNow;
-
-		// get in-proc dependency id
-		id = getId();
-
-		// replace operation with in-proc dependency as parent id 
-		Operation = Operation.CloneWithNewParentId(id, out previousParentId);
-	}
-
-	/// <summary>
-	/// Ends tracking of an InProc dependency.
-	/// </summary>
-	/// <remarks>
-	/// Reverts back <see cref="Operation"/> as it was before calling <see cref="TrackDependencyInProcBegin(Func{String}, out String?, out DateTime, out String)"/>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
-	/// </remarks>
-	/// <param name="time">The UTC timestamp when the dependency call was initiated.</param>
-	/// <param name="id">The unique identifier.</param>
-	/// <param name="name">The name of the command initiated the dependency call.</param>
-	/// <param name="success">A value indicating whether the operation was successful or unsuccessful.</param>
-	/// <param name="duration">The time taken to complete the dependency call.</param>
-	/// <param name="typeName">The type name of the dependency. Is optional.</param>
-	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
-	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
-	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void TrackDependencyInProcEnd
-	(
-		String? previousParentId,
-		DateTime time,
-		String id,
-		String name,
-		Boolean success,
-		TimeSpan duration,
-		String? typeName = null,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
-	)
-	{
-		// replace operation with in-proc dependency as parent id 
-		Operation = Operation.CloneWithNewParentId(previousParentId);
-
-		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyType.InProc : DependencyType.InProc + " | " + typeName;
-
-		var telemetry = new DependencyTelemetry
-		{
-			Duration = duration,
-			Id = id,
-			Measurements = measurements,
-			Name = name,
-			Operation = Operation,
-			Properties = properties,
-			Success = success,
-			Tags = tags,
-			Type = type,
-			Time = time
-		};
-
-		Add(telemetry);
-	}
-
-	/// <summary>
 	/// Tracks an event.
 	/// </summary>
 	/// <remarks>
@@ -483,6 +488,39 @@ public sealed class TelemetryTracker
 			Time = time,
 			Value = value,
 			ValueAggregation = valueAggregation
+		};
+
+		Add(telemetry);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackPageViewEnd
+	(
+		OperationStartInfo operationInfo,
+		String name,
+		Uri url,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		// replace operation with previous operation
+		Operation = operationInfo.Operation;
+
+		// var duration = new TimeSpan( (Stopwatch.GetTimestamp() - operationInfo.Timestamp) * Stopwatch.Frequency);
+		var duration = DateTime.UtcNow - operationInfo.Time;
+
+		var telemetry = new PageViewTelemetry
+		{
+			Duration = duration,
+			Id = operationInfo.Id,
+			Measurements = measurements,
+			Name = name,
+			Operation = operationInfo.Operation,
+			Properties = properties,
+			Tags = tags,
+			Time = operationInfo.Time,
+			Url = url
 		};
 
 		Add(telemetry);
@@ -593,6 +631,43 @@ public sealed class TelemetryTracker
 		Add(telemetry);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackRequestEnd
+	(
+		OperationStartInfo operationInfo,
+		Uri url,
+		String responseCode,
+		Boolean success,
+		String? name = null,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		// replace operation with previous operation
+		Operation = operationInfo.Operation;
+
+		// var duration = new TimeSpan( (Stopwatch.GetTimestamp() - operationInfo.Timestamp) * Stopwatch.Frequency);
+		var duration = DateTime.UtcNow - operationInfo.Time;
+
+		var telemetry = new RequestTelemetry
+		{
+			Duration = duration,
+			Id = operationInfo.Id,
+			Measurements = measurements,
+			Name = name,
+			Operation = Operation,
+			Properties = properties,
+			ResponseCode = responseCode,
+			Success = success,
+			Tags = tags,
+			Time = operationInfo.Time,
+			Url = url
+		};
+
+		Add(telemetry);
+	}
+
 	/// <summary>
 	/// Tracks a trace.
 	/// </summary>
@@ -628,4 +703,136 @@ public sealed class TelemetryTracker
 	}
 
 	#endregion
+
+	public void TrackAvailabilityEnd
+	(
+		OperationStartInfo operationInfo,
+		String name,
+		String message,
+		Boolean success,
+		String? runLocation = null,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		// replace operation with previous operation
+		Operation = operationInfo.Operation;
+
+		var duration = TimeSpan.FromMilliseconds( (Int32) (DateTime.UtcNow - operationInfo.Time).TotalMilliseconds );
+
+		var propertyValue = new KeyValuePair<String, String>("FullTestResultAvailable", "false");
+
+		IReadOnlyList<KeyValuePair<String, String>> propertiesAdjusted = properties == null ? [propertyValue] : [propertyValue, ..properties];
+
+		var telemetry = new AvailabilityTelemetry
+		{
+			Duration = duration,
+			Id = operationInfo.Id,
+			Measurements = measurements,
+			Message = message,
+			Name = name,
+			Operation = Operation,
+			Properties = propertiesAdjusted,
+			RunLocation = runLocation,
+			Success = success,
+			Tags = tags,
+			Time = operationInfo.Time
+		};
+
+		Add(telemetry);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackDependencyEnd
+	(
+		OperationStartInfo operationInfo,
+		HttpMethod httpMethod,
+		Uri uri,
+		HttpStatusCode statusCode,
+		Boolean success,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		// replace operation with previous operation
+		Operation = operationInfo.Operation;
+
+		// var duration = new TimeSpan( (Stopwatch.GetTimestamp() - operationInfo.Timestamp) * Stopwatch.Frequency);
+		var duration = DateTime.UtcNow - operationInfo.Time;
+
+		var name = String.Concat(httpMethod.Method, " ", uri.AbsolutePath);
+
+		var telemetry = new DependencyTelemetry
+		{
+			Data = uri.ToString(),
+			Duration = duration,
+			Id = operationInfo.Id,
+			Measurements = measurements,
+			Name = name,
+			Operation = Operation,
+			Properties = properties,
+			ResultCode = statusCode.ToString(),
+			Success = success,
+			Tags = tags,
+			Target = uri.Host,
+			Type = DependencyType.DetectTypeFromHttp(uri),
+			Time = operationInfo.Time
+		};
+
+		Add(telemetry);
+	}
+
+	/// <summary>
+	/// Ends tracking of an InProc dependency.
+	/// </summary>
+	/// <remarks>
+	/// Reverts back <see cref="Operation"/> as it was before calling <see cref="TrackDependencyInProcBegin(Func{String}, out String?, out DateTime, out String)"/>
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the dependency call was initiated.</param>
+	/// <param name="id">The unique identifier.</param>
+	/// <param name="name">The name of the command initiated the dependency call.</param>
+	/// <param name="success">A value indicating whether the operation was successful or unsuccessful.</param>
+	/// <param name="duration">The time taken to complete the dependency call.</param>
+	/// <param name="typeName">The type name of the dependency. Is optional.</param>
+	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackDependencyInProcEnd
+	(
+		OperationStartInfo operationInfo,
+		String name,
+		Boolean success,
+		String? typeName = null,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		// replace operation with previous operation
+		Operation = operationInfo.Operation;
+
+		var duration = DateTime.UtcNow - operationInfo.Time;
+
+		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyType.InProc : DependencyType.InProc + " | " + typeName;
+
+		var telemetry = new DependencyTelemetry
+		{
+			Duration = duration,
+			Id = operationInfo.Id,
+			Measurements = measurements,
+			Name = name,
+			Operation = Operation,
+			Properties = properties,
+			Success = success,
+			Tags = tags,
+			Type = type,
+			Time = operationInfo.Time
+		};
+
+		Add(telemetry);
+	}
 }

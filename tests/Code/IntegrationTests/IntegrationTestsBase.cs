@@ -16,7 +16,7 @@ using Azure.Monitor.Telemetry.Publish;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-public abstract class AzureIntegrationTestsBase : IDisposable
+public abstract class IntegrationTestsBase : IDisposable
 {
 	#region Fields
 
@@ -25,16 +25,25 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 	};
 
-	private readonly HttpClient httpClient;
+	private readonly HttpClient telemetryPublishHttpClient;
 
 	#endregion
 
 	#region Properties
 
+	/// <summary>
+	/// Test context.
+	/// </summary>
 	protected TestContext TestContext { get; }
 
+	/// <summary>
+	/// Collection of telemetry publishers initialized from the configuration.
+	/// </summary>
 	protected IReadOnlyList<TelemetryPublisher> TelemetryPublishers { get; }
 
+	/// <summary>
+	/// The token credential used to authenticate calls to Azure resources.
+	/// </summary>
 	protected DefaultAzureCredential TokenCredential { get; }
 
 	#endregion
@@ -42,14 +51,14 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 	#region Constructors
 
 	/// <summary>
-	/// Initialize instance.
+	/// Initializes a new instance of the <see cref="IntegrationTestsBase"/> class.
 	/// </summary>
-	/// <param name="testContext">Test context.</param>
-	/// <param name="configKeyPrefixList">The list of configuration key prefixes</param>
-	public AzureIntegrationTestsBase
+	/// <param name="testContext">The test context</param>
+	/// <param name="configList">List of configurations.</param>
+	public IntegrationTestsBase
 	(
 		TestContext testContext,
-		params Tuple<String, Boolean, KeyValuePair<String, String>[]>[] configList
+		params IReadOnlyCollection<Tuple<String, Boolean, KeyValuePair<String, String>[]>> configList
 	)
 	{
 		TestContext = testContext;
@@ -57,11 +66,11 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 		// create token credential
 		TokenCredential = new DefaultAzureCredential();
 
-		var tokenRequestContext = new TokenRequestContext(HttpTelemetryPublisher.AuthorizationScopes);
+		var tokenRequestContext = new TokenRequestContext([HttpTelemetryPublisher.AuthorizationScope]);
 
 		var token = TokenCredential.GetTokenAsync(tokenRequestContext, CancellationToken.None).Result;
 
-		httpClient = new HttpClient();
+		telemetryPublishHttpClient = new HttpClient();
 
 		var telemetryPublishers = new List<TelemetryPublisher>();
 
@@ -81,7 +90,7 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 
 			if (!config.Item2)
 			{
-				publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, tags: publisherTags);
+				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, tags: publisherTags);
 			}
 			else
 			{
@@ -96,7 +105,7 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 					return Task.FromResult(result);
 				}
 
-				publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken, publisherTags);
+				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, getAccessToken, publisherTags);
 			}
 
 			telemetryPublishers.Add(publisher);
@@ -112,7 +121,7 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 	/// <inheritdoc/>
 	public virtual void Dispose()
 	{
-		httpClient.Dispose();
+		telemetryPublishHttpClient.Dispose();
 
 		GC.SuppressFinalize(this);
 	}
@@ -160,8 +169,108 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 
 			Assert.AreEqual(result.Count, response.ItemsReceived, nameof(HttpTelemetryPublishResponse.ItemsReceived));
 
-			Assert.AreEqual(0, response.Errors.Length, nameof(HttpTelemetryPublishResponse.Errors));
+			Assert.AreEqual(0, response.Errors.Count, nameof(HttpTelemetryPublishResponse.Errors));
 		}
+	}
+
+	protected static async Task<String> MakeDependencyCallAsyc
+	(
+		HttpMessageHandler messageHandler,
+		Uri uri,
+		CancellationToken cancellationToken
+	)
+	{
+		using var httpClient = new HttpClient(messageHandler, false);
+
+		using var httpResponse = await httpClient.GetAsync(uri, cancellationToken);
+
+		var result = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
+		return result;
+	}
+
+	#endregion
+
+	#region Methods: Simulate Telemetry
+
+	protected static async Task SimulateAvailabilityAsync
+	(
+		TelemetryTracker telemetryTrakcer,
+		String name,
+		String message,
+		Boolean success,
+		String? runLocation,
+		Func<CancellationToken, Task> subsequent,
+		CancellationToken cancellationToken
+	)
+	{
+		// begin operation
+		var operationInfo = telemetryTrakcer.TrackOperationBegin(GetTelemetryId);
+
+		// execute subsequent
+		await subsequent(cancellationToken);
+
+		// end operation
+		telemetryTrakcer.TrackAvailabilityEnd(operationInfo, name, message, success, runLocation);
+	}
+
+	protected static async Task SimulateDependencyAsync
+	(
+		TelemetryTracker telemetryTrakcer,
+		HttpMethod httpMethod,
+		Uri url,
+		HttpStatusCode statusCode,
+		Func<CancellationToken, Task> subsequent,
+		CancellationToken cancellationToken
+	)
+	{
+		// begin operation
+		var operationInfo = telemetryTrakcer.TrackOperationBegin(GetTelemetryId);
+
+		// execute subsequent
+		await subsequent(cancellationToken);
+
+		// end operation
+		telemetryTrakcer.TrackDependencyEnd(operationInfo, httpMethod, url, statusCode, (Int32) statusCode < 399);
+	}
+
+	protected static async Task SimulatePageViewAsync
+	(
+		TelemetryTracker telemetryTracker,
+		String pageName,
+		Uri pageUrl,
+		Func<CancellationToken, Task> subsequent,
+		CancellationToken cancellationToken
+	)
+	{
+		// begin operation
+		var operationInfo = telemetryTracker.TrackOperationBegin(GetTelemetryId);
+
+		// execute subsequent
+		await subsequent(cancellationToken);
+
+		// end operation
+		telemetryTracker.TrackPageViewEnd(operationInfo, pageName, pageUrl);
+	}
+
+	public static async Task SimulateRequestAsync
+	(
+		TelemetryTracker telemetryTracker,
+		Uri url,
+		String responseCode,
+		Boolean success,
+		Func<CancellationToken, Task> subsequent,
+		CancellationToken cancellationToken
+	)
+	{
+		// begin operation
+		var operationInfo = telemetryTracker.TrackOperationBegin(GetTelemetryId);
+
+		// execute subsequent
+		await subsequent(cancellationToken);
+
+		// end operation
+		telemetryTracker.TrackRequestEnd(operationInfo, url, responseCode, success);
 	}
 
 	#endregion

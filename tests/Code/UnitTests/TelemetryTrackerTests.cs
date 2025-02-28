@@ -191,8 +191,10 @@ public sealed class TelemetryTrackerTests
 
 		// act
 		var expectedParentId = telemetryTracker.Operation.ParentId;
-		telemetryTracker.TrackDependencyInProcBegin(() => expectedId, out var previousParentId, out var time, out var id);
-		telemetryTracker.TrackDependencyInProcEnd(previousParentId, time, id, name, success, duration, typeName, measurements, properties, tags);
+
+		var operationInfo = telemetryTracker.TrackOperationBegin(() => expectedId);
+		telemetryTracker.TrackDependencyInProcEnd(operationInfo, name, success, typeName, measurements, properties, tags);
+
 		var actualParentId = telemetryTracker.Operation.ParentId;
 
 		telemetryTracker.PublishAsync().Wait();

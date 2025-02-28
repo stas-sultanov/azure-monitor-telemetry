@@ -21,8 +21,8 @@ public sealed class HttpTelemetryPublishResponseTests
 	public void Constructor()
 	{
 		// arrange
-		var errors = new[]
-		{
+		IReadOnlyList<HttpTelemetryPublishError> errors =
+		[
 			new HttpTelemetryPublishError
 			{
 				Index = 0,
@@ -35,7 +35,7 @@ public sealed class HttpTelemetryPublishResponseTests
 				Message = "Error message 2",
 				StatusCode = HttpStatusCode.InternalServerError
 			}
-		};
+		];
 		var itemsAccepted = (UInt16)10;
 		var itemsReceived = (UInt16)15;
 
@@ -48,7 +48,7 @@ public sealed class HttpTelemetryPublishResponseTests
 		};
 
 		// assert
-		CollectionAssert.AreEqual(errors, response.Errors, nameof(HttpTelemetryPublishResponse.Errors));
+		Assert.AreEqual(errors, response.Errors, nameof(HttpTelemetryPublishResponse.Errors));
 
 		Assert.AreEqual(itemsAccepted, response.ItemsAccepted, nameof(HttpTelemetryPublishResponse.ItemsAccepted));
 

@@ -33,9 +33,6 @@ public sealed class TelemetryOperation
 	/// <summary>The identifier of the parent operation.</summary>
 	public String? ParentId { get; init; }
 
-	/// <summary>The synthetic source.</summary>
-	public String? SyntheticSource { get; init; }
-
 	#endregion
 
 	#region Methods
@@ -52,8 +49,7 @@ public sealed class TelemetryOperation
 		{
 			Id = Id,
 			Name = Name,
-			ParentId = parentId,
-			SyntheticSource = SyntheticSource
+			ParentId = parentId
 		};
 
 		return result;

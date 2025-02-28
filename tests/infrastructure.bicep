@@ -24,6 +24,7 @@ resource Insights_components_AuthOff 'Microsoft.Insights/components@2020-02-02' 
 	name: '${baseName}off'
 	properties: {
 		Application_Type: 'web'
+		DisableIpMasking: true
 		DisableLocalAuth: false
 		WorkspaceResourceId: OperationalInsights_workspaces_Default.id
 	}
@@ -43,6 +44,7 @@ resource Insights_components_AuthOn 'Microsoft.Insights/components@2020-02-02' =
 	name: '${baseName}on'
 	properties: {
 		Application_Type: 'web'
+		DisableIpMasking: true
 		DisableLocalAuth: true
 		WorkspaceResourceId: OperationalInsights_workspaces_Default.id
 	}

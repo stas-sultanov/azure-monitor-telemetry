@@ -106,7 +106,7 @@ public sealed partial class HttpTelemetryPublisherTests
 
 		static Task<BearerToken> getAccessToken(CancellationToken _)
 		{
-			return Task.FromResult(new BearerToken { ExpiresOn = DateTimeOffset.UtcNow, Value = "token " + HttpTelemetryPublisher.AuthorizationScopes });
+			return Task.FromResult(new BearerToken { ExpiresOn = DateTimeOffset.UtcNow, Value = "token " + HttpTelemetryPublisher.AuthorizationScope });
 		}
 
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken, [new (TelemetryTagKey.SessionId, "test"), new (TelemetryTagKey.InternalAgentVersion, "test") ]);

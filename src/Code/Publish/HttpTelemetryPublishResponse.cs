@@ -13,7 +13,7 @@ public sealed class HttpTelemetryPublishResponse
 	/// <summary>
 	/// The array of errors associated with the HTTP response.
 	/// </summary>
-	public required HttpTelemetryPublishError[] Errors { get; init; }
+	public required IReadOnlyList<HttpTelemetryPublishError> Errors { get; init; }
 
 	/// <summary>
 	/// The number of items that were successfully accepted and processed.

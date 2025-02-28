@@ -11,7 +11,7 @@ using Azure.Monitor.Telemetry.Tests;
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
-public sealed class TelemetryTypesTests : AzureIntegrationTestsBase
+public sealed class TelemetryTypesTests : IntegrationTestsBase
 {
 	#region Fields
 
@@ -27,7 +27,7 @@ public sealed class TelemetryTypesTests : AzureIntegrationTestsBase
 	public TelemetryTypesTests(TestContext testContext) : base(
 		testContext,
 		[
-			Tuple.Create("Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>())
+			Tuple.Create("Azure.Monitor.AuthOff.", true, Array.Empty<KeyValuePair<String, String>>())
 		]
 	)
 	{

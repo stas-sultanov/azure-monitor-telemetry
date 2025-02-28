@@ -5,20 +5,13 @@ namespace Azure.Monitor.Telemetry.Code;
 
 using System;
 
-public sealed class OperationInfo
+public sealed class OperationStartInfo
 {
-	/// <summary>
-	/// The time taken to complete.
-	/// </summary>
-	public TimeSpan Duration { get; }
-
-	/// <summary>
-	/// The unique identifier.
-	/// </summary>
 	public required String Id { get; init; }
 
-	/// <summary>
-	/// The UTC timestamp when the trace has occurred.
-	/// </summary>
-	public DateTime Time { get; }
+	public required TelemetryOperation Operation { get; init; }
+
+	public required DateTime Time { get; init; }
+
+	public required Int64 Timestamp { get; init; }
 }

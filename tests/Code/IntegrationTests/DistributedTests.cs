@@ -17,23 +17,22 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
-public sealed class ClientToServerTests : AzureIntegrationTestsBase
+public sealed class DestributedTests : IntegrationTestsBase
 {
-	private const String QueueName = "commands";
-
 	#region Data
 
+	private const String clientIP = "78.26.233.104"; // Ukraine / Odessa
+	private static readonly String service0IP = $"4.210.128.{Random.Shared.Next(1, 8)}";   // Azure DC
+	private static readonly String service1IP = $"4.210.128.{Random.Shared.Next(16, 32)}"; // Azure DC
+
 	private readonly TelemetryTrackedHttpClientHandler clientTelemetryTrackedHttpClientHandler;
-
-	private readonly TelemetryTrackedHttpClientHandler serverTelemetryTrackedHttpClientHandler;
-
-	//private readonly KeyValuePair<String, String>[] testServerTags = [new(TelemetryTagKey.CloudRoleInstance, "Alpha"), new(TelemetryTagKey.LocationIp, "20.33.2.8")];
+	private readonly TelemetryTrackedHttpClientHandler service1TelemetryTrackedHttpClientHandler;
 
 	#endregion
 
 	private TelemetryTracker ClientTelemetryTracker { get; }
-
-	private TelemetryTracker ServerTelemetryTracker { get; }
+	private TelemetryTracker Service0TelemetryTracker { get; }
+	private TelemetryTracker Service1TelemetryTracker { get; }
 
 	#region Constructors
 
@@ -41,7 +40,7 @@ public sealed class ClientToServerTests : AzureIntegrationTestsBase
 	/// Initializes a new instance of the <see cref="DependencyTrackingTests"/> class.
 	/// </summary>
 	/// <param name="testContext">The test context.</param>
-	public ClientToServerTests(TestContext testContext)
+	public DestributedTests(TestContext testContext)
 		: base
 		(
 			testContext,
@@ -55,182 +54,188 @@ public sealed class ClientToServerTests : AzureIntegrationTestsBase
 			TelemetryPublishers,
 			[
 				new(TelemetryTagKey.CloudRole, "Frontend"),
-				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(100,200).ToString()),
+				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(0,100).ToString()),
 				new(TelemetryTagKey.DeviceType, "Browser"),
-				new(TelemetryTagKey.LocationIp, "78.26.233.104")
+				new(TelemetryTagKey.LocationIp, clientIP)
 			]
 		);
 
 		clientTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ClientTelemetryTracker, GetTelemetryId);
 
-		ServerTelemetryTracker = new TelemetryTracker
+		Service0TelemetryTracker = new TelemetryTracker
+		(
+			TelemetryPublishers,
+			[
+				new(TelemetryTagKey.CloudRole, "Watchman"),
+				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(100,200).ToString()),
+				new(TelemetryTagKey.LocationIp, service0IP)
+			]
+		);
+
+		Service1TelemetryTracker = new TelemetryTracker
 		(
 			TelemetryPublishers,
 			[
 				new(TelemetryTagKey.CloudRole, "Backend"),
-				new(TelemetryTagKey.CloudRoleInstance, Environment.MachineName),
-				new(TelemetryTagKey.LocationIp, "4.210.128.4")
+				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(200,300).ToString()),
+				new(TelemetryTagKey.LocationIp, service1IP)
 			]
 		);
 
-		serverTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ServerTelemetryTracker, GetTelemetryId);
+		service1TelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(Service1TelemetryTracker, GetTelemetryId);
 	}
 
 	#endregion
 
+	public override void Dispose()
+	{
+		base.Dispose();
+
+		clientTelemetryTrackedHttpClientHandler.Dispose();
+
+		service1TelemetryTrackedHttpClientHandler.Dispose();
+	}
+
 	#region Methods: Tests
 
-	//[TestMethod]
-	//public async Task FromAvailabilityToRequest()
-	//{
-	//	TelemetryTracker.Operation = new TelemetryOperation(GetOperationId(), $"Availability #{DateTime.UtcNow:yyMMddHHmm}");
-
-	//	// simulate Availability Test
-	//	TelemetryTracker.TrackAvailability(DateTime.UtcNow, GetTelemetryId(), "Status", "Passed", TimeSpan.FromMilliseconds(random.Next(100, 150)), true, "West Europe", tags: testServerTags);
-
-	//	// simulate connection delay
-	//	await Task.Delay(random.Next(25));
-
-	//	// simulate Request Begin
-	//	TelemetryTracker.TrackRequestBegin(GetTelemetryId, out var previousParentId, out var time, out var id);
-
-	//	// simulate execution delay
-	//	await Task.Delay(random.Next(25));
-
-	//	// simulat Trace
-	//	TelemetryTracker.TrackTrace("Status Requested", SeverityLevel.Information, tags: mainServerTags);
-
-	//	// simulate Request End
-	//	TelemetryTracker.TrackRequestEnd(previousParentId, time, id, new Uri("/status", UriKind.Relative), "200", true, TimeSpan.FromMilliseconds(random.Next(50, 100)), "GetStatus", tags: mainServerTags);
-
-	//	// publish data
-	//	_ = await TelemetryTracker.PublishAsync();
-	//}
-
 	[TestMethod]
-	public async Task FromPageViewToRequestTo()
+	public async Task FromPageViewToRequestToDependency()
 	{
-		ClientTelemetryTracker.Operation = new TelemetryOperation
-		{
-			Id = GetOperationId(),
-			Name = $"PageView #{DateTime.UtcNow:yyMMddHHmm}"
-		};
-
-		ClientTelemetryTracker.OperationBegin(GetTelemetryId, out var previousParentId, out var pageViewStartTime, out var pageViewId);
-
 		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
-		// make dependency call
-		_ = await MakeTelemetryTrackedHttpGetCallAsyc(clientTelemetryTrackedHttpClientHandler, new Uri("https://google.com"), cancellationToken);
-
-		// simulate internal work
-		await Task.Delay(Random.Shared.Next(50, 100));
-
-		await SimulateDependencyCallAsync(() => SimulateServerRequestAccept(ClientTelemetryTracker.Operation), HttpMethod.Get, new Uri("https://gostas.dev/int.js"));
-
-		// simulate internal work
-		await Task.Delay(Random.Shared.Next(50, 100));
-
-		ClientTelemetryTracker.OperationEnd(previousParentId, pageViewStartTime, out var pageViewDuration);
-
-		// track page view
-		var pageView = new PageViewTelemetry
+		// page view
 		{
-			Duration = pageViewDuration,
-			Id = pageViewId,
-			Name = "Main",
-			Operation = ClientTelemetryTracker.Operation,
-			Time = pageViewStartTime,
-			Url = new Uri("https://gostas.dev")
-		};
+			// set top level operation
+			ClientTelemetryTracker.Operation = new TelemetryOperation
+			{
+				Id = GetOperationId(),
+				Name = "ShowMainPage"
+			};
 
-		ClientTelemetryTracker.Add(pageView);
+			// simulate top level operation - page view
+			await SimulatePageViewAsync
+			(
+				ClientTelemetryTracker,
+				"Main",
+				new Uri("https://gostas.dev"),
+				async (cancellationToken) =>
+				{
+					// make dependency call
+					_ = await MakeDependencyCallAsyc(clientTelemetryTrackedHttpClientHandler, new Uri("https://google.com"), cancellationToken);
 
-		// publish data
-		_ = await ClientTelemetryTracker.PublishAsync(cancellationToken);
+					// simulate internal work
+					await Task.Delay(Random.Shared.Next(50, 100), cancellationToken);
+
+					// simulate dependency call to server
+					var requestUrl = new Uri("https://gostas.dev/int.js");
+
+					await SimulateDependencyAsync
+					(
+						ClientTelemetryTracker,
+						HttpMethod.Get,
+						requestUrl,
+						HttpStatusCode.OK,
+						(cancellationToken) => Service1ServeRequestAsync
+						(
+							ClientTelemetryTracker.Operation,
+							requestUrl,
+							"OK",
+							true,
+							Service1ServePageViewRequestInternalAsync,
+							cancellationToken
+						),
+						cancellationToken
+					);
+				},
+				cancellationToken
+			);
+		}
+
+		// availability test
+		{
+			// set top level operation
+			Service0TelemetryTracker.Operation = new TelemetryOperation
+			{
+				Id = GetOperationId(),
+				Name = "Availability"
+			};
+
+			// simulate top level operation - availability test
+			await SimulateAvailabilityAsync
+			(
+				Service0TelemetryTracker,
+				"Check Health",
+				"Passed",
+				true,
+				"West Europe",
+				(cancellationToken) => Service1ServeRequestAsync
+				(
+					Service0TelemetryTracker.Operation,
+					new Uri("https://gostas.dev/health"),
+					"OK",
+					true,
+					Service1ServeAvailabilityRequestInternalAsync,
+					cancellationToken
+				),
+				cancellationToken
+			);
+		}
+
+		// publish client telemetry
+		var clientPublishResult = await ClientTelemetryTracker.PublishAsync(cancellationToken);
+
+		// publish server telemetry
+		var service0PublishResult = await Service0TelemetryTracker.PublishAsync(cancellationToken);
+
+		// publish server telemetry
+		var service1PublishResult = await Service1TelemetryTracker.PublishAsync(cancellationToken);
+
+		AssertStandardSuccess(clientPublishResult);
+
+		AssertStandardSuccess(service0PublishResult);
+
+		AssertStandardSuccess(service1PublishResult);
 	}
 
-	private async Task SimulateDependencyCallAsync(Func<Task> dependency, HttpMethod httpMethod, Uri url)
+	#endregion
+
+	#region Methods: Helpers
+
+	private async Task Service1ServePageViewRequestInternalAsync(CancellationToken cancellationToken)
 	{
-		ClientTelemetryTracker.OperationBegin(GetTelemetryId, out var previousParentId, out var time, out var id);
-
-		await dependency();
-
-		ClientTelemetryTracker.OperationEnd(previousParentId, time, out var duration);
-
-		// track server request
-		ClientTelemetryTracker.TrackDependency(time, id, httpMethod, url, HttpStatusCode.OK, duration);
-	}
-
-	public async Task SimulateServerRequestAccept(TelemetryOperation operation)
-	{
-		ServerTelemetryTracker.Operation = operation;
-
-		ServerTelemetryTracker.OperationBegin(GetTelemetryId, out var previousParentId, out var serverRequestTime, out var serverRequestId);
-
-		var cancellationToken = TestContext.CancellationTokenSource.Token;
-
 		// make dependency call
-		_ = await MakeTelemetryTrackedHttpGetCallAsyc(serverTelemetryTrackedHttpClientHandler, new Uri("https://bing.com"), cancellationToken);
+		_ = await MakeDependencyCallAsyc(service1TelemetryTrackedHttpClientHandler, new Uri("https://bing.com"), cancellationToken);
 
 		// simulate execution delay
-		await Task.Delay(Random.Shared.Next(100));
+		await Task.Delay(Random.Shared.Next(100), cancellationToken);
 
-		// simulat Trace
-		ServerTelemetryTracker.TrackTrace("Request from Page View", SeverityLevel.Information);
-
-		ServerTelemetryTracker.OperationEnd(previousParentId, serverRequestTime, out var serverDuration);
-
-		var request = new RequestTelemetry
-		{
-			Duration = serverDuration,
-			Id = serverRequestId,
-			Operation = ServerTelemetryTracker.Operation,
-			ResponseCode = "OK",
-			Success = true,
-			Time = serverRequestTime,
-			Url = new Uri("https://gostas.dev/int.js")
-		};
-
-		// simulate Request End
-		ServerTelemetryTracker.Add(request);
-
-		// publish data
-		_ = await ServerTelemetryTracker.PublishAsync(cancellationToken);
+		// add Trace
+		Service1TelemetryTracker.TrackTrace("Request from Main Page", SeverityLevel.Information);
 	}
 
-	private static async Task<String> MakeTelemetryTrackedHttpGetCallAsyc
+	private async Task Service1ServeAvailabilityRequestInternalAsync(CancellationToken cancellationToken)
+	{
+		// simulate execution delay
+		await Task.Delay(Random.Shared.Next(100), cancellationToken);
+
+		// add Trace
+		Service1TelemetryTracker.TrackTrace("Health Request", SeverityLevel.Information);
+	}
+
+	private async Task Service1ServeRequestAsync
 	(
-		HttpMessageHandler messageHandler,
-		Uri uri,
+		TelemetryOperation operation,
+		Uri url,
+		String responseCode,
+		Boolean success,
+		Func<CancellationToken, Task> subsequent,
 		CancellationToken cancellationToken
 	)
 	{
-		using var httpClient = new HttpClient(messageHandler);
+		// set top level operation
+		Service1TelemetryTracker.Operation = operation;
 
-		using var httpResponse = await httpClient.GetAsync(uri, cancellationToken);
-
-		var result = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-
-		return result;
-	}
-
-	private static async Task SimulateTelemetryTrackedHttpCallAsyc
-	(
-		TelemetryTracker telemetryTracker,
-		TimeSpan duration,
-		HttpMethod httpMethod,
-		Uri uri,
-		CancellationToken cancellationToken
-	)
-	{
-		var time = DateTime.UtcNow;
-
-		await Task.Delay(duration, cancellationToken);
-
-		var id = GetTelemetryId();
-
-		telemetryTracker.TrackDependency(time, id, httpMethod, uri, System.Net.HttpStatusCode.OK, DateTime.UtcNow - time);
+		await SimulateRequestAsync(Service1TelemetryTracker, url, responseCode, success, subsequent, cancellationToken);
 	}
 
 	#endregion
