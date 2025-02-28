@@ -37,7 +37,7 @@ public static class Extensions
 	{
 		var countMeasurement = new KeyValuePair<String, Double>(nameof(HttpTelemetryPublishResult.Count), publishResult.Count);
 
-		KeyValuePair<String, Double>[] measurementsWithCount = measurements == null ? [countMeasurement] : [countMeasurement, ..measurements];
+		KeyValuePair<String, Double>[] measurementsWithCount = measurements == null ? [countMeasurement] : [..measurements, countMeasurement];
 
 		var name = String.Concat("POST ", publishResult.Url.AbsolutePath);
 

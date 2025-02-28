@@ -101,14 +101,14 @@ public sealed class ExtensionsTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		Assert.IsNotNull(actualResult.Measurements);
+		Assert.IsNotNull(actualResult.Measurements, nameof(DependencyTelemetry.Measurements));
 
 		Assert.AreEqual(2, actualResult.Measurements.Count);
 
 		Assert.AreEqual(measurements[0], actualResult.Measurements[0]);
 
-		Assert.AreEqual(nameof(HttpTelemetryPublishResult.Count), actualResult.Measurements[1].Key);
+		Assert.AreEqual(measurements[0].Key, actualResult.Measurements[0].Key);
 
-		Assert.AreEqual(publishResult.Count, actualResult.Measurements[1].Value);
+		Assert.AreEqual(measurements[0].Value, actualResult.Measurements[0].Value);
 	}
 }

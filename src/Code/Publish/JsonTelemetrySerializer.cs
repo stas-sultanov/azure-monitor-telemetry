@@ -628,9 +628,11 @@ public static class JsonTelemetrySerializer
 			var pair = list[index];
 
 			WritePair(streamWriter, pair.Key, pair.Value, scopeHasItems);
+
+			scopeHasItems = true;
 		}
 
-		return scopeHasItems || list.Count > 0;
+		return scopeHasItems;
 	}
 
 	/// <summary>Serializes a key-value pair into a JSON format and writes it to the <paramref name="streamWriter"/>.</summary>

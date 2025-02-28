@@ -84,7 +84,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 	[TestMethod]
 	public async Task AzureQueue_Success()
 	{
-		TelemetryTracker.TrackRequestBegin(GetOperationId, out var previousParentId, out var time, out var id);
+		var context = TelemetryTracker.TrackOperationBegin(GetOperationId);
 
 		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
@@ -101,13 +101,10 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		TelemetryTracker.TrackRequestEnd
 		(
-			previousParentId,
-			time,
-			id,
+			context,
 			new Uri($"tst:{nameof(DependencyTrackingTests)}"),
 			"OK",
 			true,
-			DateTime.UtcNow - time,
 			nameof(AzureQueue_Success)
 		);
 

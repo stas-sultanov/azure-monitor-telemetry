@@ -27,7 +27,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public TelemetryTypesTests(TestContext testContext) : base(
 		testContext,
 		[
-			Tuple.Create("Azure.Monitor.AuthOff.", true, Array.Empty<KeyValuePair<String, String>>())
+			Tuple.Create("Azure.Monitor.AuthOff.", false, Array.Empty<KeyValuePair<String, String>>())
 		]
 	)
 	{

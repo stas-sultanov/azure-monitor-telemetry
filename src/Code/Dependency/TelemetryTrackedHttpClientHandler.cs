@@ -3,7 +3,6 @@
 
 namespace Azure.Monitor.Telemetry.Dependency;
 
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,39 +31,36 @@ public class TelemetryTrackedHttpClientHandler
 	/// <summary>
 	/// The telemetry tracker to track outgoing HTTP requests.
 	/// </summary>
-	/// <exception cref="ArgumentNullException"> when <paramref name="telemetryTracker"/> is null.</exception>
+
 	private readonly TelemetryTracker telemetryTracker = telemetryTracker;
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException"> if <paramref name="request"/> is null.</exception>
+	/// <exception cref="ArgumentException"> if <paramref name="request"/> property <see cref="HttpRequestMessage.RequestUri"/> is null.</exception>
 	protected override async Task<HttpResponseMessage> SendAsync
 	(
 		HttpRequestMessage request,
 		CancellationToken cancellationToken
 	)
 	{
-		// capture current time
-		var time = DateTime.UtcNow;
-
-		// start a timer to measure the duration of the request
-		var timer = Stopwatch.StartNew();
-
-		HttpResponseMessage result;
-
-		try
+		if (request == null)
 		{
-			// send the HTTP request and capture the response.
-			result = await base.SendAsync(request, cancellationToken);
-		}
-		finally
-		{
-			timer.Stop();
+			throw new ArgumentNullException(nameof(request));
 		}
 
-		// get id for the current dependency telemetry operation
-		var id = getId();
+		if (request.RequestUri == null)
+		{
+			throw new ArgumentException($"{nameof(HttpRequestMessage.RequestUri)} is null.", nameof(request));
+		}
+
+		// begin tracking
+		var operation = telemetryTracker.TrackOperationBegin(getId);
+
+		// send the HTTP request and capture the response.
+		var result = await base.SendAsync(request, cancellationToken);
 
 		// track telemetry
-		telemetryTracker.TrackDependency(time, id, request.Method, request.RequestUri ?? new Uri("http:none"), result.StatusCode, timer.Elapsed);
+		telemetryTracker.TrackDependencyEnd(operation, request.Method, request.RequestUri, result.StatusCode, result.IsSuccessStatusCode);
 
 		return result;
 	}

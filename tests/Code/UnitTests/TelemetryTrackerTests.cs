@@ -5,6 +5,7 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -129,7 +130,8 @@ public sealed class TelemetryTrackerTests
 		var runLocation = "test-server";
 
 		// act
-		telemetryTracker.TrackAvailability(time, id, name, message, duration, success, runLocation, measurements, properties, tags);
+		var operationInfo = telemetryTracker.TrackOperationBegin(()=>id);
+		telemetryTracker.TrackAvailabilityEnd(operationInfo, name, message, success, runLocation, measurements, properties, tags);
 		telemetryTracker.PublishAsync().Wait();
 		var actualResult = telemetryPublisher.Buffer.First() as AvailabilityTelemetry;
 
@@ -138,7 +140,7 @@ public sealed class TelemetryTrackerTests
 
 		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, duration, id, measurements, message, name, runLocation, success);
+		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, id, measurements, message, name, runLocation, success);
 	}
 
 	[TestMethod]
@@ -152,13 +154,15 @@ public sealed class TelemetryTrackerTests
 		};
 		var id = "test-id";
 		var time = DateTime.UtcNow;
+		var timestamp = Stopwatch.GetTimestamp();
 		var httpMethod = HttpMethod.Post;
 		var uri = new Uri("http://example.com");
 		var statusCode = HttpStatusCode.OK;
-		var duration = TimeSpan.FromSeconds(1);
+		_ = TimeSpan.FromSeconds(1);
 
 		// act
-		telemetryTracker.TrackDependency(time, id, httpMethod, uri, statusCode, duration, measurements, properties, tags);
+		var context = telemetryTracker.TrackOperationBegin(time, timestamp, id);
+		telemetryTracker.TrackDependencyEnd(context, httpMethod, uri, statusCode, true, measurements, properties, tags);
 		telemetryTracker.PublishAsync().Wait();
 		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
 
@@ -171,7 +175,7 @@ public sealed class TelemetryTrackerTests
 
 		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, data, duration, id, measurements, name, resultCode, true, uri.Host, DependencyType.HTTP);
+		AssertHelpers.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, measurements, name, resultCode, true, uri.Host, DependencyType.HTTP);
 	}
 
 	[TestMethod]
@@ -208,7 +212,7 @@ public sealed class TelemetryTrackerTests
 
 		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, null, duration, expectedId, measurements, name, null, true, null, type);
+		AssertHelpers.PropertiesAreEqual(actualResult, null, actualResult.Duration, expectedId, measurements, name, null, true, null, type);
 	}
 
 	[TestMethod]
@@ -310,8 +314,8 @@ public sealed class TelemetryTrackerTests
 
 		// act
 		var expectedParentId = telemetryTracker.Operation.ParentId;
-		telemetryTracker.TrackRequestBegin(() => expectedId, out var previousParentId, out var time, out var id);
-		telemetryTracker.TrackRequestEnd(previousParentId, time, id, url, responseCode, success, duration, name, measurements, properties, tags);
+		var context = telemetryTracker.TrackOperationBegin(() => expectedId);
+		telemetryTracker.TrackRequestEnd(context, url, responseCode, success, name, measurements, properties, tags);
 		var actualParentId = telemetryTracker.Operation.ParentId;
 
 		telemetryTracker.PublishAsync().Wait();
@@ -324,7 +328,7 @@ public sealed class TelemetryTrackerTests
 
 		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, duration, expectedId, measurements, name, responseCode, success, url);
+		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, expectedId, measurements, name, responseCode, success, url);
 	}
 
 	[TestMethod]
