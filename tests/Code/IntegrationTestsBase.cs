@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.IntegrationTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using System.Diagnostics;
 using System.Net;
@@ -18,6 +18,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 public abstract class IntegrationTestsBase : IDisposable
 {
+	#region Types
+
+	public sealed class PublisherConfiguration
+	{
+		public required String ConfigPrefx { get; init; }
+
+		public Dictionary<String, String> Tags { get; init; } = [];
+
+		public required Boolean UseAuthentication { get; init; }
+	}
+
+	#endregion
+
 	#region Fields
 
 	private static readonly JsonSerializerOptions jsonSerializerOptions = new()
@@ -58,7 +71,7 @@ public abstract class IntegrationTestsBase : IDisposable
 	public IntegrationTestsBase
 	(
 		TestContext testContext,
-		params IReadOnlyCollection<Tuple<String, Boolean, KeyValuePair<String, String>[]>> configList
+		params IReadOnlyCollection<PublisherConfiguration> configList
 	)
 	{
 		TestContext = testContext;
@@ -76,19 +89,19 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		foreach (var config in configList)
 		{
-			var ingestionEndpointParamName = config.Item1 + "IngestionEndpoint";
+			var ingestionEndpointParamName = config.ConfigPrefx + "IngestionEndpoint";
 			var ingestionEndpointParam = TestContext.Properties[ingestionEndpointParamName]?.ToString() ?? throw new ArgumentException($"Parameter {ingestionEndpointParamName} has not been provided.");
 			var ingestionEndpoint = new Uri(ingestionEndpointParam);
 
-			var instrumentationKeyParamName = config.Item1 + "InstrumentationKey";
+			var instrumentationKeyParamName = config.ConfigPrefx + "InstrumentationKey";
 			var instrumentationKeyParam = TestContext.Properties[instrumentationKeyParamName]?.ToString() ?? throw new ArgumentException($"Parameter {instrumentationKeyParamName} has not been provided.");
 			var instrumentationKey = new Guid(instrumentationKeyParam);
 
-			var publisherTags = config.Item3;
+			var publisherTags = config.Tags.ToArray();
 
 			TelemetryPublisher publisher;
 
-			if (!config.Item2)
+			if (!config.UseAuthentication)
 			{
 				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, tags: publisherTags);
 			}
@@ -171,106 +184,6 @@ public abstract class IntegrationTestsBase : IDisposable
 
 			Assert.AreEqual(0, response.Errors.Count, nameof(HttpTelemetryPublishResponse.Errors));
 		}
-	}
-
-	protected static async Task<String> MakeDependencyCallAsyc
-	(
-		HttpMessageHandler messageHandler,
-		Uri uri,
-		CancellationToken cancellationToken
-	)
-	{
-		using var httpClient = new HttpClient(messageHandler, false);
-
-		using var httpResponse = await httpClient.GetAsync(uri, cancellationToken);
-
-		var result = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-
-		return result;
-	}
-
-	#endregion
-
-	#region Methods: Simulate Telemetry
-
-	protected static async Task SimulateAvailabilityAsync
-	(
-		TelemetryTracker telemetryTrakcer,
-		String name,
-		String message,
-		Boolean success,
-		String? runLocation,
-		Func<CancellationToken, Task> subsequent,
-		CancellationToken cancellationToken
-	)
-	{
-		// begin operation
-		var operationInfo = telemetryTrakcer.TrackOperationBegin(GetTelemetryId);
-
-		// execute subsequent
-		await subsequent(cancellationToken);
-
-		// end operation
-		telemetryTrakcer.TrackAvailabilityEnd(operationInfo, name, message, success, runLocation);
-	}
-
-	protected static async Task SimulateDependencyAsync
-	(
-		TelemetryTracker telemetryTrakcer,
-		HttpMethod httpMethod,
-		Uri url,
-		HttpStatusCode statusCode,
-		Func<CancellationToken, Task> subsequent,
-		CancellationToken cancellationToken
-	)
-	{
-		// begin operation
-		var operationInfo = telemetryTrakcer.TrackOperationBegin(GetTelemetryId);
-
-		// execute subsequent
-		await subsequent(cancellationToken);
-
-		// end operation
-		telemetryTrakcer.TrackDependencyEnd(operationInfo, httpMethod, url, statusCode, (Int32) statusCode < 399);
-	}
-
-	protected static async Task SimulatePageViewAsync
-	(
-		TelemetryTracker telemetryTracker,
-		String pageName,
-		Uri pageUrl,
-		Func<CancellationToken, Task> subsequent,
-		CancellationToken cancellationToken
-	)
-	{
-		// begin operation
-		var operationInfo = telemetryTracker.TrackOperationBegin(GetTelemetryId);
-
-		// execute subsequent
-		await subsequent(cancellationToken);
-
-		// end operation
-		telemetryTracker.TrackPageViewEnd(operationInfo, pageName, pageUrl);
-	}
-
-	public static async Task SimulateRequestAsync
-	(
-		TelemetryTracker telemetryTracker,
-		Uri url,
-		String responseCode,
-		Boolean success,
-		Func<CancellationToken, Task> subsequent,
-		CancellationToken cancellationToken
-	)
-	{
-		// begin operation
-		var operationInfo = telemetryTracker.TrackOperationBegin(GetTelemetryId);
-
-		// execute subsequent
-		await subsequent(cancellationToken);
-
-		// end operation
-		telemetryTracker.TrackRequestEnd(operationInfo, url, responseCode, success);
 	}
 
 	#endregion

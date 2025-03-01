@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 
 using Azure.Monitor.Telemetry.Dependency;
+using Azure.Monitor.Telemetry.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -44,9 +45,11 @@ public sealed class DestributedTests : IntegrationTestsBase
 		: base
 		(
 			testContext,
-			[
-				Tuple.Create(@"Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>()),
-			]
+			new PublisherConfiguration()
+			{
+				ConfigPrefx = @"Azure.Monitor.AuthOn.",
+				UseAuthentication = true
+			}
 		)
 	{
 		ClientTelemetryTracker = new TelemetryTracker
@@ -113,7 +116,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 			};
 
 			// simulate top level operation - page view
-			await SimulatePageViewAsync
+			await TelemetrySimulator.SimulatePageViewAsync
 			(
 				ClientTelemetryTracker,
 				"Main",
@@ -129,7 +132,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 					// simulate dependency call to server
 					var requestUrl = new Uri("https://gostas.dev/int.js");
 
-					await SimulateDependencyAsync
+					await TelemetrySimulator.SimulateDependencyAsync
 					(
 						ClientTelemetryTracker,
 						HttpMethod.Get,
@@ -161,7 +164,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 			};
 
 			// simulate top level operation - availability test
-			await SimulateAvailabilityAsync
+			await TelemetrySimulator.SimulateAvailabilityAsync
 			(
 				Service0TelemetryTracker,
 				"Check Health",
@@ -235,7 +238,23 @@ public sealed class DestributedTests : IntegrationTestsBase
 		// set top level operation
 		Service1TelemetryTracker.Operation = operation;
 
-		await SimulateRequestAsync(Service1TelemetryTracker, url, responseCode, success, subsequent, cancellationToken);
+		await TelemetrySimulator.SimulateRequestAsync(Service1TelemetryTracker, url, responseCode, success, subsequent, cancellationToken);
+	}
+
+	public static async Task<String> MakeDependencyCallAsyc
+(
+	HttpMessageHandler messageHandler,
+	Uri uri,
+	CancellationToken cancellationToken
+)
+	{
+		using var httpClient = new HttpClient(messageHandler, false);
+
+		using var httpResponse = await httpClient.GetAsync(uri, cancellationToken);
+
+		var result = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
+		return result;
 	}
 
 	#endregion

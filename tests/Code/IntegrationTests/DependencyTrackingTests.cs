@@ -7,6 +7,7 @@ using System.Diagnostics;
 
 using Azure.Core.Pipeline;
 using Azure.Monitor.Telemetry.Dependency;
+using Azure.Monitor.Telemetry.Tests;
 using Azure.Storage.Queues;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,8 +24,6 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 	private const String QueueName = "commands";
 
 	#region Data
-
-	private static readonly Random random = new(DateTime.UtcNow.Millisecond);
 
 	private readonly HttpClientTransport queueClientHttpClientTransport;
 
@@ -44,9 +43,11 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 		: base
 		(
 			testContext,
-			[
-				Tuple.Create(@"Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>()),
-			]
+			new PublisherConfiguration()
+			{
+				ConfigPrefx = @"Azure.Monitor.AuthOn.",
+				UseAuthentication = true
+			}
 		)
 	{
 		TelemetryTracker = new TelemetryTracker

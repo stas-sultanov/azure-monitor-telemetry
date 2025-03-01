@@ -4,6 +4,7 @@
 namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
+using System.Diagnostics;
 
 /// <summary>
 /// Provides instances of classes that implements <see cref="Telemetry"/> for testing purposes.
@@ -51,7 +52,7 @@ internal sealed class TelemetryFactory
 
 	internal static String GetId()
 	{
-		return Guid.NewGuid().ToString("N").Substring(0, 16);
+		return ActivitySpanId.CreateRandom().ToString();
 	}
 
 	internal static TimeSpan GetRandomDuration(Int32 millisecondsMin, Int32 millisecondsMax)

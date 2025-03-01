@@ -26,9 +26,11 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	/// <param name="testContext">The test context.</param>
 	public TelemetryTypesTests(TestContext testContext) : base(
 		testContext,
-		[
-			Tuple.Create("Azure.Monitor.AuthOff.", false, Array.Empty<KeyValuePair<String, String>>())
-		]
+		new PublisherConfiguration()
+		{
+			ConfigPrefx = @"Azure.Monitor.AuthOff.",
+			UseAuthentication = false
+		}
 	)
 	{
 		TelemetryTracker = new TelemetryTracker

@@ -35,7 +35,6 @@ public class TelemetryTrackedHttpClientHandler
 	private readonly TelemetryTracker telemetryTracker = telemetryTracker;
 
 	/// <inheritdoc/>
-	/// <exception cref="ArgumentNullException"> if <paramref name="request"/> is null.</exception>
 	/// <exception cref="ArgumentException"> if <paramref name="request"/> property <see cref="HttpRequestMessage.RequestUri"/> is null.</exception>
 	protected override async Task<HttpResponseMessage> SendAsync
 	(
@@ -43,11 +42,6 @@ public class TelemetryTrackedHttpClientHandler
 		CancellationToken cancellationToken
 	)
 	{
-		if (request == null)
-		{
-			throw new ArgumentNullException(nameof(request));
-		}
-
 		if (request.RequestUri == null)
 		{
 			throw new ArgumentException($"{nameof(HttpRequestMessage.RequestUri)} is null.", nameof(request));

@@ -2,9 +2,6 @@
 // Copyright © Stas Sultanov.
 
 namespace Azure.Monitor.Telemetry;
-
-using System.Runtime.CompilerServices;
-
 /// <summary>
 /// Represents a distributed operation containing information about operation hierarchy and synthetic sources.
 /// </summary>
@@ -32,48 +29,6 @@ public sealed class TelemetryOperation
 
 	/// <summary>The identifier of the parent operation.</summary>
 	public String? ParentId { get; init; }
-
-	#endregion
-
-	#region Methods
-
-	/// <summary>
-	/// Creates a new instance of <see cref="TelemetryOperation"/> with a new parent identifier.
-	/// </summary>
-	/// <param name="parentId">The new parent identifier to be set.</param>
-	/// <returns>A new instance of <see cref="TelemetryOperation"/> with the specified parent identifier.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public TelemetryOperation CloneWithNewParentId(String? parentId)
-	{
-		var result = new TelemetryOperation
-		{
-			Id = Id,
-			Name = Name,
-			ParentId = parentId
-		};
-
-		return result;
-	}
-
-	/// <summary>
-	/// Creates a new instance of <see cref="TelemetryOperation"/> with a new parent identifier.
-	/// </summary>
-	/// <param name="parentId">The new parent identifier to be set.</param>
-	/// <param name="previousParentId">Outputs the previous parent identifier.</param>
-	/// <returns>A new instance of <see cref="TelemetryOperation"/> with the specified parent identifier.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public TelemetryOperation CloneWithNewParentId
-	(
-		String? parentId,
-		out String? previousParentId
-	)
-	{
-		previousParentId = ParentId;
-
-		var result = CloneWithNewParentId(parentId);
-
-		return result;
-	}
 
 	#endregion
 }

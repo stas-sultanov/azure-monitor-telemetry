@@ -5,30 +5,19 @@ namespace Azure.Monitor.Telemetry.IntegrationTests;
 
 using System.Diagnostics;
 
-using Azure.Core.Pipeline;
-using Azure.Monitor.Telemetry.Dependency;
-using Azure.Storage.Queues;
+using Azure.Monitor.Telemetry.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
 /// The goals of this test:
 /// - publish telemetry data into two instances of AppInsights; one with auth, one without auth.
-/// - test dependency tracking with <see cref="TelemetryTrackedHttpClientHandler"/>.
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
 public sealed class MultiplePublishersTests : IntegrationTestsBase
 {
-	private const String QueueName = "commands";
-
 	#region Data
-
-	private static readonly Random random = new(DateTime.UtcNow.Millisecond);
-
-	private readonly HttpClientTransport queueClientHttpClientTransport;
-
-	private readonly QueueClient queueClient;
 
 	private TelemetryTracker TelemetryTracker { get; }
 
@@ -44,10 +33,16 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 		: base
 		(
 			testContext,
-			[
-				Tuple.Create(@"Azure.Monitor.AuthOn.", true, Array.Empty<KeyValuePair<String, String>>()),
-				Tuple.Create(@"Azure.Monitor.AuthOff.", false, Array.Empty<KeyValuePair<String, String>>())
-			]
+			new PublisherConfiguration()
+			{
+				ConfigPrefx = @"Azure.Monitor.AuthOn.",
+				UseAuthentication = true
+			},
+			new PublisherConfiguration()
+			{
+				ConfigPrefx = @"Azure.Monitor.AuthOff.",
+				UseAuthentication = false
+			}
 		)
 	{
 		TelemetryTracker = new TelemetryTracker
@@ -58,24 +53,6 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 				new (TelemetryTagKey.CloudRoleInstance, Environment.MachineName)
 			]
 		);
-
-		var handler = new TelemetryTrackedHttpClientHandler(TelemetryTracker, () => ActivitySpanId.CreateRandom().ToString());
-
-		queueClientHttpClientTransport = new HttpClientTransport(handler);
-
-		var queueServiceUriParamName = @"Azure.Queue.Default.ServiceUri";
-		var queueServiceUriParam = TestContext.Properties[queueServiceUriParamName]?.ToString() ?? throw new ArgumentException($"Parameter {queueServiceUriParamName} has not been provided.");
-		var queueServiceUri = new Uri(queueServiceUriParam);
-
-		var queueClientOptions = new QueueClientOptions()
-		{
-			MessageEncoding = QueueMessageEncoding.Base64,
-			Transport = queueClientHttpClientTransport
-		};
-
-		var queueService = new QueueServiceClient(queueServiceUri, TokenCredential, queueClientOptions);
-
-		queueClient = queueService.GetQueueClient(QueueName);
 	}
 
 	#endregion
@@ -83,53 +60,19 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 	#region Methods: Tests
 
 	[TestMethod]
-	public async Task AzureQueue_Success()
+	public async Task PublishSomeTelemetryAsync()
 	{
-		var context = TelemetryTracker.TrackOperationBegin(GetOperationId);
+		TelemetryTracker.Operation = new()
+		{
+			Id = ActivityTraceId.CreateRandom().ToString(),
+			Name = nameof(MultiplePublishersTests)
+		};
 
-		var cancellationToken = TestContext.CancellationTokenSource.Token;
+		TelemetryTracker.TrackEvent("start");
 
-		// execute
-		await SendMessageTrackedAsync("begin", cancellationToken);
+		TelemetryTracker.TrackTrace("started", SeverityLevel.Verbose);
 
-		await Task.Delay(random.Next(300));
-
-		await SendMessageTrackedAsync("end", cancellationToken);
-
-		TelemetryTracker.TrackRequestEnd
-		(
-			context,
-			new Uri($"tst:{nameof(DependencyTrackingTests)}"),
-			"OK",
-			true,
-			nameof(AzureQueue_Success)
-		);
-
-		var result = await TelemetryTracker.PublishAsync(cancellationToken);
-
-		// assert
-		AssertStandardSuccess(result);
-	}
-
-	private async Task SendMessageTrackedAsync(String message, CancellationToken cancellationToken)
-	{
-		var operationInfo = TelemetryTracker.TrackOperationBegin(GetOperationId);
-
-		_ = await queueClient.SendMessageAsync(message, cancellationToken);
-
-		TelemetryTracker.TrackDependencyInProcEnd(operationInfo, "Storage", true);
-	}
-
-	#endregion
-
-	#region Methods: Implementation of IDisposable
-
-	/// <inheritdoc/>
-	public override void Dispose()
-	{
-		queueClientHttpClientTransport.Dispose();
-
-		base.Dispose();
+		_ = await TelemetryTracker.PublishAsync();
 	}
 
 	#endregion
