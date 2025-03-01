@@ -8,6 +8,7 @@ using System.Net.Http;
 
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
+using Azure.Monitor.Telemetry.Tests;
 
 /// <summary>
 /// Tests for <see cref="HttpTelemetryPublisher"/> class.
@@ -22,68 +23,66 @@ public sealed partial class HttpTelemetryPublisherTests
 
 	#endregion
 
+	#region Static Fields
+
+	private static readonly Uri ingestionEndpoint = new(mockValidIngestEndpoint);
+	private static readonly Guid instrumentationKey = Guid.NewGuid();
+	private static readonly TelemetryFactory telemetryFactory = new (nameof(HttpTelemetryPublisherTests));
+
+	#endregion
+
 	#region Methods: Tests
 
 	[TestMethod]
 	public void Constructor_ThrowsArgumentException_IfIngestionEndpointIsInvalid()
 	{
+		// arrange
 		using var httpClient = new HttpClient();
 		var ingestionEndpoint = new Uri("file://example.com");
-		var instrumentationKey = Guid.NewGuid();
 
-		// exception type
+		// act
 		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
 		(
 			() => _ = _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
 		);
 
-		// parameter name
+		// assert
 		Assert.AreEqual(nameof(ingestionEndpoint), argumentNullException.ParamName);
 	}
 
 	[TestMethod]
 	public void Constructor_ThrowsArgumentException_IfInstrumentationKeyIsEmpty()
 	{
+		// arrange
 		var httpClient = new HttpClient();
-		var ingestionEndpoint = new Uri(mockValidIngestEndpoint);
 		var instrumentationKey = Guid.Empty;
 
-		// exception type
+		// act
 		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
 		(
 			() => _ = _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
 		);
 
-		// parameter name
+		// assert
 		Assert.AreEqual(nameof(instrumentationKey), argumentNullException.ParamName);
 	}
 
 	[TestMethod]
 	public async Task Method_PublishAsync_WithoutAuthentication()
 	{
+		// arrange
 		var time = DateTime.UtcNow;
 		var httpClient = new HttpClient(new HttpMessageHandlerMock());
-		var ingestionEndpoint = new Uri(mockValidIngestEndpoint);
-		var instrumentationKey = Guid.NewGuid();
-
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey);
-
 		var telemetryList = new[]
 		{
-			new TraceTelemetry
-			{
-				Message = @"test",
-				Operation = TelemetryOperation.Empty,
-				SeverityLevel = SeverityLevel.Information,
-				Time = DateTime.UtcNow
-			}
+			telemetryFactory.Create_TraceTelemetry_Min("Test")
 		};
 
-		var tags = Array.Empty<KeyValuePair<String, String>>();
-		var cancellationToken = CancellationToken.None;
+		// act
+		var result = (await publisher.PublishAsync(telemetryList)) as HttpTelemetryPublishResult;
 
-		var result = (await publisher.PublishAsync(telemetryList, tags, cancellationToken)) as HttpTelemetryPublishResult;
-
+		// assert
 		Assert.IsNotNull(result);
 
 		Assert.AreEqual(telemetryList.Length, result.Count, nameof(HttpTelemetryPublishResult.Count));
@@ -100,39 +99,34 @@ public sealed partial class HttpTelemetryPublisherTests
 	[TestMethod]
 	public async Task Method_PublishAsync_WithAuthToken()
 	{
+		// arrange
 		var httpClient = new HttpClient(new HttpMessageHandlerMock());
-		var ingestionEndpoint = new Uri(mockValidIngestEndpoint);
-		var instrumentationKey = Guid.NewGuid();
 
-		static Task<BearerToken> getAccessToken(CancellationToken _)
-		{
-			return Task.FromResult(new BearerToken { ExpiresOn = DateTimeOffset.UtcNow, Value = "token " + HttpTelemetryPublisher.AuthorizationScope });
-		}
-
-		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken, [new (TelemetryTagKey.SessionId, "test"), new (TelemetryTagKey.InternalAgentVersion, "test") ]);
+		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, GetAccessToken, [new (TelemetryTagKey.SessionId, "test"), new (TelemetryTagKey.InternalAgentVersion, "test") ]);
 
 		var telemetryList = new[]
 		{
-			new TraceTelemetry
-			{
-				Message = @"test",
-				Operation = TelemetryOperation.Empty,
-				SeverityLevel = SeverityLevel.Information,
-				Time = DateTime.UtcNow
-			}
+			telemetryFactory.Create_TraceTelemetry_Min("Test")
 		};
-		var tags = Array.Empty<KeyValuePair<String, String>>();
-		var cancellationToken = CancellationToken.None;
 
-		// initiate publish, token will expire right after the call
-		var result = await publisher.PublishAsync(telemetryList, tags, cancellationToken);
+		// act 1 - initiate publish, token will expire right after the call
+		var result = await publisher.PublishAsync(telemetryList);
 
+		// assert 1
 		Assert.IsTrue(result.Success);
 
-		// initiate publish, token will be re-requested
-		result = await publisher.PublishAsync(telemetryList, tags, cancellationToken);
+		// act 2 - initiate publish, token will be re-requested
+		result = await publisher.PublishAsync(telemetryList);
 
+		// assert 2
 		Assert.IsTrue(result.Success);
+	}
+
+	private static Task<BearerToken> GetAccessToken(CancellationToken _)
+	{
+		var result = new BearerToken { ExpiresOn = DateTimeOffset.UtcNow, Value = "token " + HttpTelemetryPublisher.AuthorizationScope };
+
+		return Task.FromResult(result);
 	}
 
 	#endregion

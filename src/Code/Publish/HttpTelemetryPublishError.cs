@@ -6,7 +6,7 @@ namespace Azure.Monitor.Telemetry.Publish;
 using System.Net;
 
 /// <summary>
-/// Represents an HTTP track response error with an index, message, and status code.
+/// Represents an error within the Publish operation.
 /// </summary>
 public sealed class HttpTelemetryPublishError
 {

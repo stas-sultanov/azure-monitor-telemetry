@@ -62,7 +62,7 @@ public sealed class TelemetryTrackedHttpClientHandlerTests : IDisposable
 		// assert
 		Assert.AreEqual(1, telemetryPublisher.Buffer.Count, "Items Count");
 
-		var telemetry = telemetryPublisher.Buffer[0];
+		var telemetry = telemetryPublisher.Buffer.Dequeue();
 
 		Assert.IsInstanceOfType<DependencyTelemetry>(telemetry);
 	}

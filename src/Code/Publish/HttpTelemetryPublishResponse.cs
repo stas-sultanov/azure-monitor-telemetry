@@ -4,7 +4,7 @@
 namespace Azure.Monitor.Telemetry.Publish;
 
 /// <summary>
-/// Represents the response from an HTTP tracking operation in version 2 format.
+/// Represents a response of the Publish operation.
 /// </summary>
 public sealed class HttpTelemetryPublishResponse
 {

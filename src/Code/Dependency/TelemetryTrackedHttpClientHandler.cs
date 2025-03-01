@@ -3,6 +3,7 @@
 
 namespace Azure.Monitor.Telemetry.Dependency;
 
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,26 +36,40 @@ public class TelemetryTrackedHttpClientHandler
 	private readonly TelemetryTracker telemetryTracker = telemetryTracker;
 
 	/// <inheritdoc/>
-	/// <exception cref="ArgumentException"> if <paramref name="request"/> property <see cref="HttpRequestMessage.RequestUri"/> is null.</exception>
 	protected override async Task<HttpResponseMessage> SendAsync
 	(
 		HttpRequestMessage request,
 		CancellationToken cancellationToken
 	)
 	{
-		if (request.RequestUri == null)
-		{
-			throw new ArgumentException($"{nameof(HttpRequestMessage.RequestUri)} is null.", nameof(request));
-		}
+		// start stopwatch
+		var stopwatch = Stopwatch.StartNew();
 
-		// begin tracking
-		var operation = telemetryTracker.TrackOperationBegin(getId);
+		// get time
+		var time = DateTime.UtcNow;
+
+		// get id
+		var id = getId();
 
 		// send the HTTP request and capture the response.
 		var result = await base.SendAsync(request, cancellationToken);
 
+		stopwatch.Stop();
+
+		var duration = stopwatch.Elapsed;
+
 		// track telemetry
-		telemetryTracker.TrackDependencyEnd(operation, request.Method, request.RequestUri, result.StatusCode, result.IsSuccessStatusCode);
+		// if RequestUri is null the host class will throw exception before calling this method
+		telemetryTracker.TrackDependency
+		(
+			time,
+			duration,
+			id,
+			request.Method,
+			request.RequestUri!,
+			result.StatusCode,
+			result.IsSuccessStatusCode
+		);
 
 		return result;
 	}

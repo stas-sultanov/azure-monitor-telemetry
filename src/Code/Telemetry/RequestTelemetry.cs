@@ -9,7 +9,7 @@ namespace Azure.Monitor.Telemetry;
 /// <remarks>
 /// Every request execution is identified by a unique <see cref="Id"/> and <see cref="Url"/> that contain all the execution parameters.
 /// </remarks>
-public sealed class RequestTelemetry : Telemetry
+public sealed class RequestTelemetry : ActivityTelemetry
 {
 	#region Properties
 

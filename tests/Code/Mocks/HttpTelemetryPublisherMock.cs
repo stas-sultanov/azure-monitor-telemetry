@@ -21,23 +21,26 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 
 	#endregion
 
-	public List<Telemetry> Buffer { get; } = [];
+	public Queue<Telemetry> Buffer { get; } = [];
 
 	/// <inheritdoc/>
 	public Task<TelemetryPublishResult> PublishAsync
 	(
-		IReadOnlyList<Telemetry> telemetryList,
+		IReadOnlyList<Telemetry> telemetryItems,
 		IReadOnlyList<KeyValuePair<String, String>>? tags,
 		CancellationToken cancellationToken
 	)
 	{
 		var time = DateTime.UtcNow;
 
-		Buffer.AddRange(telemetryList);
+		foreach (var item in telemetryItems)
+		{
+			Buffer.Enqueue(item);
+		}
 
 		var publishResult = (TelemetryPublishResult) new HttpTelemetryPublishResult
 		{
-			Count = telemetryList.Count,
+			Count = telemetryItems.Count,
 			Duration = DateTime.UtcNow.Subtract(time),
 			Response = "OK",
 			StatusCode = HttpStatusCode.OK,

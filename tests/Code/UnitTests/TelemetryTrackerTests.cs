@@ -4,8 +4,6 @@
 namespace Azure.Monitor.Telemetry.UnitTests;
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -24,44 +22,30 @@ public sealed class TelemetryTrackerTests
 {
 	#region Fields
 
-	private readonly KeyValuePair<String, Double> [] measurements = [new("m", 0)];
-	private readonly TelemetryOperation operation = new()
-	{
-		Id = new Guid().ToString("N"),
-		Name = "Test"
-	};
-	private readonly KeyValuePair<String, String> [] properties = [new("a", "b")];
-	private readonly KeyValuePair<String, String> [] tags = [new(TelemetryTagKey.CloudRole, "role")];
+	private readonly TelemetryFactory factory;
+	private readonly HttpTelemetryPublisherMock publisher;
+	private readonly TelemetryTracker tracker;
 
 	#endregion
 
-	#region Methods: Tests Constructors
+	#region Constructors
 
-	[TestMethod]
-	public void Constructor()
+	/// <summary>
+	/// Initializes a new instance of <see cref="TelemetryTrackerTests"/> class.
+	/// </summary>
+	public TelemetryTrackerTests()
 	{
-		// arrange
-		var operationId = Guid.NewGuid().ToString("N");
-		var operation = new TelemetryOperation { Id = operationId };
-		var tags = new KeyValuePair<String, String> []
+		factory = new(nameof(TelemetryTrackerTests));
+		publisher = new();
+		tracker = new TelemetryTracker(publisher)
 		{
-			new(TelemetryTagKey.CloudRole, "tester")
+			Operation = factory.Operation
 		};
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-
-		// act
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher, tags)
-		{
-			Operation = operation
-		};
-
-		// assert
-		Assert.AreEqual(operation, telemetryTracker.Operation, nameof(telemetryTracker.Operation));
 	}
 
 	#endregion
 
-	#region Tests: Method PublishAsync
+	#region Methods: Tests PublishAsync
 
 	[TestMethod]
 	public async Task Method_PublishAsync_ShouldReturnEmptySuccess_WhenNoItems()
@@ -78,50 +62,36 @@ public sealed class TelemetryTrackerTests
 
 	#endregion
 
-	#region Tests: Method Add
+	#region Methods: Tests Add
 
 	[TestMethod]
-	public void Method_Add_ShouldEnqueueTelemetryItem()
+	public async Task Method_Add_ShouldEnqueueTelemetryItem()
 	{
 		// arrange
-		var operationId = Guid.NewGuid().ToString("N");
-		var operation = new TelemetryOperation { Id = operationId };
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
-		var telemetry = new TraceTelemetry
-		{
-			Message = "test",
-			Operation = operation,
-			SeverityLevel = SeverityLevel.Information,
-			Time = DateTime.UtcNow
-		};
+		var telemetry = factory.Create_TraceTelemetry_Min("Test");
 
 		// act
-		telemetryTracker.Add(telemetry);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as TraceTelemetry;
+		tracker.Add(telemetry);
+
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as TraceTelemetry;
 
 		// assert
+		Assert.IsNotNull(actualResult);
+
 		Assert.AreEqual(telemetry, actualResult);
 	}
 
 	#endregion
 
-	#region Tests: Method Track
+	#region Methods: Tests Track
 
 	[TestMethod]
-	public void Method_TrackAvailability()
+	public async Task Method_TrackAvailability()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
-		var id = "test-id";
+		var id = TelemetryFactory.GetActivityId();
 		var name = "name";
 		var message = "ok";
 		var time = DateTime.UtcNow;
@@ -130,149 +100,126 @@ public sealed class TelemetryTrackerTests
 		var runLocation = "test-server";
 
 		// act
-		var operationInfo = telemetryTracker.TrackOperationBegin(()=>id);
-		telemetryTracker.TrackAvailabilityEnd(operationInfo, name, message, success, runLocation, measurements, properties, tags);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as AvailabilityTelemetry;
+		tracker.TrackAvailability(time, duration, id, name, message, success, runLocation, factory.Measurements, factory.Properties, factory.Tags);
+
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as AvailabilityTelemetry;
 
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, id, measurements, message, name, runLocation, success);
+		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, message, name, runLocation, success);
 	}
 
 	[TestMethod]
-	public void Method_TrackDependency_With_HttpRequest()
+	public async Task Method_TrackDependency_With_HttpRequest()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
-		var id = "test-id";
 		var time = DateTime.UtcNow;
-		var timestamp = Stopwatch.GetTimestamp();
+		var duration = TimeSpan.FromSeconds(1);
+		var id = TelemetryFactory.GetActivityId();
 		var httpMethod = HttpMethod.Post;
 		var uri = new Uri("http://example.com");
 		var statusCode = HttpStatusCode.OK;
 		_ = TimeSpan.FromSeconds(1);
 
 		// act
-		var context = telemetryTracker.TrackOperationBegin(time, timestamp, id);
-		telemetryTracker.TrackDependencyEnd(context, httpMethod, uri, statusCode, true, measurements, properties, tags);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
+		tracker.TrackDependency(time, duration, id, httpMethod, uri, statusCode, true, factory.Measurements, factory.Properties, factory.Tags);
 
-		// assert
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
+
 		var data = uri.ToString();
 		var name = $"{httpMethod.Method} {uri.AbsolutePath}";
 		var resultCode = statusCode.ToString();
 
+		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, measurements, name, resultCode, true, uri.Host, DependencyType.HTTP);
+		AssertHelpers.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, DependencyType.HTTP);
 	}
 
 	[TestMethod]
-	public void Method_TrackDependencyInProc()
+	public async Task Method_TrackDependencyInProc()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
-		var expectedId = Guid.NewGuid().ToString();
+		var time = DateTime.UtcNow;
+		var duration = TimeSpan.FromSeconds(1);
+		var id = TelemetryFactory.GetActivityId();
 		var name = "name";
 		var typeName = "Service";
-		var duration = TimeSpan.FromSeconds(1);
 		var success = true;
 
 		// act
-		var expectedParentId = telemetryTracker.Operation.ParentId;
+		tracker.TrackDependencyInProc(time, duration, id, name, success, typeName, factory.Measurements, factory.Properties, factory.Tags);
 
-		var operationInfo = telemetryTracker.TrackOperationBegin(() => expectedId);
-		telemetryTracker.TrackDependencyInProcEnd(operationInfo, name, success, typeName, measurements, properties, tags);
+		_ = await tracker.PublishAsync();
 
-		var actualParentId = telemetryTracker.Operation.ParentId;
+		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
 
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
 		var type = DependencyType.InProc + " | " + typeName;
 
 		// assert
-		Assert.AreEqual(expectedParentId, actualParentId, "Operation.ParentId");
-
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, null, actualResult.Duration, expectedId, measurements, name, null, true, null, type);
+		AssertHelpers.PropertiesAreEqual(actualResult, null, actualResult.Duration, id, factory.Measurements, name, null, true, null, type);
 	}
 
 	[TestMethod]
-	public void Method_TrackEvent()
+	public async Task Method_TrackEvent()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
 		var name = "test";
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
 
 		// act
-		telemetryTracker.TrackEvent(name, measurements, properties, tags);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as EventTelemetry;
+		tracker.TrackEvent(name, factory.Measurements, factory.Properties, factory.Tags);
+
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as EventTelemetry;
 
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, measurements, name);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Measurements, name);
 	}
 
 	[TestMethod]
-	public void Method_TrackException()
+	public async Task Method_TrackException()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
 		var exception = new Exception("Test exception");
 		var severityLevel = SeverityLevel.Error;
 
 		// act
-		telemetryTracker.TrackException(exception, severityLevel, measurements, properties, tags);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as ExceptionTelemetry;
+		tracker.TrackException(exception, severityLevel, factory.Measurements, factory.Properties, factory.Tags);
+
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as ExceptionTelemetry;
 
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, exception, measurements, severityLevel);
+		AssertHelpers.PropertiesAreEqual(actualResult, exception, factory.Measurements, severityLevel);
 	}
 
 	[TestMethod]
-	public void Method_TrackMetric()
+	public async Task Method_TrackMetric()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
 		var name = "test";
 		var @namespace = "tests";
 		var value = 6;
@@ -284,74 +231,65 @@ public sealed class TelemetryTrackerTests
 		};
 
 		// act
-		telemetryTracker.TrackMetric(@namespace, name, value, valueAggregation, properties, tags);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as MetricTelemetry;
+		tracker.TrackMetric(@namespace, name, value, valueAggregation, factory.Properties, factory.Tags);
+
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as MetricTelemetry;
 
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
 		AssertHelpers.PropertiesAreEqual(actualResult, name, @namespace, value, valueAggregation);
 	}
 
 	[TestMethod]
-	public void Method_TrackRequest()
+	public async Task Method_TrackRequest()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
-		var expectedId = Guid.NewGuid().ToString();
+		var time = DateTime.UtcNow;
+		var duration = TimeSpan.FromSeconds(1);
+		var id = TelemetryFactory.GetActivityId();
 		var url = new Uri("tst:exe");
 		var responseCode = "1";
 		var name = "name";
-		var duration = TimeSpan.FromSeconds(1);
 		var success = true;
 
 		// act
-		var expectedParentId = telemetryTracker.Operation.ParentId;
-		var context = telemetryTracker.TrackOperationBegin(() => expectedId);
-		telemetryTracker.TrackRequestEnd(context, url, responseCode, success, name, measurements, properties, tags);
-		var actualParentId = telemetryTracker.Operation.ParentId;
+		tracker.TrackRequest(time, duration, id, url, responseCode, success, name, factory.Measurements, factory.Properties, factory.Tags);
 
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as RequestTelemetry;
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as RequestTelemetry;
 
 		// assert
-		Assert.AreEqual(expectedParentId, actualParentId, "Operation.ParentId");
-
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, expectedId, measurements, name, responseCode, success, url);
+		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, name, responseCode, success, url);
 	}
 
 	[TestMethod]
-	public void Method_TrackTrace()
+	public async Task Method_TrackTrace()
 	{
 		// arrange
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
 		var message = "test";
 		var severityLevel = SeverityLevel.Information;
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
-		{
-			Operation = operation
-		};
 
 		// act
-		telemetryTracker.TrackTrace(message, severityLevel, properties, tags);
-		telemetryTracker.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as TraceTelemetry;
+		tracker.TrackTrace(message, severityLevel, factory.Properties, factory.Tags);
+
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as TraceTelemetry;
 
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, operation, properties, tags);
+		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
 		AssertHelpers.PropertiesAreEqual(actualResult, message, severityLevel);
 	}

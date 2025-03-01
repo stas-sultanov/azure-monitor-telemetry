@@ -2,32 +2,24 @@
 // Copyright © Stas Sultanov.
 
 namespace Azure.Monitor.Telemetry;
+
 /// <summary>
-/// Represents a distributed operation containing information about operation hierarchy and synthetic sources.
+/// Represents an operation.
 /// </summary>
 /// <remarks>
-/// This type is used to track and correlate telemetry data across different operations and their relationships.
+/// This type is used to track and correlate telemetry data across different activities.
 /// </remarks>
 public sealed class TelemetryOperation
 {
-	#region Static
-
-	/// <summary>
-	/// An empty instance of <see cref="TelemetryOperation"/>.
-	/// </summary>
-	public static TelemetryOperation Empty { get; } = new TelemetryOperation();
-
-	#endregion
-
 	#region Properties
 
-	/// <summary>The identifier of the topmost operation.</summary>
+	/// <summary>The identifier of the operation.</summary>
 	public String? Id { get; init; }
 
-	/// <summary>The name of the topmost operation.</summary>
+	/// <summary>The name of the operation.</summary>
 	public String? Name { get; init; }
 
-	/// <summary>The identifier of the parent operation.</summary>
+	/// <summary>The identifier of the parent activity.</summary>
 	public String? ParentId { get; init; }
 
 	#endregion

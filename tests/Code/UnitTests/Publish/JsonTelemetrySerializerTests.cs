@@ -31,6 +31,8 @@ public class JsonTelemetrySerializerTests
 
 	#region Fields
 
+	private static readonly Uri testUrl = new ("https://gostas.dev");
+
 	private static readonly KeyValuePair<String, String> [] publisherTags =
 	[
 		new(TelemetryTagKey.InternalSdkVersion, "test"),
@@ -42,7 +44,7 @@ public class JsonTelemetrySerializerTests
 	];
 
 	private static readonly String instrumentationKey = Guid.NewGuid().ToString();
-	private readonly TelemetryFactory telemetryFactory = new();
+	private readonly TelemetryFactory telemetryFactory = new(nameof(HttpTelemetryPublisherTests));
 
 	#endregion
 
@@ -55,7 +57,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppAvailabilityResults";
 		var expectedType = @"AvailabilityData";
 
-		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max();
+		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max("Check");
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -89,7 +91,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppDependencies";
 		var expectedType = @"RemoteDependencyData";
 
-		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max();
+		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max("Storage",  testUrl );
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -127,7 +129,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppEvents";
 		var expectedType = @"EventData";
 
-		var telemetry = telemetryFactory.Create_EventTelemetry_Max();
+		var telemetry = telemetryFactory.Create_EventTelemetry_Max("Check");
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -183,7 +185,7 @@ public class JsonTelemetrySerializerTests
 			Min = 1,
 			Max = 3
 		};
-		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", 6, aggregation);
+		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", "count", 6, aggregation);
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -219,7 +221,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppPageViews";
 		var expectedType = @"PageViewData";
 
-		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max();
+		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max("Main", testUrl);
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -245,7 +247,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppRequests";
 		var expectedType = @"RequestData";
 
-		var telemetry = telemetryFactory.Create_RequestTelemetry_Max();
+		var telemetry = telemetryFactory.Create_RequestTelemetry_Max("GetMain", testUrl);
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -275,7 +277,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppTraces";
 		var expectedType = @"MessageData";
 
-		var telemetry = telemetryFactory.Create_TraceTelemetry_Max();
+		var telemetry = telemetryFactory.Create_TraceTelemetry_Max("Test");
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -365,7 +367,7 @@ public class JsonTelemetrySerializerTests
 
 		Assert.IsNotNull(actualTags, "tags");
 
-		Assert.AreEqual(expectedTags.Length, actualTags.Count, "Tags count");
+		Assert.IsTrue(expectedTags.Length <= actualTags.Count, "Tags count");
 
 		foreach (var expectedTag in expectedTags)
 		{

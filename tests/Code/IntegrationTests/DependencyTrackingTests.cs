@@ -45,7 +45,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 			testContext,
 			new PublisherConfiguration()
 			{
-				ConfigPrefx = @"Azure.Monitor.AuthOn.",
+				ConfigPrefix = @"Azure.Monitor.AuthOn.",
 				UseAuthentication = true
 			}
 		)
@@ -83,9 +83,16 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 	#region Methods: Tests
 
 	[TestMethod]
-	public async Task AzureQueue_Success()
+	public async Task AzureQueue()
 	{
-		var context = TelemetryTracker.TrackOperationBegin(GetOperationId);
+		// set operation
+		TelemetryTracker.Operation = new()
+		{
+			Id = TelemetryFactory.GetOperationId(),
+			Name = $"{nameof(DependencyTrackingTests)}.{nameof(AzureQueue)}"
+		};
+
+		TelemetryTracker.ActivityScopeBegin(TelemetryFactory.GetOperationId, out var time, out var timestamp, out var id, out var operation);
 
 		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
@@ -100,13 +107,17 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		await SendMessageTrackedAsync("end", cancellationToken);
 
-		TelemetryTracker.TrackRequestEnd
+		var duration = TelemetryTracker.ActivityScopeEnd(timestamp, operation);
+
+		TelemetryTracker.TrackRequest
 		(
-			context,
+			time,
+			duration,
+			id,
 			new Uri($"tst:{nameof(DependencyTrackingTests)}"),
 			"OK",
 			true,
-			nameof(AzureQueue_Success)
+			nameof(AzureQueue)
 		);
 
 		var result = await TelemetryTracker.PublishAsync(cancellationToken);
@@ -117,11 +128,13 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 	private async Task SendMessageTrackedAsync(String message, CancellationToken cancellationToken)
 	{
-		var operationContext = TelemetryTracker.TrackOperationBegin(GetTelemetryId);
+		TelemetryTracker.ActivityScopeBegin(TelemetryFactory.GetActivityId, out var time, out var timestamp, out var id, out var operation);
 
 		_ = await queueClient.SendMessageAsync(message, cancellationToken);
 
-		TelemetryTracker.TrackDependencyInProcEnd(operationContext, "Storage", true);
+		var duration = TelemetryTracker.ActivityScopeEnd(timestamp, operation);
+
+		TelemetryTracker.TrackDependencyInProc(time, duration, id, "Storage", true);
 	}
 
 	#endregion

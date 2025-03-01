@@ -8,7 +8,7 @@ using System;
 /// <summary>
 /// Represents the context for tracking telemetry data.
 /// </summary>
-public sealed class TelemetryTrackContext
+public sealed class ActivityContext
 {
 	/// <summary>
 	/// The unique identifier of the telemetry item.

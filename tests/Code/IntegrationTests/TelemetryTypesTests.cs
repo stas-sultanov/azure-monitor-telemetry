@@ -15,7 +15,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 {
 	#region Fields
 
-	private readonly TelemetryFactory telemetryFactory = new();
+	private readonly Uri defaultUri = new ("https://gostas.dev");
+
+	private readonly TelemetryFactory telemetryFactory = new(nameof(TelemetryTypesTests));
 
 	private TelemetryTracker TelemetryTracker { get; }
 
@@ -28,7 +30,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		testContext,
 		new PublisherConfiguration()
 		{
-			ConfigPrefx = @"Azure.Monitor.AuthOff.",
+			ConfigPrefix = @"Azure.Monitor.AuthOff.",
 			UseAuthentication = false
 		}
 	)
@@ -54,7 +56,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_AvailabilityTelemetry_Max()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max();
+		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max("Check");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -72,7 +74,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_AvailabilityTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Min();
+		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Min("Check");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -94,7 +96,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_DependencyTelemetry_Max()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max();
+		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max("Storage", defaultUri);
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -111,7 +113,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_DependencyTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_DependencyTelemetry_Min();
+		var telemetry = telemetryFactory.Create_DependencyTelemetry_Min("Storage");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -132,7 +134,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_EventTelemetry_Max()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_EventTelemetry_Max();
+		var telemetry = telemetryFactory.Create_EventTelemetry_Max("Check");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -150,7 +152,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_EventTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_EventTelemetry_Min();
+		var telemetry = telemetryFactory.Create_EventTelemetry_Min("Check");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -218,7 +220,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 			Min = 1,
 			Max = 3
 		};
-		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", 6, aggregation);
+		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", "count", 6, aggregation);
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -236,7 +238,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_MetricTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_MetricTelemetry_Min("tests", 6);
+		var telemetry = telemetryFactory.Create_MetricTelemetry_Min("tests", "count", 6);
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -258,7 +260,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_PageViewTelemetry_Max()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max();
+		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max("Main", defaultUri);
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -276,7 +278,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_PageViewTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min();
+		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min("Main");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -298,7 +300,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_RequestTelemetry_Max()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_RequestTelemetry_Max();
+		var telemetry = telemetryFactory.Create_RequestTelemetry_Max("GetMain", defaultUri);
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -316,7 +318,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_RequestTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min();
+		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min("GetMain");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -338,7 +340,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_TraceTelemetry_Max()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_TraceTelemetry_Max();
+		var telemetry = telemetryFactory.Create_TraceTelemetry_Max("Test");
 
 		// act
 		TelemetryTracker.Add(telemetry);
@@ -356,7 +358,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_TraceTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_TraceTelemetry_Min();
+		var telemetry = telemetryFactory.Create_TraceTelemetry_Min("Test");
 
 		// act
 		TelemetryTracker.Add(telemetry);

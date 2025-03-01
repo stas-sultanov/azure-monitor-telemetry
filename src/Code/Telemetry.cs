@@ -4,33 +4,29 @@
 namespace Azure.Monitor.Telemetry;
 
 /// <summary>
-/// Represents a base class for all types of telemetry data.
+/// Contract for types that reperests telemetry.
 /// </summary>
 public interface Telemetry
 {
 	#region Properties
 
 	/// <summary>
-	/// The details about the telemetry operation being performed.
+	/// The details about the operation being performed.
 	/// </summary>
 	public TelemetryOperation Operation { get; }
 
 	/// <summary>
-	/// A read-only list of custom properties in a name-value format.
-	/// This collection is used to extend standard telemetry data with custom dimensions.
+	/// A read-only list of custom properties.
 	/// </summary>
 	/// <remarks>
+	/// This collection is used to extend standard telemetry data with custom dimensions.
 	/// Maximum key length: 150 characters, Maximum value length: 8192 characters.
-	/// Is null by default.
 	/// </remarks>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; }
 
 	/// <summary>
-	/// A read-only list of tags in a name-value format.
+	/// A read-only list of tags.
 	/// </summary>
-	/// <remarks>
-	/// Is null by default.
-	/// </remarks>
 	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; }
 
 	/// <summary>

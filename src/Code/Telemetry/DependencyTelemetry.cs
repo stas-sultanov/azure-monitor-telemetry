@@ -13,24 +13,20 @@ namespace Azure.Monitor.Telemetry;
 /// - Azure storage operations
 /// - Custom dependencies
 /// </remarks>
-public sealed class DependencyTelemetry : Telemetry
+public sealed class DependencyTelemetry : ActivityTelemetry
 {
 	#region Properties
 
 	/// <summary>
-	/// This field is the command initiated by this dependency call.
+	/// The command initiated by this dependency call.
 	/// </summary>
-	/// <example>SQL statement and HTTP URL with all query parameters.</example>
+	/// <example>SQL statement or HTTP URL with all query parameters.</example>
 	public String? Data { get; init; }
 
-	/// <summary>
-	/// The time taken to complete the dependency call.
-	/// </summary>
+	/// <inheritdoc/>
 	public TimeSpan Duration { get; init; }
 
-	/// <summary>
-	/// The unique identifier.
-	/// </summary>
+	/// <inheritdoc/>
 	public required String Id { get; init; }
 
 	/// <summary>

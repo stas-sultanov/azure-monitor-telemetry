@@ -9,18 +9,14 @@ namespace Azure.Monitor.Telemetry;
 /// <remarks>
 /// The page is a logical unit that is defined by the developer to be an application tab or a screen.
 /// </remarks>
-public sealed class PageViewTelemetry : Telemetry
+public sealed class PageViewTelemetry : ActivityTelemetry
 {
 	#region Properties
 
-	/// <summary>
-	/// The time taken to present the page to the user.
-	/// </summary>
+	/// <inheritdoc/>
 	public TimeSpan Duration { get; init; }
 
-	/// <summary>
-	/// The unique identifier.
-	/// </summary>
+	/// <inheritdoc/>
 	public required String Id { get; init; }
 
 	/// <summary>
@@ -47,7 +43,7 @@ public sealed class PageViewTelemetry : Telemetry
 	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
-	/// The UTC timestamp when the operation was initiated.
+	/// The UTC timestamp when the page view was initiated.
 	/// </summary>
 	public required DateTime Time { get; init; }
 

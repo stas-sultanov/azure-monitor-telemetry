@@ -2,6 +2,7 @@
 // Copyright © Stas Sultanov.
 
 namespace Azure.Monitor.Telemetry;
+
 /// <summary>
 /// Represents telemetry of an exception that occurred in an application.
 /// </summary>

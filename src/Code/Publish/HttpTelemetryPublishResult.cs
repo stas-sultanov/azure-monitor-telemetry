@@ -6,7 +6,7 @@ namespace Azure.Monitor.Telemetry.Publish;
 using System.Net;
 
 /// <summary>
-/// Encapsulates the outcome of publishing telemetry over HTTP.
+/// Represents a result of the Publish operation.
 /// </summary>
 public sealed class HttpTelemetryPublishResult : TelemetryPublishResult
 {

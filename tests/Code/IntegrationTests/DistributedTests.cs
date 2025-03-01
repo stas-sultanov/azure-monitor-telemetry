@@ -47,7 +47,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 			testContext,
 			new PublisherConfiguration()
 			{
-				ConfigPrefx = @"Azure.Monitor.AuthOn.",
+				ConfigPrefix = @"Azure.Monitor.AuthOn.",
 				UseAuthentication = true
 			}
 		)
@@ -63,7 +63,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 			]
 		);
 
-		clientTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ClientTelemetryTracker, GetTelemetryId);
+		clientTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ClientTelemetryTracker, TelemetryFactory.GetActivityId);
 
 		Service0TelemetryTracker = new TelemetryTracker
 		(
@@ -85,7 +85,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 			]
 		);
 
-		service1TelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(Service1TelemetryTracker, GetTelemetryId);
+		service1TelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(Service1TelemetryTracker, TelemetryFactory.GetActivityId);
 	}
 
 	#endregion
@@ -111,7 +111,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 			// set top level operation
 			ClientTelemetryTracker.Operation = new TelemetryOperation
 			{
-				Id = GetOperationId(),
+				Id = TelemetryFactory.GetOperationId(),
 				Name = "ShowMainPage"
 			};
 
@@ -159,7 +159,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 			// set top level operation
 			Service0TelemetryTracker.Operation = new TelemetryOperation
 			{
-				Id = GetOperationId(),
+				Id = TelemetryFactory.GetOperationId(),
 				Name = "Availability"
 			};
 

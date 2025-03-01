@@ -6,18 +6,14 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of an availability test.
 /// </summary>
-public sealed class AvailabilityTelemetry : Telemetry
+public sealed class AvailabilityTelemetry : ActivityTelemetry
 {
 	#region Properties
 
-	/// <summary>
-	/// The time taken to complete the test.
-	/// </summary>
+	/// <inheritdoc/>
 	public required TimeSpan Duration { get; init; }
 
-	/// <summary>
-	/// The unique identifier.
-	/// </summary>
+	/// <inheritdoc/>
 	public required String Id { get; init; }
 
 	/// <summary>

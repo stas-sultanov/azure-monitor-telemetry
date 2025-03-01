@@ -162,26 +162,29 @@ public static class JsonTelemetrySerializer
 		{
 			var scopeHasItems = false;
 
-			// serialize operation-specific tags
-			if (telemetry.Operation.Id != null)
+			if (telemetry.Operation != null)
 			{
-				WritePair(streamWriter, TelemetryTagKey.OperationId, telemetry.Operation.Id, scopeHasItems);
+				// serialize operation-specific tags
+				if (telemetry.Operation.Id != null)
+				{
+					WritePair(streamWriter, TelemetryTagKey.OperationId, telemetry.Operation.Id, scopeHasItems);
 
-				scopeHasItems = true;
-			}
+					scopeHasItems = true;
+				}
 
-			if (telemetry.Operation.Name != null)
-			{
-				WritePair(streamWriter, TelemetryTagKey.OperationName, telemetry.Operation.Name, scopeHasItems);
+				if (telemetry.Operation.Name != null)
+				{
+					WritePair(streamWriter, TelemetryTagKey.OperationName, telemetry.Operation.Name, scopeHasItems);
 
-				scopeHasItems = true;
-			}
+					scopeHasItems = true;
+				}
 
-			if (telemetry.Operation.ParentId != null)
-			{
-				WritePair(streamWriter, TelemetryTagKey.OperationParentId, telemetry.Operation.ParentId, scopeHasItems);
+				if (telemetry.Operation.ParentId != null)
+				{
+					WritePair(streamWriter, TelemetryTagKey.OperationParentId, telemetry.Operation.ParentId, scopeHasItems);
 
-				scopeHasItems = true;
+					scopeHasItems = true;
+				}
 			}
 
 			// serialize telemetry item tags

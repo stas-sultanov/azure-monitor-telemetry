@@ -3,7 +3,6 @@
 
 namespace Azure.Monitor.Telemetry.Tests;
 
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -22,7 +21,7 @@ public abstract class IntegrationTestsBase : IDisposable
 
 	public sealed class PublisherConfiguration
 	{
-		public required String ConfigPrefx { get; init; }
+		public required String ConfigPrefix { get; init; }
 
 		public Dictionary<String, String> Tags { get; init; } = [];
 
@@ -89,11 +88,11 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		foreach (var config in configList)
 		{
-			var ingestionEndpointParamName = config.ConfigPrefx + "IngestionEndpoint";
+			var ingestionEndpointParamName = config.ConfigPrefix + "IngestionEndpoint";
 			var ingestionEndpointParam = TestContext.Properties[ingestionEndpointParamName]?.ToString() ?? throw new ArgumentException($"Parameter {ingestionEndpointParamName} has not been provided.");
 			var ingestionEndpoint = new Uri(ingestionEndpointParam);
 
-			var instrumentationKeyParamName = config.ConfigPrefx + "InstrumentationKey";
+			var instrumentationKeyParamName = config.ConfigPrefix + "InstrumentationKey";
 			var instrumentationKeyParam = TestContext.Properties[instrumentationKeyParamName]?.ToString() ?? throw new ArgumentException($"Parameter {instrumentationKeyParamName} has not been provided.");
 			var instrumentationKey = new Guid(instrumentationKeyParam);
 
@@ -142,16 +141,6 @@ public abstract class IntegrationTestsBase : IDisposable
 	#endregion
 
 	#region Methods
-
-	protected static String GetOperationId()
-	{
-		return ActivityTraceId.CreateRandom().ToString();
-	}
-
-	protected static String GetTelemetryId()
-	{
-		return ActivitySpanId.CreateRandom().ToString();
-	}
 
 	protected static void AssertStandardSuccess(TelemetryPublishResult[] telemetryPublishResults)
 	{

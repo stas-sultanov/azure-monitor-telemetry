@@ -9,13 +9,13 @@ using System.Net.Http.Headers;
 using System.Text;
 
 /// <summary>
-/// Provides telemetry publishing using HTTP protocol.
+/// Provides telemetry publishing via HTTP protocol.
 /// </summary>
 /// <remarks>
 /// Handles publishing of telemetry data to Azure Monitor's ingestion endpoints.
-/// It supports both authenticated (with Bearer token) and unauthenticated scenarios.
-/// For authenticated scenarios, uses v2.1 of the track endpoint.
+/// Supports both unauthenticated and authenticated (via Bearer token) scenarios.
 /// For unauthenticated scenarios, uses the v2 of the track endpoint.
+/// For authenticated scenarios, uses v2.1 of the track endpoint.
 /// For authenticated scenario, the identity, on behalf of which the operation occurs, requires <a href="https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher">Monitoring Metrics Publisher</a> role.
 /// </remarks>
 public sealed class HttpTelemetryPublisher : TelemetryPublisher
@@ -109,9 +109,9 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <inheritdoc/>
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
-		IReadOnlyList<Telemetry> telemetryList,
-		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
-		CancellationToken cancellationToken
+		IReadOnlyList<Telemetry> telemetryItems,
+		IReadOnlyList<KeyValuePair<String, String>>? trackerTags = null,
+		CancellationToken cancellationToken = default
 	)
 	{
 		// create memory stream to write request
@@ -123,9 +123,9 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			// create stream writer based on memory stream as we want to write text in JSON format
 			using var streamWriter = new StreamWriter(compressedStream, encoding);
 
-			for (var index = 0; index < telemetryList.Count; index++)
+			for (var index = 0; index < telemetryItems.Count; index++)
 			{
-				var telemetryItem = telemetryList[index];
+				var telemetryItem = telemetryItems[index];
 
 				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem, trackerTags, tags);
 			}
@@ -147,7 +147,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			if (authorizationHeaderValue == null || DateTimeOffset.UtcNow > authorizationTokenExpiresOn)
 			{
 				// get token
-				var token = await getAccessToken(cancellationToken).ConfigureAwait(false);
+				var token = await getAccessToken(cancellationToken);
 
 				authorizationTokenExpiresOn = token.ExpiresOn;
 
@@ -171,21 +171,18 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		var httpRequestTimer = System.Diagnostics.Stopwatch.StartNew();
 
 		// execute http request to the ingestion endpoint
-		using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		using var response = await httpClient.SendAsync(request, cancellationToken);
 
 		// stop timer
 		httpRequestTimer.Stop();
 
 		// read response content as string
-#if NET462
-		var responseContentAsString = await response.Content.ReadAsStringAsync();
-#else
-		var responseContentAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#endif
+		var responseContentAsString = await response.Content.ReadAsStringAsync(cancellationToken);
+
 		// create result
 		var result = new HttpTelemetryPublishResult
 		{
-			Count = telemetryList.Count,
+			Count = telemetryItems.Count,
 			Duration = httpRequestTimer.Elapsed,
 			Response = responseContentAsString,
 			StatusCode = response.StatusCode,

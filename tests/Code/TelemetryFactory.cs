@@ -7,67 +7,76 @@ using System;
 using System.Diagnostics;
 
 /// <summary>
-/// Provides instances of classes that implements <see cref="Telemetry"/> for testing purposes.
+/// Provides a set of method to create types that implemlement <see cref="Telemetry"/> for test purposes.
 /// </summary>
 internal sealed class TelemetryFactory
 {
 	#region Properties
 
 	public KeyValuePair<String, Double>[] Measurements { get; set; }
-	public String Message { get; set; }
-	public String Name { get; set; }
-	public TelemetryOperation Operation { get; set; }
+	public TelemetryOperation Operation { get; }
 	public KeyValuePair<String, String>[] Properties { get; set; }
 	public KeyValuePair<String, String>[] Tags { get; set; }
-	public Uri Url { get; set; }
 
 	#endregion
 
 	#region Constructors
 
-	internal TelemetryFactory()
+	internal TelemetryFactory
+	(
+		String operationName
+	)
 	{
-		Message = "message";
-
 		Measurements = [new("m", 0), new("n", 1.5)];
-
-		Name = "name";
 
 		Operation = new TelemetryOperation
 		{
-			Id = Guid.NewGuid().ToString("N"),
-			Name = "Test #" + DateTime.Now.ToString("yyMMddhhmm")
+			Id = GetOperationId(),
+			Name = operationName
 		};
 
 		Properties = [new("key", "value")];
 
-		Tags = [new(TelemetryTagKey.CloudRole, "TestMachine")];
-
-		Url = new Uri("https://gostas.dev");
+		Tags = [new(TelemetryTagKey.CloudRole, Environment.MachineName), new(TelemetryTagKey.CloudRoleInstance, Environment.ProcessId.ToString())];
 	}
 
 	#endregion
 
 	#region Methods: Helpers
 
-	internal static String GetId()
+	internal static String GetOperationId()
+	{
+		return ActivityTraceId.CreateRandom().ToString();
+	}
+
+	internal static String GetActivityId()
 	{
 		return ActivitySpanId.CreateRandom().ToString();
 	}
 
-	internal static TimeSpan GetRandomDuration(Int32 millisecondsMin, Int32 millisecondsMax)
+	internal static TimeSpan GetRandomDuration
+	(
+		Int32 millisecondsMin,
+		Int32 millisecondsMax
+	)
 	{
 		var milliseconds = Random.Shared.Next(millisecondsMin, millisecondsMax);
 
 		return TimeSpan.FromMilliseconds(milliseconds);
 	}
 
-	internal static void Simulate_ExceptionThrow(String? param1)
+	internal static void Simulate_ExceptionThrow
+	(
+		String? param1
+	)
 	{
 		throw new ArgumentNullException(nameof(param1), "L1");
 	}
 
-	internal static void Simulate_ExceptionThrow_WithInnerException(String? paramL2)
+	internal static void Simulate_ExceptionThrow_WithInnerException
+	(
+		String? paramL2
+	)
 	{
 		try
 		{
@@ -86,9 +95,13 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="AvailabilityTelemetry"/> with full load.
 	/// </summary>
-	public AvailabilityTelemetry Create_AvailabilityTelemetry_Max()
+	public AvailabilityTelemetry Create_AvailabilityTelemetry_Max
+	(
+		String name,
+		String message = @"Passed"
+	)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
 		var duration = GetRandomDuration(100, 2000);
 
@@ -97,8 +110,8 @@ internal sealed class TelemetryFactory
 			Duration = duration,
 			Id = id,
 			Measurements = Measurements,
-			Message = Message,
-			Name = Name,
+			Message = message,
+			Name = name,
 			Operation = Operation,
 			Properties = Properties,
 			RunLocation = "Earth",
@@ -113,16 +126,20 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="AvailabilityTelemetry"/> with minimum load.
 	/// </summary>
-	public AvailabilityTelemetry Create_AvailabilityTelemetry_Min()
+	public AvailabilityTelemetry Create_AvailabilityTelemetry_Min
+	(
+		String name,
+		String message = @"Passed"
+	)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
 		var result = new AvailabilityTelemetry
 		{
 			Duration = TimeSpan.Zero,
 			Id = id,
-			Message = Message,
-			Name = Name,
+			Message = message,
+			Name = name,
 			Operation = Operation,
 			Success = true,
 			Time = DateTime.UtcNow
@@ -134,11 +151,15 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="DependencyTelemetry"/> with full load.
 	/// </summary>
-	public DependencyTelemetry Create_DependencyTelemetry_Max()
+	public DependencyTelemetry Create_DependencyTelemetry_Max
+	(
+		String name,
+		Uri url
+	)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
-		var type = DependencyType.DetectTypeFromHttp(Url);
+		var type = DependencyType.DetectTypeFromHttp(url);
 
 		var duration = GetRandomDuration(200, 800);
 
@@ -148,7 +169,7 @@ internal sealed class TelemetryFactory
 			Duration = duration,
 			Id = id,
 			Measurements = Measurements,
-			Name = Name,
+			Name = name,
 			Operation = Operation,
 			Properties = Properties,
 			ResultCode = "401",
@@ -165,16 +186,19 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="DependencyTelemetry"/> with minimum load.
 	/// </summary>
-	public DependencyTelemetry Create_DependencyTelemetry_Min()
+	public DependencyTelemetry Create_DependencyTelemetry_Min
+	(
+		String name
+	)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
 		var result = new DependencyTelemetry
 		{
 			Operation = Operation,
 			Time = DateTime.UtcNow,
 			Id = id,
-			Name = Name
+			Name = name
 		};
 
 		return result;
@@ -183,12 +207,15 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="EventTelemetry"/> with full load.
 	/// </summary>
-	public EventTelemetry Create_EventTelemetry_Max()
+	public EventTelemetry Create_EventTelemetry_Max
+	(
+		String name
+	)
 	{
 		var result = new EventTelemetry
 		{
 			Measurements = Measurements,
-			Name = Name,
+			Name = name,
 			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags,
@@ -201,13 +228,16 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="EventTelemetry"/> with minimum load.
 	/// </summary>
-	public EventTelemetry Create_EventTelemetry_Min()
+	public EventTelemetry Create_EventTelemetry_Min
+	(
+		String name
+	)
 	{
 		var result = new EventTelemetry
 		{
+			Name = name,
 			Operation = Operation,
 			Time = DateTime.UtcNow,
-			Name = Name
 		};
 
 		return result;
@@ -271,6 +301,7 @@ internal sealed class TelemetryFactory
 	public MetricTelemetry Create_MetricTelemetry_Max
 	(
 		String @namespace,
+		String name,
 		Double value,
 		MetricValueAggregation aggregation
 	)
@@ -280,7 +311,7 @@ internal sealed class TelemetryFactory
 			Operation = Operation,
 			Time = DateTime.UtcNow,
 			Namespace = @namespace,
-			Name = Name,
+			Name = name,
 			Value = value,
 			ValueAggregation = aggregation,
 			Properties = Properties,
@@ -296,12 +327,13 @@ internal sealed class TelemetryFactory
 	public MetricTelemetry Create_MetricTelemetry_Min
 	(
 		String @namespace,
+		String name,
 		Double value
 	)
 	{
 		var result = new MetricTelemetry
 		{
-			Name = Name,
+			Name = name,
 			Namespace = @namespace,
 			Operation = Operation,
 			Time = DateTime.UtcNow,
@@ -314,9 +346,13 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="PageViewTelemetry"/> with full load.
 	/// </summary>
-	public PageViewTelemetry Create_PageViewTelemetry_Max()
+	public PageViewTelemetry Create_PageViewTelemetry_Max
+	(
+		String name,
+		Uri url
+	)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
 		var duration = GetRandomDuration(300, 700);
 
@@ -325,12 +361,12 @@ internal sealed class TelemetryFactory
 			Measurements = Measurements,
 			Duration = duration,
 			Id = id,
-			Name = Name,
+			Name = name,
 			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags,
 			Time = DateTime.UtcNow,
-			Url = Url
+			Url = url
 		};
 
 		return result;
@@ -339,14 +375,17 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="PageViewTelemetry"/> with minimum load.
 	/// </summary>
-	public PageViewTelemetry Create_PageViewTelemetry_Min()
+	public PageViewTelemetry Create_PageViewTelemetry_Min
+	(
+		String name
+	)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
 		var result = new PageViewTelemetry
 		{
 			Id = id,
-			Name = Name,
+			Name = name,
 			Operation = Operation,
 			Time = DateTime.UtcNow
 		};
@@ -357,23 +396,27 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="RequestTelemetry"/> with full load.
 	/// </summary>
-	public RequestTelemetry Create_RequestTelemetry_Max()
+	public RequestTelemetry Create_RequestTelemetry_Max
+	(
+		String name,
+		Uri url
+	)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
 		var result = new RequestTelemetry
 		{
 			Duration = TimeSpan.FromSeconds(1),
 			Id = id,
 			Measurements = Measurements,
-			Name = Name,
+			Name = name,
 			Operation = Operation,
 			Properties = Properties,
 			ResponseCode = "200",
 			Success = true,
 			Tags = Tags,
 			Time = DateTime.UtcNow,
-			Url = Url
+			Url = url
 		};
 
 		return result;
@@ -382,16 +425,16 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="RequestTelemetry"/> with minimum load.
 	/// </summary>
-	public RequestTelemetry Create_RequestTelemetry_Min()
+	public RequestTelemetry Create_RequestTelemetry_Min(Uri url)
 	{
-		var id = GetId();
+		var id = GetActivityId();
 
 		var result = new RequestTelemetry
 		{
 			Operation = Operation,
 			Time = DateTime.UtcNow,
 			Id = id,
-			Url = Url,
+			Url = url,
 			ResponseCode = "1"
 		};
 
@@ -401,11 +444,11 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="TraceTelemetry"/> with full load.
 	/// </summary>
-	public TraceTelemetry Create_TraceTelemetry_Max()
+	public TraceTelemetry Create_TraceTelemetry_Max(String message)
 	{
 		var result = new TraceTelemetry
 		{
-			Message = Message,
+			Message = message,
 			Operation = Operation,
 			Properties = Properties,
 			SeverityLevel = SeverityLevel.Information,
@@ -419,11 +462,11 @@ internal sealed class TelemetryFactory
 	/// <summary>
 	/// Creates instance of <see cref="TraceTelemetry"/> with minimum load.
 	/// </summary>
-	public TraceTelemetry Create_TraceTelemetry_Min()
+	public TraceTelemetry Create_TraceTelemetry_Min(String message)
 	{
 		var result = new TraceTelemetry
 		{
-			Message = Message,
+			Message = message,
 			Operation = Operation,
 			SeverityLevel = SeverityLevel.Verbose,
 			Time = DateTime.UtcNow
