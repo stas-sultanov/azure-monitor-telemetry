@@ -6,9 +6,6 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of a logical sequence of execution triggered by an external request to an application.
 /// </summary>
-/// <remarks>
-/// Every request execution is identified by a unique <see cref="Id"/> and <see cref="Url"/> that contain all the execution parameters.
-/// </remarks>
 public sealed class RequestTelemetry : ActivityTelemetry
 {
 	#region Properties

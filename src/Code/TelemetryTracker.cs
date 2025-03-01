@@ -254,7 +254,7 @@ public sealed class TelemetryTracker
 	/// <remarks>
 	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
-	/// <param name="time">The UTC timestamp when the activity was intiated.</param>
+	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="httpMethod">The HTTP method used in the operation.</param>

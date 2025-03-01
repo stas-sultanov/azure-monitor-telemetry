@@ -15,24 +15,22 @@ using System.Threading.Tasks;
 /// This handler uses a <see cref="TelemetryTracker"/> to track details about HTTP requests and responses, including the request URI, method, status code, and duration.
 /// </remarks>
 /// <param name="telemetryTracker">The telemetry tracker.</param>
-/// <param name="getId">A function that returns a unique identifier for the telemetry operation.</param>
+/// <param name="getActivityId">A function that returns a unique identifier for the activity.</param>
 public class TelemetryTrackedHttpClientHandler
 (
 	TelemetryTracker telemetryTracker,
-	Func<String> getId
+	Func<String> getActivityId
 )
 	: HttpClientHandler
 {
 	/// <summary>
 	/// A delegate that returns an identifier for the <see cref="DependencyTelemetry"/>.
 	/// </summary>
-	/// <exception cref="ArgumentNullException"> when <paramref name="getId"/> is null.</exception>
-	private readonly Func<String> getId = getId;
+	private readonly Func<String> getActivityId = getActivityId;
 
 	/// <summary>
 	/// The telemetry tracker to track outgoing HTTP requests.
 	/// </summary>
-
 	private readonly TelemetryTracker telemetryTracker = telemetryTracker;
 
 	/// <inheritdoc/>
@@ -48,14 +46,16 @@ public class TelemetryTrackedHttpClientHandler
 		// get time
 		var time = DateTime.UtcNow;
 
-		// get id
-		var id = getId();
+		// get activity id
+		var id = getActivityId();
 
 		// send the HTTP request and capture the response.
 		var result = await base.SendAsync(request, cancellationToken);
 
+		// stop stopwatch
 		stopwatch.Stop();
 
+		// get duration
 		var duration = stopwatch.Elapsed;
 
 		// track telemetry

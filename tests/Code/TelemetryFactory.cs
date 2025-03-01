@@ -7,7 +7,7 @@ using System;
 using System.Diagnostics;
 
 /// <summary>
-/// Provides a set of method to create types that implemlement <see cref="Telemetry"/> for test purposes.
+/// Provides a set of method to create types that implement <see cref="Telemetry"/> for test purposes.
 /// </summary>
 internal sealed class TelemetryFactory
 {

@@ -1,4 +1,4 @@
-# The workflow to compile main project and pack it as NuGet package.
+# The workflow to release the library.
 
 name: Publish
 

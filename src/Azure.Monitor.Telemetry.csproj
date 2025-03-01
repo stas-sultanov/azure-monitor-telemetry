@@ -30,7 +30,6 @@
 				<Compile Remove="NET462\HttpContent.cs" />
 				<Compile Remove="NET462\IsExternalInit.cs" />
 				<Compile Remove="NET462\RequiredMemberAttribute.cs" />
-				<Compile Remove="NET462\Stopwatch.cs" />
 			</ItemGroup>
 		</When>
 	</Choose>

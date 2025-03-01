@@ -4,7 +4,7 @@
 namespace Azure.Monitor.Telemetry;
 
 /// <summary>
-/// Contract for telemetry types that represent activity.
+/// A contract for telemetry types that represent activity.
 /// </summary>
 public interface ActivityTelemetry : Telemetry
 {
@@ -16,7 +16,7 @@ public interface ActivityTelemetry : Telemetry
 	public TimeSpan Duration { get; }
 
 	/// <summary>
-	/// The unieque identifier of the activity.
+	/// The unique identifier of the activity.
 	/// </summary>
 	public String Id { get; }
 

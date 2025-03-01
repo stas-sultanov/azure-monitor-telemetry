@@ -6,7 +6,7 @@ namespace Azure.Monitor.Telemetry;
 using System;
 
 /// <summary>
-/// Represents a contract for result of a telemetry Publish operation.
+/// A contract for types that represents a result of a telemetry Publish operation.
 /// </summary>
 public interface TelemetryPublishResult
 {

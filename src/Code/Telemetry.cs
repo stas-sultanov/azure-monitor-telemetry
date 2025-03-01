@@ -4,7 +4,7 @@
 namespace Azure.Monitor.Telemetry;
 
 /// <summary>
-/// Contract for types that reperests telemetry.
+/// A contract for types that represents telemetry.
 /// </summary>
 public interface Telemetry
 {

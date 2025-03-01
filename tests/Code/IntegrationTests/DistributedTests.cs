@@ -18,7 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
-public sealed class DestributedTests : IntegrationTestsBase
+public sealed class DistributedTests : IntegrationTestsBase
 {
 	#region Data
 
@@ -41,7 +41,7 @@ public sealed class DestributedTests : IntegrationTestsBase
 	/// Initializes a new instance of the <see cref="DependencyTrackingTests"/> class.
 	/// </summary>
 	/// <param name="testContext">The test context.</param>
-	public DestributedTests(TestContext testContext)
+	public DistributedTests(TestContext testContext)
 		: base
 		(
 			testContext,

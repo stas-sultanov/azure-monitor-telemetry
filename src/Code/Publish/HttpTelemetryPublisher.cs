@@ -42,6 +42,10 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// </summary>
 	public const String AuthorizationScope = "https://monitor.azure.com//.default";
 
+	#endregion
+
+	#region Static Fields
+
 	private static readonly UTF8Encoding encoding = new(false);
 
 	private static readonly MediaTypeHeaderValue contentTypeHeaderValue = MediaTypeHeaderValue.Parse(@"application/x-json-stream");

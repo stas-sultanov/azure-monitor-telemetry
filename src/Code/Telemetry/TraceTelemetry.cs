@@ -4,7 +4,7 @@
 namespace Azure.Monitor.Telemetry;
 
 /// <summary>
-/// Represents printf-style trace statements that are text searched.
+/// Represents a printf-style trace statement that is text searched.
 /// </summary>
 public sealed class TraceTelemetry : Telemetry
 {
