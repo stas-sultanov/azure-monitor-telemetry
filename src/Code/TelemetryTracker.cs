@@ -10,6 +10,8 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 
+using Azure.Monitor.Telemetry.Types;
+
 /// <summary>
 /// Provides functionality to collect and publish telemetry data.
 /// </summary>
@@ -342,7 +344,7 @@ public sealed class TelemetryTracker
 			Success = success,
 			Tags = tags,
 			Target = uri.Host,
-			Type = DependencyType.DetectTypeFromHttp(uri),
+			Type = uri.DetectDependencyTypeFromHttp(),
 			Time = time
 		};
 
@@ -454,7 +456,7 @@ public sealed class TelemetryTracker
 	{
 		var time = DateTime.UtcNow;
 
-		var exceptions = ExceptionTelemetry.Convert(exception);
+		var exceptions = exception.Convert();
 
 		var telemetry = new ExceptionTelemetry
 		{

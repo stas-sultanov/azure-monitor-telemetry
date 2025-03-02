@@ -5,6 +5,8 @@ namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 
+using Azure.Monitor.Telemetry.Types;
+
 /// <summary>
 /// Provides helper methods for asserting.
 /// </summary>

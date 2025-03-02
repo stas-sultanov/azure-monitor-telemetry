@@ -8,7 +8,7 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-sealed public class DependencyTypeTests
+public sealed class DependencyTypeTests
 {
 	[TestMethod]
 	public void Method_DetectTypeFromHttp_ShouldReturnAzureBlob()
@@ -17,7 +17,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.blob.core.windows.net");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureBlob, result);
@@ -30,7 +30,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.documents.azure.com");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureCosmosDB, result);
@@ -43,7 +43,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.azure-devices.net");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureIotHub, result);
@@ -56,7 +56,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.applicationinsights.azure.com");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureMonitor, result);
@@ -69,7 +69,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.queue.core.windows.net");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureQueue, result);
@@ -82,7 +82,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.search.windows.net");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureSearch, result);
@@ -95,7 +95,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.servicebus.windows.net");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureServiceBus, result);
@@ -108,7 +108,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://myaccount.table.core.windows.net");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.AzureTable, result);
@@ -121,7 +121,7 @@ sealed public class DependencyTypeTests
 		var uri = new Uri("https://unknownuri.com");
 
 		// act
-		var result = DependencyType.DetectTypeFromHttp(uri);
+		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
 		Assert.AreEqual(DependencyType.HTTP, result);

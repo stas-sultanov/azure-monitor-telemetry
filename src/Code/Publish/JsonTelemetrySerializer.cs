@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 
 using Azure.Monitor.Telemetry;
+using Azure.Monitor.Telemetry.Types;
 
 /// <summary>
 /// Provides serialization of types that implements <see cref="Telemetry"/> into the stream using JSON format.

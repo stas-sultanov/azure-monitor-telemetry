@@ -7,6 +7,7 @@ using System;
 using System.Runtime.CompilerServices;
 
 using Azure.Monitor.Telemetry;
+using Azure.Monitor.Telemetry.Types;
 
 /// <summary>
 /// Provides extension methods for the <see cref="TelemetryTracker"/> class.

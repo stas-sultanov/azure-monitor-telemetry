@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Mocks;
 using Azure.Monitor.Telemetry.Tests;
+using Azure.Monitor.Telemetry.Types;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

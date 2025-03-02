@@ -7,6 +7,8 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 
+using Azure.Monitor.Telemetry.Types;
+
 /// <summary>
 /// Provides a set of method to create types that implement <see cref="Telemetry"/> for test purposes.
 /// </summary>
@@ -160,7 +162,7 @@ internal sealed class TelemetryFactory
 	{
 		var id = GetActivityId();
 
-		var type = DependencyType.DetectTypeFromHttp(url);
+		var type = url.DetectDependencyTypeFromHttp();
 
 		var duration = GetRandomDuration(200, 800);
 
@@ -257,9 +259,11 @@ internal sealed class TelemetryFactory
 		}
 		catch (Exception exception)
 		{
+			var exceptions = exception.Convert();
+
 			var result = new ExceptionTelemetry
 			{
-				Exceptions = ExceptionTelemetry.Convert(exception),
+				Exceptions = exceptions,
 				Measurements = Measurements,
 				Operation = Operation,
 				Properties = Properties,
@@ -285,9 +289,11 @@ internal sealed class TelemetryFactory
 		}
 		catch (Exception exception)
 		{
+			var exceptions = exception.Convert();
+
 			var result = new ExceptionTelemetry
 			{
-				Exceptions = ExceptionTelemetry.Convert(exception),
+				Exceptions = exceptions,
 				Operation = Operation,
 				Time = DateTime.UtcNow
 			};

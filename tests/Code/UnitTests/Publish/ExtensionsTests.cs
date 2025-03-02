@@ -7,6 +7,7 @@ using System.Net;
 
 using Azure.Monitor.Telemetry.Mocks;
 using Azure.Monitor.Telemetry.Publish;
+using Azure.Monitor.Telemetry.Types;
 
 /// <summary>
 /// Tests for <see cref="Extensions"/> class.
