@@ -341,7 +341,7 @@ public static class JsonTelemetrySerializer
 
 					streamWriter.Write(frame.Assembly);
 
-					WriteIfValid(streamWriter, frame.FileName, ",\"fileName\":\"", "");
+					WriteIfValid(streamWriter, frame.FileName, "\",\"fileName\":\"", "");
 
 					streamWriter.Write("\",\"level\":");
 

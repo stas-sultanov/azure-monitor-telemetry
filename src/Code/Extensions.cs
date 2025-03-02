@@ -138,10 +138,12 @@ public static class Extensions
 						line = 0;
 					}
 
+					var fileName = frame.GetFileName()?.Replace(@"\", @"\\");
+
 					var frameInfo = new StackFrameInfo
 					{
 						Assembly = methodInfo?.Module.Assembly.FullName!,
-						FileName = frame.GetFileName(),
+						FileName = fileName,
 						Level = frameIndex,
 						Line = line,
 						Method = method
