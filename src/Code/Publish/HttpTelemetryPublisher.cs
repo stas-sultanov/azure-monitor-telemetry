@@ -114,8 +114,8 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryItems,
-		IReadOnlyList<KeyValuePair<String, String>>? trackerTags = null,
-		CancellationToken cancellationToken = default
+		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
+		CancellationToken cancellationToken
 	)
 	{
 		// create memory stream to write request

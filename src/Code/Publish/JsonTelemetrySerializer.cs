@@ -3,6 +3,7 @@
 
 namespace Azure.Monitor.Telemetry.Publish;
 
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 
@@ -16,7 +17,6 @@ public static class JsonTelemetrySerializer
 {
 	#region Constants
 
-	private const Int32 ExceptionMaxStackLength = 32768;
 	private const String Name_Availability = @"AppAvailabilityResults";
 	private const String Name_Dependency = @"AppDependencies";
 	private const String Name_Event = @"AppEvents";
@@ -295,63 +295,48 @@ public static class JsonTelemetrySerializer
 	{
 		var exceptionTelemetry = (ExceptionTelemetry) telemetry;
 
-		var exception = exceptionTelemetry.Exception;
-
-		var outerId = 0;
-
 		streamWriter.Write("\"exceptions\":[");
 
-		do
+		for (var exceptionInfoIndex = 0; exceptionInfoIndex < exceptionTelemetry.Exceptions.Count; exceptionInfoIndex++)
 		{
-			var stackTrace = new System.Diagnostics.StackTrace(exception, true);
+			// get exception info
+			var exceptionInfo = exceptionTelemetry.Exceptions[exceptionInfoIndex];
 
-			var hasFullStack = stackTrace.FrameCount < ExceptionMaxStackLength;
-
-			var id = exception.GetHashCode();
-
-			var message = exception.Message.Replace("\r\n", " ");
-
-			var frames = stackTrace.GetFrames();
-
-			if (outerId != 0)
+			if (exceptionInfoIndex > 0)
 			{
 				streamWriter.Write(",");
 			}
 
 			streamWriter.Write("{\"hasFullStack\":");
 
-			streamWriter.Write(hasFullStack ? "true" : "false");
+			streamWriter.Write(exceptionInfo.HasFullStack ? "true" : "false");
 
 			streamWriter.Write(",\"id\":");
 
-			streamWriter.Write(id);
+			streamWriter.Write(exceptionInfo.Id);
 
 			streamWriter.Write(",\"message\":\"");
 
-			streamWriter.Write(message);
+			streamWriter.Write(exceptionInfo.Message);
 
 			streamWriter.Write("\",\"outerId\":");
 
-			streamWriter.Write(outerId);
+			streamWriter.Write(exceptionInfo.OuterId);
 
 			streamWriter.Write(",\"parsedStack\":[");
 
-			var takeFramesCount = Math.Min(frames.Length, ExceptionMaxStackLength);
-
-			for (var frameIndex = 0; frameIndex < frames.Length || frameIndex < takeFramesCount; frameIndex++)
+			for (var frameIndex = 0; frameIndex < exceptionInfo.ParsedStack.Count; frameIndex++)
 			{
 				if (frameIndex != 0)
 				{
 					streamWriter.Write(",");
 				}
 
-				var frame = frames[frameIndex];
-
-				var methodInfo = frame.GetMethod();
+				var frame = exceptionInfo.ParsedStack[frameIndex];
 
 				streamWriter.Write("{\"assembly\":\"");
 
-				streamWriter.Write(methodInfo?.Module.Assembly.FullName);
+				streamWriter.Write(frame.Assembly);
 
 				streamWriter.Write("\",\"level\":");
 
@@ -359,33 +344,21 @@ public static class JsonTelemetrySerializer
 
 				streamWriter.Write(",\"line\":");
 
-				streamWriter.Write(frame.GetFileLineNumber());
+				streamWriter.Write(frame.Line);
 
 				streamWriter.Write(",\"method\":\"");
 
-				if (methodInfo?.DeclaringType != null)
-				{
-					streamWriter.Write(methodInfo.DeclaringType.FullName);
-
-					streamWriter.Write('.');
-				}
-
-				streamWriter.Write(methodInfo?.Name);
+				streamWriter.Write(frame.Method);
 
 				streamWriter.Write("\"}");
 			}
 
 			streamWriter.Write("],\"typeName\":\"");
 
-			streamWriter.Write(exception.GetType().FullName);
+			streamWriter.Write(exceptionInfo.TypeName);
 
 			streamWriter.Write("\"}");
-
-			outerId = id;
-
-			exception = exception.InnerException;
 		}
-		while (exception != null);
 
 		streamWriter.Write("]");
 

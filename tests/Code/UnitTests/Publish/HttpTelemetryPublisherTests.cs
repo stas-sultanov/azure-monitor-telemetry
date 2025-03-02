@@ -80,7 +80,7 @@ public sealed partial class HttpTelemetryPublisherTests
 		};
 
 		// act
-		var result = (await publisher.PublishAsync(telemetryList)) as HttpTelemetryPublishResult;
+		var result = (await publisher.PublishAsync(telemetryList, null, CancellationToken.None)) as HttpTelemetryPublishResult;
 
 		// assert
 		Assert.IsNotNull(result);
@@ -110,13 +110,13 @@ public sealed partial class HttpTelemetryPublisherTests
 		};
 
 		// act 1 - initiate publish, token will expire right after the call
-		var result = await publisher.PublishAsync(telemetryList);
+		var result = await publisher.PublishAsync(telemetryList, null, CancellationToken.None);
 
 		// assert 1
 		Assert.IsTrue(result.Success);
 
 		// act 2 - initiate publish, token will be re-requested
-		result = await publisher.PublishAsync(telemetryList);
+		result = await publisher.PublishAsync(telemetryList, null, CancellationToken.None);
 
 		// assert 2
 		Assert.IsTrue(result.Success);

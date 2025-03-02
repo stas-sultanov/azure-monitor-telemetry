@@ -259,7 +259,7 @@ internal sealed class TelemetryFactory
 		{
 			var result = new ExceptionTelemetry
 			{
-				Exception = exception,
+				Exceptions = ExceptionTelemetry.Convert(exception),
 				Measurements = Measurements,
 				Operation = Operation,
 				Properties = Properties,
@@ -287,7 +287,7 @@ internal sealed class TelemetryFactory
 		{
 			var result = new ExceptionTelemetry
 			{
-				Exception = exception,
+				Exceptions = ExceptionTelemetry.Convert(exception),
 				Operation = Operation,
 				Time = DateTime.UtcNow
 			};

@@ -454,9 +454,11 @@ public sealed class TelemetryTracker
 	{
 		var time = DateTime.UtcNow;
 
+		var exceptions = ExceptionTelemetry.Convert(exception);
+
 		var telemetry = new ExceptionTelemetry
 		{
-			Exception = exception,
+			Exceptions = exceptions,
 			Measurements = measurements,
 			Operation = Operation,
 			Properties = properties,
