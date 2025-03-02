@@ -33,6 +33,11 @@ public sealed class ExceptionTelemetry : Telemetry
 	/// <inheritdoc/>
 	public required TelemetryOperation Operation { get; init; }
 
+	/// <summary>
+	/// The problem identifier.
+	/// </summary>
+	public String? ProblemId { get; init; }
+
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 

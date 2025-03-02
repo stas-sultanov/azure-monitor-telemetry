@@ -17,6 +17,8 @@ public sealed class StackFrameInfo
 	/// </summary>
 	public required String Assembly { get; init; }
 
+	public required String? FileName { get; init; }
+
 	/// <summary>
 	/// The level of the stack frame in the call stack.
 	/// </summary>

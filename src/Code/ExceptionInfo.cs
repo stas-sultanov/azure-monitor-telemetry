@@ -36,7 +36,7 @@ public sealed class ExceptionInfo
 	/// <summary>
 	/// The stack information.
 	/// </summary>
-	public required IReadOnlyList<StackFrameInfo> ParsedStack { get; init; }
+	public required IReadOnlyList<StackFrameInfo>? ParsedStack { get; init; }
 
 	/// <summary>
 	/// The type name of the exception.

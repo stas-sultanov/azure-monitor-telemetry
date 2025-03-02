@@ -11,6 +11,7 @@ public static class Extensions
 	#region Data
 
 	private const Int32 ExceptionMaxStackLength = 32768;
+	private const Int32 ExceptionMaxMessageLength = 32768;
 
 	/// <summary>
 	/// A dictionary mapping well-known domain names to their corresponding dependency types.
@@ -97,38 +98,64 @@ public static class Extensions
 			// get stack trace
 			var stackTrace = new System.Diagnostics.StackTrace(currentException, true);
 
+			// get message
+			var message = currentException.Message.Replace("\r\n", " ");
+
+			if (message.Length > ExceptionMaxMessageLength)
+			{
+				// adjust message
+				message = message.Substring(0, ExceptionMaxMessageLength);
+			}
+
+			StackFrameInfo[]? parsedStack;
+
 			// get frames
 			var frames = stackTrace.GetFrames();
 
-			// calc number of frames to take
-			var takeFramesCount = Math.Min(frames.Length, maxStackLength);
-
-			var parsedStack = new StackFrameInfo[takeFramesCount];
-
-			for (var frameIndex = 0; frameIndex < takeFramesCount; frameIndex++)
+			if (frames == null || frames.Length == 0)
 			{
-				var frame = frames[frameIndex];
+				parsedStack = null;
+			}
+			else
+			{
+				// calc number of frames to take
+				var takeFramesCount = Math.Min(frames.Length, maxStackLength);
 
-				var methodInfo = frame.GetMethod();
+				parsedStack = new StackFrameInfo[takeFramesCount];
 
-				var method = methodInfo?.DeclaringType == null ? methodInfo?.Name: String.Concat(methodInfo.DeclaringType.FullName, ".", methodInfo.Name);
-
-				var frameInfo = new StackFrameInfo
+				for (var frameIndex = 0; frameIndex < takeFramesCount; frameIndex++)
 				{
-					Assembly = methodInfo?.Module.Assembly.FullName!,
-					Level = frameIndex,
-					Line = frame.GetFileLineNumber(),
-					Method = method
-				};
+					var frame = frames[frameIndex];
 
-				parsedStack[frameIndex] = frameInfo;
+					var methodInfo = frame.GetMethod();
+
+					var method = methodInfo?.DeclaringType == null ? methodInfo?.Name: String.Concat(methodInfo.DeclaringType.FullName, ".", methodInfo.Name);
+
+					var line = frame.GetFileLineNumber();
+
+					if (line is > (-1000000) and < 1000000)
+					{
+						line = 0;
+					}
+
+					var frameInfo = new StackFrameInfo
+					{
+						Assembly = methodInfo?.Module.Assembly.FullName!,
+						FileName = frame.GetFileName(),
+						Level = frameIndex,
+						Line = line,
+						Method = method
+					};
+
+					parsedStack[frameIndex] = frameInfo;
+				}
 			}
 
 			var exceptionInfo = new ExceptionInfo()
 			{
 				HasFullStack = stackTrace.FrameCount < maxStackLength,
 				Id = id,
-				Message = currentException.Message.Replace("\r\n", " "),
+				Message = message,
 				OuterId = outerId,
 				ParsedStack = parsedStack,
 				TypeName = currentException.GetType().FullName!

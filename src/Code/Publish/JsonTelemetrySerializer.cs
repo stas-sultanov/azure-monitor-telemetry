@@ -324,37 +324,44 @@ public static class JsonTelemetrySerializer
 
 			streamWriter.Write(exceptionInfo.OuterId);
 
-			streamWriter.Write(",\"parsedStack\":[");
-
-			for (var frameIndex = 0; frameIndex < exceptionInfo.ParsedStack.Count; frameIndex++)
+			if (exceptionInfo.ParsedStack != null)
 			{
-				if (frameIndex != 0)
+				streamWriter.Write(",\"parsedStack\":[");
+
+				for (var frameIndex = 0; frameIndex < exceptionInfo.ParsedStack.Count; frameIndex++)
 				{
-					streamWriter.Write(",");
+					if (frameIndex != 0)
+					{
+						streamWriter.Write(",");
+					}
+
+					var frame = exceptionInfo.ParsedStack[frameIndex];
+
+					streamWriter.Write("{\"assembly\":\"");
+
+					streamWriter.Write(frame.Assembly);
+
+					WriteIfValid(streamWriter, frame.FileName, ",\"fileName\":\"", "");
+
+					streamWriter.Write("\",\"level\":");
+
+					streamWriter.Write(frame.Level);
+
+					streamWriter.Write(",\"line\":");
+
+					streamWriter.Write(frame.Line);
+
+					streamWriter.Write(",\"method\":\"");
+
+					streamWriter.Write(frame.Method);
+
+					streamWriter.Write("\"}");
 				}
 
-				var frame = exceptionInfo.ParsedStack[frameIndex];
-
-				streamWriter.Write("{\"assembly\":\"");
-
-				streamWriter.Write(frame.Assembly);
-
-				streamWriter.Write("\",\"level\":");
-
-				streamWriter.Write(frameIndex);
-
-				streamWriter.Write(",\"line\":");
-
-				streamWriter.Write(frame.Line);
-
-				streamWriter.Write(",\"method\":\"");
-
-				streamWriter.Write(frame.Method);
-
-				streamWriter.Write("\"}");
+				streamWriter.Write("]");
 			}
 
-			streamWriter.Write("],\"typeName\":\"");
+			streamWriter.Write(",\"typeName\":\"");
 
 			streamWriter.Write(exceptionInfo.TypeName);
 
@@ -364,6 +371,8 @@ public static class JsonTelemetrySerializer
 		streamWriter.Write("]");
 
 		WriteIfValid(streamWriter, exceptionTelemetry.Measurements, ",\"measurements\":{", "}");
+
+		WriteIfValid(streamWriter, exceptionTelemetry.ProblemId, ",\"problemId\":\"", "\"");
 
 		if (exceptionTelemetry.SeverityLevel.HasValue)
 		{
