@@ -3,6 +3,8 @@
 
 namespace Azure.Monitor.Telemetry.Types;
 
+using Azure.Monitor.Telemetry;
+
 /// <summary>
 /// Represents telemetry of an exception that occurred in an application.
 /// </summary>
@@ -15,7 +17,7 @@ public sealed class ExceptionTelemetry : Telemetry
 	#region Properties
 
 	/// <summary>
-	/// A read only list that represents execptions stack.
+	/// A read only list that represents exceptions stack.
 	/// </summary>
 	public required IReadOnlyList<ExceptionInfo> Exceptions { get; init; }
 

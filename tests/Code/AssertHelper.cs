@@ -5,6 +5,7 @@ namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 
+using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Types;
 
 /// <summary>
@@ -94,6 +95,27 @@ internal static class AssertHelper
 	}
 
 	/// <summary>
+	/// Tests whether data within instance of <see cref="ActivityTelemetry"/> is equal to the expected values.
+	/// </summary>
+	public static void PropertiesAreEqual
+	(
+		ActivityTelemetry telemetry,
+		TimeSpan duration,
+		String? id,
+		TelemetryOperation operation,
+		KeyValuePair<String, String>[] properties,
+		KeyValuePair<String, String>[] tags,
+		DateTime? time = null
+	)
+	{
+		PropertiesAreEqual(telemetry, operation, properties, tags, time);
+
+		Assert.AreEqual(telemetry.Duration, duration, nameof(ActivityTelemetry.Duration));
+
+		Assert.AreEqual(telemetry.Id, id, nameof(ActivityTelemetry.Id));
+	}
+
+	/// <summary>
 	/// Tests whether data within instance of <see cref="AvailabilityTelemetry"/> is equal to the expected values.
 	/// </summary>
 	public static void PropertiesAreEqual
@@ -180,7 +202,7 @@ internal static class AssertHelper
 	public static void PropertiesAreEqual
 	(
 		ExceptionTelemetry telemetry,
-		Exception exception,
+		IReadOnlyList<ExceptionInfo> exceptions,
 		KeyValuePair<String, Double>[] measurements,
 		SeverityLevel? severityLevel
 	)
@@ -282,13 +304,15 @@ internal static class AssertHelper
 	public static void PropertiesAreEqual
 	(
 		TraceTelemetry telemetry,
-		String message,
-		SeverityLevel severityLevel
+		String? message,
+		SeverityLevel? severityLevel
 	)
 	{
 		Assert.AreEqual(message, telemetry.Message, nameof(TraceTelemetry.Message));
 
-		Assert.AreEqual(severityLevel, telemetry.SeverityLevel, nameof(TraceTelemetry.SeverityLevel));
+		Assert.IsTrue(severityLevel.HasValue, nameof(TraceTelemetry.SeverityLevel));
+
+		Assert.AreEqual(severityLevel!.Value, telemetry.SeverityLevel, nameof(TraceTelemetry.SeverityLevel));
 	}
 
 	#endregion

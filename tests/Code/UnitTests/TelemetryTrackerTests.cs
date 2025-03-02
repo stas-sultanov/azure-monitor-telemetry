@@ -250,6 +250,7 @@ public sealed class TelemetryTrackerTests
 	{
 		// arrange
 		var exception = new Exception("Test exception");
+		var exceptions = exception.Convert();
 		var severityLevel = SeverityLevel.Error;
 
 		// act
@@ -264,7 +265,7 @@ public sealed class TelemetryTrackerTests
 
 		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelper.PropertiesAreEqual(actualResult, exception, factory.Measurements, severityLevel);
+		AssertHelper.PropertiesAreEqual(actualResult, exceptions, factory.Measurements, severityLevel);
 	}
 
 	[TestMethod]

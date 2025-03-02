@@ -6,8 +6,6 @@ namespace Azure.Monitor.Telemetry;
 using System;
 using System.Collections.Generic;
 
-using Azure.Monitor.Telemetry.Types;
-
 public static class Extensions
 {
 	#region Data
@@ -105,7 +103,7 @@ public static class Extensions
 			// calc number of frames to take
 			var takeFramesCount = Math.Min(frames.Length, maxStackLength);
 
-			var parsedStack = new ExceptionFrameInfo[takeFramesCount];
+			var parsedStack = new StackFrameInfo[takeFramesCount];
 
 			for (var frameIndex = 0; frameIndex < takeFramesCount; frameIndex++)
 			{
@@ -115,7 +113,7 @@ public static class Extensions
 
 				var method = methodInfo?.DeclaringType == null ? methodInfo?.Name: String.Concat(methodInfo.DeclaringType.FullName, ".", methodInfo.Name);
 
-				var frameInfo = new ExceptionFrameInfo
+				var frameInfo = new StackFrameInfo
 				{
 					Assembly = methodInfo?.Module.Assembly.FullName!,
 					Level = frameIndex,
