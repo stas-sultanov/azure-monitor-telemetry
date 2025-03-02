@@ -4,7 +4,7 @@
 namespace Azure.Monitor.Telemetry;
 
 /// <summary>
-/// Contains the names of tags which are supported by the telemetry service.
+/// Provides a set of constant string keys used for telemetry tagging in Azure Monitor.
 /// </summary>
 public static class TelemetryTagKey
 {

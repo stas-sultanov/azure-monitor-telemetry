@@ -107,7 +107,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		await SendMessageTrackedAsync("end", cancellationToken);
 
-		var duration = TelemetryTracker.ActivityScopeEnd(timestamp, operation);
+		TelemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		TelemetryTracker.TrackRequest
 		(
@@ -132,7 +132,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		_ = await queueClient.SendMessageAsync(message, cancellationToken);
 
-		var duration = TelemetryTracker.ActivityScopeEnd(timestamp, operation);
+		TelemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		TelemetryTracker.TrackDependencyInProc(time, duration, id, "Storage", true);
 	}

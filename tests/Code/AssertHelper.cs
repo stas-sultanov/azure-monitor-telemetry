@@ -8,7 +8,7 @@ using System;
 /// <summary>
 /// Provides helper methods for asserting.
 /// </summary>
-internal static class AssertHelpers
+internal static class AssertHelper
 {
 	#region Static: Fields
 
@@ -57,9 +57,9 @@ internal static class AssertHelpers
 	public static void PropertiesAreEqual
 	(
 		TelemetryOperation actual,
-		String id,
-		String name,
-		String parentId
+		String? id,
+		String? name,
+		String? parentId
 	)
 	{
 		Assert.AreEqual(id, actual.Id, nameof(TelemetryOperation.Id));
@@ -221,18 +221,42 @@ internal static class AssertHelpers
 	}
 
 	/// <summary>
+	/// Tests whether data within instance of <see cref="PageViewTelemetry"/> is equal to the expected values.
+	/// </summary>
+	public static void PropertiesAreEqual
+	(
+		PageViewTelemetry telemetry,
+		TimeSpan duration,
+		String? id,
+		KeyValuePair<String, Double>[] measurements,
+		String? name,
+		Uri? url
+	)
+	{
+		Assert.AreEqual(duration, telemetry.Duration, nameof(PageViewTelemetry.Duration));
+
+		Assert.AreEqual(id, telemetry.Id, nameof(PageViewTelemetry.Id));
+
+		CollectionAssert.AreEquivalent(measurements, telemetry.Measurements, measurementComparer, nameof(PageViewTelemetry.Measurements));
+
+		Assert.AreEqual(name, telemetry.Name, nameof(PageViewTelemetry.Name));
+
+		Assert.AreEqual(url, telemetry.Url, nameof(PageViewTelemetry.Name));
+	}
+
+	/// <summary>
 	/// Tests whether data within instance of <see cref="RequestTelemetry"/> is equal to the expected values.
 	/// </summary>
 	public static void PropertiesAreEqual
 	(
 		RequestTelemetry telemetry,
 		TimeSpan duration,
-		String id,
+		String? id,
 		KeyValuePair<String, Double>[] measurements,
-		String name,
-		String responseCode,
+		String? name,
+		String? responseCode,
 		Boolean success,
-		Uri url
+		Uri? url
 	)
 	{
 		Assert.AreEqual(duration, telemetry.Duration, nameof(RequestTelemetry.Duration));

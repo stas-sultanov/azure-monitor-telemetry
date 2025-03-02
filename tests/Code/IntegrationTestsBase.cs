@@ -80,7 +80,7 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		var tokenRequestContext = new TokenRequestContext([HttpTelemetryPublisher.AuthorizationScope]);
 
-		var token = TokenCredential.GetTokenAsync(tokenRequestContext, CancellationToken.None).Result;
+		var token = TokenCredential.GetToken(tokenRequestContext);
 
 		telemetryPublishHttpClient = new HttpClient();
 

@@ -79,13 +79,17 @@ public sealed class TelemetryTracker
 	}
 
 	/// <summary>
-	/// Publishes in parallel all telemetry items from the queue using all configured telemetry publishers.
+	/// Publishes telemetry items asynchronously to all configured telemetry publishers.
 	/// </summary>
-	/// <param name="cancellationToken">Optional token to cancel the operation.</param>
-	/// <returns>An array of <see cref="TelemetryPublishResult"/> indicating the status for each configured publisher.</returns>
 	/// <remarks>
-	/// If the queue is empty, returns an empty success result array.
+	/// This method dequeues all telemetry items from the internal queue and publishes them to all configured 
+	/// telemetry publishers. If there are no items to publish, it returns an empty result array.
 	/// </remarks>
+	/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation. The task result contains an array of 
+	/// <see cref="TelemetryPublishResult"/> indicating the result of the publish operation for each publisher.
+	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public async Task<TelemetryPublishResult[]> PublishAsync
 	(
@@ -127,12 +131,21 @@ public sealed class TelemetryTracker
 
 	#endregion
 
-	#region Methods: Operation
+	#region Methods: Scope
 
+	/// <summary>
+	/// Begins an activity scope.
+	/// </summary>
+	/// <remarks>
+	/// The method replaces <see cref="Operation"/> with new value where <see cref="TelemetryOperation.ParentId"/> is set to the <paramref name="activityId"/>.
+	/// All telemetry items tracked within the scope will have <paramref name="activityId"/> as parent activity identifier.
+	/// </remarks>
+	/// <param name="activityId">The activity unique identifier to use as parent for telemetry items tracked within the scope.</param>
+	/// <param name="operation">Outputs a value of <see cref="Operation"/> before it is replaced.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeBegin
 	(
-		String id,
+		String activityId,
 		out TelemetryOperation operation
 	)
 	{
@@ -144,17 +157,29 @@ public sealed class TelemetryTracker
 		{
 			Id = operation.Id,
 			Name = operation.Name,
-			ParentId = id
+			ParentId = activityId
 		};
 	}
 
+	/// <summary>
+	/// Begins an activity scope.
+	/// </summary>
+	/// <remarks>
+	/// The method replaces value of <see cref="Operation"/> with new value where <see cref="TelemetryOperation.ParentId"/> is set to the <paramref name="activityId"/>.
+	/// All telemetry items tracked within the scope will have <paramref name="activityId"/> as parent activity identifier.
+	/// </remarks>
+	/// <param name="getActivityId">A function that returns a unique identifier for the activity.</param>
+	/// <param name="time">Outputs the UTC timestamp when the activity scope begins.</param>
+	/// <param name="timestamp">Outputs the timestamp to calculate the duration when the activity scope ends.</param>
+	/// <param name="activityId">Outputs the generated unique identifier for the activity.</param>
+	/// <param name="operation">Outputs a value of <see cref="Operation"/> before it is replaced.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeBegin
 	(
-		Func<String> getId,
+		Func<String> getActivityId,
 		out DateTime time,
 		out Int64 timestamp,
-		out String id,
+		out String activityId,
 		out TelemetryOperation operation
 	)
 	{
@@ -165,34 +190,57 @@ public sealed class TelemetryTracker
 		timestamp = Stopwatch.GetTimestamp();
 
 		// get id
-		id = getId();
+		activityId = getActivityId();
 
 		// call overload
-		ActivityScopeBegin(id, out operation);
+		ActivityScopeBegin(activityId, out operation);
 	}
 
 	/// <summary>
-	/// Begins tracking of an operation.
+	/// Ends the current activity scope.
 	/// </summary>
-	/// <param name="getId">The function to get telemetry identifier.</param>
-	/// <returns>An object that represents a context of operation tracking.</returns>
+	/// <remarks>
+	/// The method restores value of <see cref="Operation"/> with <paramref name="operation"/>.
+	/// </remarks>
+	/// <param name="operation">The telemetry operation to be restored.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public TimeSpan ActivityScopeEnd
+	public void ActivityScopeEnd
 	(
-		Int64 timestamp,
 		TelemetryOperation operation
 	)
 	{
+		// bring back operation
+		Operation = operation;
+	}
+
+	/// <summary>
+	/// Ends the current activity scope and calculates duration of the activity.
+	/// </summary>
+	/// <remarks>
+	/// The method restores value of <see cref="Operation"/> with <paramref name="operation"/>.
+	/// </remarks>
+	/// <param name="operation">The telemetry operation that is being tracked.</param>
+	/// <param name="timestamp">The timestamp when the operation started.</param>
+	/// <param name="duration">The output parameter that will hold the duration of the operation.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void ActivityScopeEnd
+	(
+		TelemetryOperation operation,
+		Int64 timestamp,
+		out TimeSpan duration
+	)
+	{
+		// call overload
+		ActivityScopeEnd(operation);
+
 		// get timestamp to calculate duration
 		var endTimestamp = Stopwatch.GetTimestamp();
 
-		// bring back operation
-		Operation = operation;
+		// calculate duration in ticks
+		var durationInTicks = (endTimestamp - timestamp) * TimeSpan.TicksPerSecond / Stopwatch.Frequency;
 
-		// calculate duration
-		TimeSpan result = new ((endTimestamp - timestamp) * TimeSpan.TicksPerSecond / Stopwatch.Frequency);
-
-		return result;
+		// set duration
+		duration = new TimeSpan(durationInTicks);
 	}
 
 	#endregion
@@ -200,12 +248,12 @@ public sealed class TelemetryTracker
 	#region Methods: Track
 
 	/// <summary>
-	/// Taracks an availability test activity.
+	/// Tracks an availability test activity.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="AvailabilityTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
-	/// <param name="time">The UTC timestamp when the activity was intiated.</param>
+	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="name">The name of the availability test.</param>
@@ -307,7 +355,7 @@ public sealed class TelemetryTracker
 	/// <remarks>
 	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
-	/// <param name="time">The UTC timestamp when the activity was intiated.</param>
+	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="name">The name of the dependency operation.</param>
@@ -466,7 +514,7 @@ public sealed class TelemetryTracker
 	/// <remarks>
 	/// Creates an instance of <see cref="PageViewTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
-	/// <param name="time">The UTC timestamp when the activity was intiated.</param>
+	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="name">The name of the page view.</param>
@@ -509,7 +557,7 @@ public sealed class TelemetryTracker
 	/// <remarks>
 	/// Creates an instance of <see cref="RequestTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
-	/// <param name="time">The UTC timestamp when the activity was intiated.</param>
+	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="url">The URL of the request.</param>

@@ -5,6 +5,7 @@ namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 
 /// <summary>
 /// Provides a set of method to create types that implement <see cref="Telemetry"/> for test purposes.
@@ -37,7 +38,7 @@ internal sealed class TelemetryFactory
 
 		Properties = [new("key", "value")];
 
-		Tags = [new(TelemetryTagKey.CloudRole, Environment.MachineName), new(TelemetryTagKey.CloudRoleInstance, Environment.ProcessId.ToString())];
+		Tags = [new(TelemetryTagKey.CloudRole, Environment.MachineName), new(TelemetryTagKey.CloudRoleInstance, Environment.ProcessId.ToString(CultureInfo.InvariantCulture))];
 	}
 
 	#endregion

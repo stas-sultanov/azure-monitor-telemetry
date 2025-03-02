@@ -8,7 +8,7 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public sealed class DependencyTypeTests
+sealed public class DependencyTypeTests
 {
 	[TestMethod]
 	public void Method_DetectTypeFromHttp_ShouldReturnAzureBlob()

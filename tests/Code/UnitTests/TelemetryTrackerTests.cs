@@ -85,6 +85,56 @@ public sealed class TelemetryTrackerTests
 
 	#endregion
 
+	#region Methods: Activity Scope
+
+	[TestMethod]
+	public void ActivityScopeBegin()
+	{
+		// arrange
+		var originalOperation = tracker.Operation;
+		var expectedId = TelemetryFactory.GetActivityId();
+
+		// act
+		tracker.ActivityScopeBegin(expectedId, out var actualOperation);
+
+		var scopeOpeartion = tracker.Operation;
+
+		tracker.ActivityScopeEnd(actualOperation);
+
+		// assert
+		AssertHelper.AreEqual(originalOperation, actualOperation);
+
+		AssertHelper.PropertiesAreEqual(scopeOpeartion, actualOperation.Id, actualOperation.Name, expectedId);
+	}
+
+	[TestMethod]
+	public void ActivityScopeBegin_Overload()
+	{
+		// arrange
+		var originalOperation = tracker.Operation;
+		var expectedId = TelemetryFactory.GetActivityId();
+
+		// act
+		tracker.ActivityScopeBegin(() => expectedId, out var time, out var timestamp, out var activityId, out var actualOperation);
+
+		var scopeOpeartion = tracker.Operation;
+
+		tracker.ActivityScopeEnd(actualOperation, timestamp, out var duration);
+
+		// assert
+		Assert.IsTrue(time < DateTime.UtcNow);
+
+		Assert.IsTrue(duration > TimeSpan.Zero);
+
+		Assert.AreEqual(expectedId, activityId);
+
+		AssertHelper.AreEqual(originalOperation, actualOperation);
+
+		AssertHelper.PropertiesAreEqual(scopeOpeartion, actualOperation.Id, actualOperation.Name, expectedId);
+	}
+
+	#endregion
+
 	#region Methods: Tests Track
 
 	[TestMethod]
@@ -109,9 +159,9 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, message, name, runLocation, success);
+		AssertHelper.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, message, name, runLocation, success);
 	}
 
 	[TestMethod]
@@ -140,9 +190,9 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, DependencyType.HTTP);
+		AssertHelper.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, DependencyType.HTTP);
 	}
 
 	[TestMethod]
@@ -168,9 +218,9 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, null, actualResult.Duration, id, factory.Measurements, name, null, true, null, type);
+		AssertHelper.PropertiesAreEqual(actualResult, null, actualResult.Duration, id, factory.Measurements, name, null, true, null, type);
 	}
 
 	[TestMethod]
@@ -189,9 +239,9 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Measurements, name);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Measurements, name);
 	}
 
 	[TestMethod]
@@ -211,9 +261,9 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, exception, factory.Measurements, severityLevel);
+		AssertHelper.PropertiesAreEqual(actualResult, exception, factory.Measurements, severityLevel);
 	}
 
 	[TestMethod]
@@ -240,9 +290,34 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, name, @namespace, value, valueAggregation);
+		AssertHelper.PropertiesAreEqual(actualResult, name, @namespace, value, valueAggregation);
+	}
+
+	[TestMethod]
+	public async Task Method_TrackPageView()
+	{
+		// arrange
+		var time = DateTime.UtcNow;
+		var duration = TimeSpan.FromSeconds(1);
+		var id = TelemetryFactory.GetActivityId();
+		var name = "name";
+		var url = new Uri("https://gostas.dev");
+
+		// act
+		tracker.TrackPageView(time, duration, id, name, url, factory.Measurements, factory.Properties, factory.Tags);
+
+		_ = await tracker.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as PageViewTelemetry;
+
+		// assert
+		Assert.IsNotNull(actualResult);
+
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+
+		AssertHelper.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, name, url);
 	}
 
 	[TestMethod]
@@ -267,9 +342,9 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, name, responseCode, success, url);
+		AssertHelper.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, name, responseCode, success, url);
 	}
 
 	[TestMethod]
@@ -289,9 +364,9 @@ public sealed class TelemetryTrackerTests
 		// assert
 		Assert.IsNotNull(actualResult);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelpers.PropertiesAreEqual(actualResult, message, severityLevel);
+		AssertHelper.PropertiesAreEqual(actualResult, message, severityLevel);
 	}
 
 	#endregion

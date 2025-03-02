@@ -3,6 +3,7 @@
 
 namespace Azure.Monitor.Telemetry.IntegrationTests;
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 
@@ -57,7 +58,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 			TelemetryPublishers,
 			[
 				new(TelemetryTagKey.CloudRole, "Frontend"),
-				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(0,100).ToString()),
+				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(0,100).ToString(CultureInfo.InvariantCulture)),
 				new(TelemetryTagKey.DeviceType, "Browser"),
 				new(TelemetryTagKey.LocationIp, clientIP)
 			]
@@ -70,7 +71,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 			TelemetryPublishers,
 			[
 				new(TelemetryTagKey.CloudRole, "Watchman"),
-				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(100,200).ToString()),
+				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(100,200).ToString(CultureInfo.InvariantCulture)),
 				new(TelemetryTagKey.LocationIp, service0IP)
 			]
 		);
@@ -80,7 +81,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 			TelemetryPublishers,
 			[
 				new(TelemetryTagKey.CloudRole, "Backend"),
-				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(200,300).ToString()),
+				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(200,300).ToString(CultureInfo.InvariantCulture)),
 				new(TelemetryTagKey.LocationIp, service1IP)
 			]
 		);

@@ -35,7 +35,7 @@ internal static class TelemetrySimulator
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		var duration = telemetryTracker.ActivityScopeEnd(timestamp, operation);
+		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
 		telemetryTracker.TrackAvailability(time, duration, id, name, message, success, runLocation);
@@ -58,7 +58,7 @@ internal static class TelemetrySimulator
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		var duration = telemetryTracker.ActivityScopeEnd(timestamp, operation);
+		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
 		telemetryTracker.TrackDependency(time, duration, id, httpMethod, url, statusCode, (Int32) statusCode < 399);
@@ -80,7 +80,7 @@ internal static class TelemetrySimulator
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		var duration = telemetryTracker.ActivityScopeEnd(timestamp, operation);
+		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
 		telemetryTracker.TrackPageView(time, duration, id, pageName, pageUrl);
@@ -103,7 +103,7 @@ internal static class TelemetrySimulator
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		var duration = telemetryTracker.ActivityScopeEnd(timestamp, operation);
+		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
 		telemetryTracker.TrackRequest(time, duration, id, url, responseCode, success);

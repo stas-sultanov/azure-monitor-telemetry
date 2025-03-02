@@ -15,15 +15,15 @@ using Azure.Monitor.Telemetry.Tests;
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public class JsonTelemetrySerializerTests
+public sealed class JsonTelemetrySerializerTests
 {
 	#region Types
 
 	private sealed class UnknownTelemetry(DateTime time) : Telemetry
 	{
 		public TelemetryOperation Operation { get; set; } = new TelemetryOperation();
-		public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; set; } = null;
-		public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; set; } = null;
+		public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; set; }
+		public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; set; }
 		public DateTime Time { get; init; } = time;
 	}
 
@@ -81,7 +81,7 @@ public class JsonTelemetrySerializerTests
 
 		var success = GetSuccess(jsonElement);
 
-		AssertHelpers.PropertiesAreEqual(telemetry, duration, id, measurements, message, name, runLocation, success);
+		AssertHelper.PropertiesAreEqual(telemetry, duration, id, measurements, message, name, runLocation, success);
 	}
 
 	[TestMethod]
@@ -119,7 +119,7 @@ public class JsonTelemetrySerializerTests
 
 		var type = GetType(jsonElement);
 
-		AssertHelpers.PropertiesAreEqual(telemetry, data, duration, id, measurements, name, resultCode, success, target, type);
+		AssertHelper.PropertiesAreEqual(telemetry, data, duration, id, measurements, name, resultCode, success, target, type);
 	}
 
 	[TestMethod]
@@ -143,7 +143,7 @@ public class JsonTelemetrySerializerTests
 
 		var name = GetName(jsonElement);
 
-		AssertHelpers.PropertiesAreEqual(telemetry, measurements, name);
+		AssertHelper.PropertiesAreEqual(telemetry, measurements, name);
 	}
 
 	[TestMethod]
@@ -211,7 +211,7 @@ public class JsonTelemetrySerializerTests
 
 		Assert.IsNotNull(name);
 
-		AssertHelpers.PropertiesAreEqual(telemetry, name, @namespace, value, new MetricValueAggregation() { Count = count, Max = max, Min = min });
+		AssertHelper.PropertiesAreEqual(telemetry, name, @namespace, value, new MetricValueAggregation() { Count = count, Max = max, Min = min });
 	}
 
 	[TestMethod]
@@ -231,13 +231,17 @@ public class JsonTelemetrySerializerTests
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
-		DeserializeAndAssert(jsonElement, @"duration", telemetry.Duration);
+		var duration = GetDuration(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"id", telemetry.Id);
+		var id = GetId(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"name", telemetry.Name);
+		var measurements = GetMeasurements(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"url", telemetry.Url);
+		var name = GetName(jsonElement);
+
+		var url = GetUrl(jsonElement);
+
+		AssertHelper.PropertiesAreEqual(telemetry, duration, id, measurements, name, url);
 	}
 
 	[TestMethod]
@@ -257,17 +261,21 @@ public class JsonTelemetrySerializerTests
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
-		DeserializeAndAssert(jsonElement, @"id", telemetry.Id);
+		var duration = GetDuration(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"name", telemetry.Name);
+		var id = GetId(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"duration", telemetry.Duration);
+		var measurements = GetMeasurements(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"success", telemetry.Success);
+		var name = GetName(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"responseCode", telemetry.ResponseCode);
+		var responseCode = GetResponseCode(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"url", telemetry.Url);
+		var success = GetSuccess(jsonElement);
+
+		var url = GetUrl(jsonElement);
+
+		AssertHelper.PropertiesAreEqual(telemetry, duration, id, measurements, name, responseCode, success, url);
 	}
 
 	[TestMethod]
@@ -432,6 +440,10 @@ public class JsonTelemetrySerializerTests
 		Assert.AreEqual(expectedValue, actualValue, propertyName);
 	}
 
+	#endregion
+
+	#region Methods: Helpers Get
+
 	private static String? GetData(JsonElement jsonElement)
 	{
 		return jsonElement.GetProperty(@"data").Deserialize<String>();
@@ -469,6 +481,11 @@ public class JsonTelemetrySerializerTests
 		return jsonElement.GetProperty(@"resultCode").Deserialize<String>();
 	}
 
+	private static String? GetResponseCode(JsonElement jsonElement)
+	{
+		return jsonElement.GetProperty(@"responseCode").Deserialize<String>();
+	}
+
 	private static String? GetRunLocation(JsonElement jsonElement)
 	{
 		return jsonElement.GetProperty(@"runLocation").Deserialize<String>();
@@ -487,6 +504,11 @@ public class JsonTelemetrySerializerTests
 	private static String? GetType(JsonElement jsonElement)
 	{
 		return jsonElement.GetProperty(@"type").Deserialize<String>();
+	}
+
+	private static Uri? GetUrl(JsonElement jsonElement)
+	{
+		return jsonElement.GetProperty(@"url").Deserialize<Uri>();
 	}
 
 	#endregion
