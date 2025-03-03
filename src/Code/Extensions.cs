@@ -6,6 +6,9 @@ namespace Azure.Monitor.Telemetry;
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// Provides a set of extension methods.
+/// </summary>
 public static class Extensions
 {
 	#region Data
@@ -58,7 +61,7 @@ public static class Extensions
 	/// <summary>
 	/// Detects the dependency type from the HTTP request URI.
 	/// </summary>
-	/// <param name="host">The host of the HTTP URI.</param>
+	/// <param name="uri">The HTTP URI.</param>
 	/// <returns>The detected dependency type, or "Http" if the host is not recognized.</returns>
 	public static String DetectDependencyTypeFromHttp(this Uri uri)
 	{
@@ -78,6 +81,12 @@ public static class Extensions
 
 	#region Methods: Exception
 
+	/// <summary>
+	/// Converts <paramref name="exception"/> to read-only list of items of <see cref="ExceptionInfo"/> type.
+	/// </summary>
+	/// <param name="exception">The exception to convert.</param>
+	/// <param name="maxStackLength">Maximal number of items to put into the <see cref="ExceptionInfo.ParsedStack"/>.</param>
+	/// <returns>A read-only list of items of  <see cref="ExceptionInfo"/> type.</returns>
 	public static IReadOnlyList<ExceptionInfo> Convert
 	(
 		this Exception exception,

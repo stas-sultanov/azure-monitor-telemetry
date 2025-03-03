@@ -24,12 +24,12 @@ public class TelemetryTrackedHttpClientHandler
 	: HttpClientHandler
 {
 	/// <summary>
-	/// A delegate that returns an identifier for the <see cref="DependencyTelemetry"/>.
+	/// A function that returns a unique identifier for the activity.
 	/// </summary>
 	private readonly Func<String> getActivityId = getActivityId;
 
 	/// <summary>
-	/// The telemetry tracker to track outgoing HTTP requests.
+	/// The telemetry tracker.
 	/// </summary>
 	private readonly TelemetryTracker telemetryTracker = telemetryTracker;
 

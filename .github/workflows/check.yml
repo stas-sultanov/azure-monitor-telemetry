@@ -115,7 +115,7 @@ jobs:
         files: |
           ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*.trx
 
-    - name: Publish Coverage
+    - name: Convert Coverage Report to Markdown
       uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 #v1.3.0
       with:
         badge: true
@@ -124,7 +124,7 @@ jobs:
         output: file
         thresholds: '90 95'
 
-    - name: Add Coverage to PR
+    - name: Add Coverage Report to PR
       uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 #v2.9.1
       if: github.event_name == 'pull_request'
       with:
@@ -222,7 +222,7 @@ jobs:
         inlineScript: |
           az group delete -n ${{ env.AZURE_RESOURCE_GROUP_NAME }} -y
 
-    - name: Publish Results
+    - name: Publish Tests Results
       uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b #v2.18.0
       with:
         check_name: Integration Tests
@@ -230,20 +230,19 @@ jobs:
         files: |
           ${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*.trx
 
-    - name: Publish Coverage
+    - name: Convert Coverage Report to Markdown
       uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 #v1.3.0
       with:
         badge: true
         filename: '${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*/*.cobertura.xml'
         format: markdown
         output: file
-        thresholds: '75 85'
+        thresholds: '80 90'
 
-    - name: Add Coverage to PR
+    - name: Add Coverage Report to PR
       uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 #v2.9.1
       if: github.event_name == 'pull_request'
       with:
         header: Integration Tests
         recreate: true
         path: code-coverage-results.md
-

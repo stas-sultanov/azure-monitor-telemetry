@@ -3,14 +3,15 @@
 	<PropertyGroup>
 		<AnalysisLevel>latest-all</AnalysisLevel>
 		<AssemblyName>Azure.Monitor.Telemetry</AssemblyName>
-		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<RootNamespace>Azure.Monitor.Telemetry</RootNamespace>
 		<TargetFrameworks>net462;net8.0;net9.0</TargetFrameworks>
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<Choose>
@@ -44,6 +45,7 @@
 				<Copyright>Copyright © Stas Sultanov</Copyright>
 				<Description>A lightweight, high-performance library for tracking and publishing telemetry.</Description>
 				<EmbedUntrackedSources>true</EmbedUntrackedSources>
+				<EnablePackageValidation>true</EnablePackageValidation>
 				<IncludeSymbols>true</IncludeSymbols>
 				<PackageIcon>icon.png</PackageIcon>
 				<PackageLicenseFile>license.md</PackageLicenseFile>
@@ -52,7 +54,7 @@
 				<PackageTags>Azure;Monitor;Telemetry;ApplicationInsights;</PackageTags>
 				<Product>Azure Light Client</Product>
 				<RepositoryType>git</RepositoryType>
-				<SignAssembly>True</SignAssembly>
+				<SignAssembly>true</SignAssembly>
 				<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 				<Title>Azure Monitor Telemetry</Title>
 				<Version>$(AssemblyVersion)</Version>

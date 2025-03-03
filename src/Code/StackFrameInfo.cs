@@ -17,6 +17,9 @@ public sealed class StackFrameInfo
 	/// </summary>
 	public required String Assembly { get; init; }
 
+	/// <summary>
+	/// The file name that contains the code that was executed.
+	/// </summary>
 	public required String? FileName { get; init; }
 
 	/// <summary>
