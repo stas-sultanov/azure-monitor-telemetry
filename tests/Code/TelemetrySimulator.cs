@@ -19,7 +19,7 @@ internal static class TelemetrySimulator
 
 	public static async Task SimulateAvailabilityAsync
 	(
-		TelemetryTracker telemetryTracker,
+		TelemetryClient telemetryClient,
 		String name,
 		String message,
 		Boolean success,
@@ -29,21 +29,21 @@ internal static class TelemetrySimulator
 	)
 	{
 		// begin activity scope
-		telemetryTracker.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
-		telemetryTracker.TrackAvailability(time, duration, id, name, message, success, runLocation);
+		telemetryClient.TrackAvailability(time, duration, id, name, message, success, runLocation);
 	}
 
 	public static async Task SimulateDependencyAsync
 	(
-		TelemetryTracker telemetryTracker,
+		TelemetryClient telemetryClient,
 		HttpMethod httpMethod,
 		Uri url,
 		HttpStatusCode statusCode,
@@ -52,21 +52,21 @@ internal static class TelemetrySimulator
 	)
 	{
 		// begin activity scope
-		telemetryTracker.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
-		telemetryTracker.TrackDependency(time, duration, id, httpMethod, url, statusCode, (Int32) statusCode < 399);
+		telemetryClient.TrackDependency(time, duration, id, httpMethod, url, statusCode, (Int32) statusCode < 399);
 	}
 
 	public static async Task SimulatePageViewAsync
 	(
-		TelemetryTracker telemetryTracker,
+		TelemetryClient telemetryClient,
 		String pageName,
 		Uri pageUrl,
 		Func<CancellationToken, Task> subsequent,
@@ -74,21 +74,21 @@ internal static class TelemetrySimulator
 	)
 	{
 		// begin operation
-		telemetryTracker.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
-		telemetryTracker.TrackPageView(time, duration, id, pageName, pageUrl);
+		telemetryClient.TrackPageView(time, duration, id, pageName, pageUrl);
 	}
 
 	public static async Task SimulateRequestAsync
 	(
-		TelemetryTracker telemetryTracker,
+		TelemetryClient telemetryClient,
 		Uri url,
 		String responseCode,
 		Boolean success,
@@ -97,15 +97,15 @@ internal static class TelemetrySimulator
 	)
 	{
 		// begin operation
-		telemetryTracker.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryTracker.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
-		telemetryTracker.TrackRequest(time, duration, id, url, responseCode, success);
+		telemetryClient.TrackRequest(time, duration, id, url, responseCode, success);
 	}
 }

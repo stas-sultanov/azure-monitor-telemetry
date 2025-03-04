@@ -22,7 +22,7 @@ public sealed class ExtensionsTests
 		// arrange
 		var operation = new TelemetryOperation { Id = new Guid().ToString("N"), Name = "Test" };
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		var telemetryClient = new TelemetryClient(telemetryPublisher)
 		{
 			Operation = operation
 		};
@@ -39,8 +39,8 @@ public sealed class ExtensionsTests
 		};
 
 		// act
-		telemetryTracker.TrackDependency(id, publishResult);
-		telemetryTracker.PublishAsync().Wait();
+		telemetryClient.TrackDependency(id, publishResult);
+		telemetryClient.PublishAsync().Wait();
 		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
 
 		// assert
@@ -68,7 +68,7 @@ public sealed class ExtensionsTests
 
 		Assert.AreEqual(publishResult.Url.Host, actualResult.Target, nameof(DependencyTelemetry.Target));
 
-		Assert.AreEqual(DependencyType.AzureMonitor, actualResult.Type, nameof(DependencyTelemetry.Type));
+		Assert.AreEqual(TelemetryDependencyTypes.AzureMonitor, actualResult.Type, nameof(DependencyTelemetry.Type));
 	}
 
 	[TestMethod]
@@ -89,14 +89,14 @@ public sealed class ExtensionsTests
 			Url = new Uri("http://example.com")
 		};
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryTracker = new TelemetryTracker(telemetryPublisher)
+		var telemetryClient = new TelemetryClient(telemetryPublisher)
 		{
 			Operation = operation
 		};
 
 		// act
-		telemetryTracker.TrackDependency(id, publishResult, measurements);
-		telemetryTracker.PublishAsync().Wait();
+		telemetryClient.TrackDependency(id, publishResult, measurements);
+		telemetryClient.PublishAsync().Wait();
 		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
 
 		// assert

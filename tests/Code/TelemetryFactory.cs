@@ -40,7 +40,7 @@ internal sealed class TelemetryFactory
 
 		Properties = [new("key", "value")];
 
-		Tags = [new(TelemetryTagKey.CloudRole, Environment.MachineName), new(TelemetryTagKey.CloudRoleInstance, Environment.ProcessId.ToString(CultureInfo.InvariantCulture))];
+		Tags = [new(TelemetryTagKeys.CloudRole, Environment.MachineName), new(TelemetryTagKeys.CloudRoleInstance, Environment.ProcessId.ToString(CultureInfo.InvariantCulture))];
 	}
 
 	#endregion
@@ -267,6 +267,7 @@ internal sealed class TelemetryFactory
 				Measurements = Measurements,
 				Operation = Operation,
 				Properties = Properties,
+				ProblemId = Random.Shared.Next(1000).ToString(CultureInfo.InvariantCulture),
 				SeverityLevel = SeverityLevel.Critical,
 				Tags = Tags,
 				Time = DateTime.UtcNow

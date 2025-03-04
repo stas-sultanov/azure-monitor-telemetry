@@ -4,7 +4,7 @@
 namespace Azure.Monitor.Telemetry.UnitTests;
 
 /// <summary>
-/// Tests for <see cref="DependencyType"/> class.
+/// Tests for <see cref="TelemetryDependencyTypes"/> class.
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
@@ -20,7 +20,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureBlob, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureBlob, result);
 	}
 
 	[TestMethod]
@@ -33,7 +33,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureCosmosDB, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureCosmosDB, result);
 	}
 
 	[TestMethod]
@@ -46,7 +46,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureIotHub, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureIotHub, result);
 	}
 
 	[TestMethod]
@@ -59,7 +59,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureMonitor, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureMonitor, result);
 	}
 
 	[TestMethod]
@@ -72,7 +72,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureQueue, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureQueue, result);
 	}
 
 	[TestMethod]
@@ -85,7 +85,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureSearch, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureSearch, result);
 	}
 
 	[TestMethod]
@@ -98,7 +98,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureServiceBus, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureServiceBus, result);
 	}
 
 	[TestMethod]
@@ -111,7 +111,7 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.AzureTable, result);
+		Assert.AreEqual(TelemetryDependencyTypes.AzureTable, result);
 	}
 
 	[TestMethod]
@@ -124,6 +124,6 @@ public sealed class DependencyTypeTests
 		var result = uri.DetectDependencyTypeFromHttp();
 
 		// assert
-		Assert.AreEqual(DependencyType.HTTP, result);
+		Assert.AreEqual(TelemetryDependencyTypes.HTTP, result);
 	}
 }

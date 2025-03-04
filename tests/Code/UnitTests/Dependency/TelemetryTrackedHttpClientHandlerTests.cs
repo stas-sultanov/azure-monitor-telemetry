@@ -21,7 +21,7 @@ public sealed class TelemetryTrackedHttpClientHandlerTests : IDisposable
 	#region Fields
 
 	private readonly HttpTelemetryPublisherMock telemetryPublisher;
-	private readonly TelemetryTracker telemetryTracker;
+	private readonly TelemetryClient telemetryClient;
 	private readonly TelemetryTrackedHttpClientHandler handler;
 	private readonly HttpClient httpClient;
 
@@ -35,8 +35,8 @@ public sealed class TelemetryTrackedHttpClientHandlerTests : IDisposable
 	public TelemetryTrackedHttpClientHandlerTests()
 	{
 		telemetryPublisher = new();
-		telemetryTracker = new(telemetryPublisher);
-		handler = new TelemetryTrackedHttpClientHandler(telemetryTracker, () => "test-id");
+		telemetryClient = new(telemetryPublisher);
+		handler = new TelemetryTrackedHttpClientHandler(telemetryClient, () => "test-id");
 		httpClient = new HttpClient(handler);
 	}
 
@@ -58,7 +58,7 @@ public sealed class TelemetryTrackedHttpClientHandlerTests : IDisposable
 		// act
 		_ = await httpClient.SendAsync(request, CancellationToken.None);
 
-		_ = await telemetryTracker.PublishAsync(CancellationToken.None);
+		_ = await telemetryClient.PublishAsync(CancellationToken.None);
 
 		// assert
 		Assert.AreEqual(1, telemetryPublisher.Buffer.Count, "Items Count");

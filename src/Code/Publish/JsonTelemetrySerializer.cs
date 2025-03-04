@@ -54,7 +54,7 @@ public static class JsonTelemetrySerializer
 	/// <param name="streamWriter">The StreamWriter to which the serialized JSON will be written.</param>
 	/// <param name="instrumentationKey">The instrumentation key associated with the telemetry data.</param>
 	/// <param name="telemetry">The telemetry data to be serialized.</param>
-	/// <param name="trackerTags">A list of tags to attach to each telemetry item. From <see cref="TelemetryTracker"/>.</param>
+	/// <param name="trackerTags">A list of tags to attach to each telemetry item. From <see cref="TelemetryClient"/>.</param>
 	/// <param name="publisherTags">A list of tags to attach to each telemetry item. From <see cref="HttpTelemetryPublisher"/>.</param>
 	public static void Serialize
 	(
@@ -168,21 +168,21 @@ public static class JsonTelemetrySerializer
 				// serialize operation-specific tags
 				if (telemetry.Operation.Id != null)
 				{
-					WritePair(streamWriter, TelemetryTagKey.OperationId, telemetry.Operation.Id, scopeHasItems);
+					WritePair(streamWriter, TelemetryTagKeys.OperationId, telemetry.Operation.Id, scopeHasItems);
 
 					scopeHasItems = true;
 				}
 
 				if (telemetry.Operation.Name != null)
 				{
-					WritePair(streamWriter, TelemetryTagKey.OperationName, telemetry.Operation.Name, scopeHasItems);
+					WritePair(streamWriter, TelemetryTagKeys.OperationName, telemetry.Operation.Name, scopeHasItems);
 
 					scopeHasItems = true;
 				}
 
 				if (telemetry.Operation.ParentId != null)
 				{
-					WritePair(streamWriter, TelemetryTagKey.OperationParentId, telemetry.Operation.ParentId, scopeHasItems);
+					WritePair(streamWriter, TelemetryTagKeys.OperationParentId, telemetry.Operation.ParentId, scopeHasItems);
 
 					scopeHasItems = true;
 				}

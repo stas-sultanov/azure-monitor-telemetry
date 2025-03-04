@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 /// A custom <see cref="HttpClientHandler"/> that enables tracking telemetry of HTTP requests.
 /// </summary>
 /// <remarks>
-/// This handler uses a <see cref="TelemetryTracker"/> to track details about HTTP requests and responses, including the request URI, method, status code, and duration.
+/// This handler uses a <see cref="TelemetryClient"/> to track details about HTTP requests and responses, including the request URI, method, status code, and duration.
 /// </remarks>
-/// <param name="telemetryTracker">The telemetry tracker.</param>
+/// <param name="telemetryClient">The telemetry tracker.</param>
 /// <param name="getActivityId">A function that returns a unique identifier for the activity.</param>
 public class TelemetryTrackedHttpClientHandler
 (
-	TelemetryTracker telemetryTracker,
+	TelemetryClient telemetryClient,
 	Func<String> getActivityId
 )
 	: HttpClientHandler
@@ -31,7 +31,7 @@ public class TelemetryTrackedHttpClientHandler
 	/// <summary>
 	/// The telemetry tracker.
 	/// </summary>
-	private readonly TelemetryTracker telemetryTracker = telemetryTracker;
+	private readonly TelemetryClient telemetryClient = telemetryClient;
 
 	/// <inheritdoc/>
 	protected override async Task<HttpResponseMessage> SendAsync
@@ -60,7 +60,7 @@ public class TelemetryTrackedHttpClientHandler
 
 		// track telemetry
 		// if RequestUri is null the host class will throw exception before calling this method
-		telemetryTracker.TrackDependency
+		telemetryClient.TrackDependency
 		(
 			time,
 			duration,

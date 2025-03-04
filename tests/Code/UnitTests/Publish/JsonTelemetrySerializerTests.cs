@@ -57,12 +57,12 @@ public sealed class JsonTelemetrySerializerTests
 
 	private readonly KeyValuePair<String, String> [] publisherTags =
 	[
-		new(TelemetryTagKey.InternalSdkVersion, "test"),
+		new(TelemetryTagKeys.InternalSdkVersion, "test"),
 	];
 
 	private readonly KeyValuePair<String, String> [] trackerTags =
 	[
-		new(TelemetryTagKey.CloudRole, "TestMachine"),
+		new(TelemetryTagKeys.CloudRole, "TestMachine"),
 	];
 
 	private readonly String instrumentationKey = Guid.NewGuid().ToString();
@@ -187,9 +187,11 @@ public sealed class JsonTelemetrySerializerTests
 
 		var measurements = GetMeasurements(jsonElement);
 
+		var problemId = GetProblemId(jsonElement);
+
 		var severityLevel = GetSeverityLevel(jsonElement);
 
-		AssertHelper.PropertiesAreEqual(telemetry, [], measurements, severityLevel);
+		AssertHelper.PropertiesAreEqual(telemetry, [], measurements, problemId, severityLevel);
 	}
 
 	[TestMethod]
@@ -420,17 +422,17 @@ public sealed class JsonTelemetrySerializerTests
 		{
 			if (!String.IsNullOrWhiteSpace(telemetry.Operation.Id))
 			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationId, telemetry.Operation.Id));
+				tags.Add(new KeyValuePair<String, String>(TelemetryTagKeys.OperationId, telemetry.Operation.Id));
 			}
 
 			if (!String.IsNullOrWhiteSpace(telemetry.Operation.Name))
 			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationName, telemetry.Operation.Name));
+				tags.Add(new KeyValuePair<String, String>(TelemetryTagKeys.OperationName, telemetry.Operation.Name));
 			}
 
 			if (!String.IsNullOrWhiteSpace(telemetry.Operation.ParentId))
 			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationParentId, telemetry.Operation.ParentId));
+				tags.Add(new KeyValuePair<String, String>(TelemetryTagKeys.OperationParentId, telemetry.Operation.ParentId));
 			}
 		}
 
@@ -491,6 +493,10 @@ public sealed class JsonTelemetrySerializerTests
 	{
 		return jsonElement.GetProperty(@"name").Deserialize<String>();
 	}
+	private static String? GetRunLocation(JsonElement jsonElement)
+	{
+		return jsonElement.GetProperty(@"runLocation").Deserialize<String>();
+	}
 
 	private static String? GetResultCode(JsonElement jsonElement)
 	{
@@ -502,9 +508,9 @@ public sealed class JsonTelemetrySerializerTests
 		return jsonElement.GetProperty(@"responseCode").Deserialize<String>();
 	}
 
-	private static String? GetRunLocation(JsonElement jsonElement)
+	private static String? GetProblemId(JsonElement jsonElement)
 	{
-		return jsonElement.GetProperty(@"runLocation").Deserialize<String>();
+		return jsonElement.GetProperty(@"problemId").Deserialize<String>();
 	}
 
 	private static SeverityLevel? GetSeverityLevel(JsonElement jsonElement)

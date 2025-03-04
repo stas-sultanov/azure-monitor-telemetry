@@ -19,7 +19,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	private readonly TelemetryFactory telemetryFactory = new(nameof(TelemetryTypesTests));
 
-	private TelemetryTracker TelemetryTracker { get; }
+	private TelemetryClient TelemetryClient { get; }
 
 	#endregion
 
@@ -35,12 +35,12 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		}
 	)
 	{
-		TelemetryTracker = new TelemetryTracker
+		TelemetryClient = new TelemetryClient
 		(
 			TelemetryPublishers,
 			[
-				new (TelemetryTagKey.CloudRole, "Tester"),
-				new (TelemetryTagKey.CloudRoleInstance, Environment.MachineName)
+				new (TelemetryTagKeys.CloudRole, "Tester"),
+				new (TelemetryTagKeys.CloudRoleInstance, Environment.MachineName)
 			]
 		);
 	}
@@ -59,9 +59,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max("Check");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -77,9 +77,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Min("Check");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -99,8 +99,8 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max("Storage", defaultUri);
 
 		// act
-		TelemetryTracker.Add(telemetry);
-		var publishResult = await TelemetryTracker.PublishAsync();
+		TelemetryClient.Add(telemetry);
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -116,8 +116,8 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_DependencyTelemetry_Min("Storage");
 
 		// act
-		TelemetryTracker.Add(telemetry);
-		var publishResult = await TelemetryTracker.PublishAsync();
+		TelemetryClient.Add(telemetry);
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -137,9 +137,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_EventTelemetry_Max("Check");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -155,9 +155,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_EventTelemetry_Min("Check");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -177,9 +177,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_ExceptionTelemetry_Max();
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -195,9 +195,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_ExceptionTelemetry_Min();
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -223,9 +223,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", "count", 6, aggregation);
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -241,9 +241,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_MetricTelemetry_Min("tests", "count", 6);
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -263,9 +263,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max("Main", defaultUri);
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -281,9 +281,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min("Main");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -303,9 +303,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_RequestTelemetry_Max("GetMain", defaultUri);
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -321,9 +321,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min("GetMain");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -343,9 +343,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_TraceTelemetry_Max("Test");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);
@@ -361,9 +361,9 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		var telemetry = telemetryFactory.Create_TraceTelemetry_Min("Test");
 
 		// act
-		TelemetryTracker.Add(telemetry);
+		TelemetryClient.Add(telemetry);
 
-		var publishResult = await TelemetryTracker.PublishAsync();
+		var publishResult = await TelemetryClient.PublishAsync();
 
 		// assert
 		AssertStandardSuccess(publishResult);

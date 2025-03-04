@@ -102,7 +102,7 @@ public sealed partial class HttpTelemetryPublisherTests
 		// arrange
 		var httpClient = new HttpClient(new HttpMessageHandlerMock());
 
-		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, GetAccessToken, [new (TelemetryTagKey.SessionId, "test"), new (TelemetryTagKey.InternalAgentVersion, "test") ]);
+		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, GetAccessToken, [new (TelemetryTagKeys.SessionId, "test"), new (TelemetryTagKeys.InternalAgentVersion, "test") ]);
 
 		var telemetryList = new[]
 		{

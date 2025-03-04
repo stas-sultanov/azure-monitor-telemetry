@@ -19,8 +19,8 @@ using Azure.Monitor.Telemetry.Types;
 /// Utilizes <see cref="ConcurrentQueue{T}"/> to collect telemetry items and publish in a batch through configured telemetry publishers.
 /// </remarks>
 /// <param name="telemetryPublishers">A read only list of telemetry publishers to publish the telemetry data.</param>
-/// <param name="tags">A read-only list of tags to attach to each telemetry item. Is optional.</param>
-public sealed class TelemetryTracker
+/// <param name="tags">A read-only list of tags to attach to each telemetry item during publish. Is optional.</param>
+public sealed class TelemetryClient
 (
 	IReadOnlyList<TelemetryPublisher> telemetryPublishers,
 	IReadOnlyList<KeyValuePair<String, String>>? tags = null
@@ -39,11 +39,11 @@ public sealed class TelemetryTracker
 	#region Constructor
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="TelemetryTracker"/> class.
+	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="telemetryPublisher">A telemetry publisher to publish the telemetry data.</param>
-	/// <param name="tags">A read-only list of tags to attach to each telemetry item. Is optional.</param>
-	public TelemetryTracker
+	/// <param name="tags">A read-only list of tags to attach to each telemetry item during publish. Is optional.</param>
+	public TelemetryClient
 	(
 		TelemetryPublisher telemetryPublisher,
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
@@ -380,7 +380,7 @@ public sealed class TelemetryTracker
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyType.InProc : DependencyType.InProc + " | " + typeName;
+		var type = String.IsNullOrWhiteSpace(typeName) ? TelemetryDependencyTypes.InProc : TelemetryDependencyTypes.InProc + " | " + typeName;
 
 		var telemetry = new DependencyTelemetry
 		{
@@ -440,6 +440,7 @@ public sealed class TelemetryTracker
 	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="exception">The exception to be tracked.</param>
+	/// <param name="problemId">The problem identifier.</param>
 	/// <param name="severityLevel">The severity level of the exception. Is optional.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
 	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
@@ -448,6 +449,7 @@ public sealed class TelemetryTracker
 	public void TrackException
 	(
 		Exception exception,
+		String? problemId = null,
 		SeverityLevel? severityLevel = null,
 		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
 		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
@@ -464,6 +466,7 @@ public sealed class TelemetryTracker
 			Measurements = measurements,
 			Operation = Operation,
 			Properties = properties,
+			ProblemId = problemId,
 			SeverityLevel = severityLevel,
 			Tags = tags,
 			Time = time
@@ -481,7 +484,6 @@ public sealed class TelemetryTracker
 	/// <param name="namespace">The namespace of the metric to be tracked.</param>
 	/// <param name="name">The name of the metric to be tracked.</param>
 	/// <param name="value">The value of the metric to be tracked.</param>
-	/// <param name="valueAggregation">The aggregation type of the metric. Is optional.</param>
 	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
 	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -490,12 +492,61 @@ public sealed class TelemetryTracker
 		String @namespace,
 		String name,
 		Double value,
-		MetricValueAggregation? valueAggregation = null,
 		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
+
+		var telemetry = new MetricTelemetry
+		{
+			Namespace = @namespace,
+			Name = name,
+			Operation = Operation,
+			Properties = properties,
+			Tags = tags,
+			Time = time,
+			Value = value
+		};
+
+		Add(telemetry);
+	}
+
+	/// <summary>
+	/// Tracks a metric.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="namespace">The namespace of the metric to be tracked.</param>
+	/// <param name="name">The name of the metric to be tracked.</param>
+	/// <param name="value">The value of the metric to be tracked.</param>
+	/// <param name="count">The number of values in the sample set.</param>
+	/// <param name="max">The max value of the metric across the sample set.</param>
+	/// <param name="min">The min value of the metric across the sample set.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackMetric
+	(
+		String @namespace,
+		String name,
+		Double value,
+		Int32 count,
+		Double max,
+		Double min,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var time = DateTime.UtcNow;
+
+		var valueAggregation = new MetricValueAggregation()
+		{
+			Count = count,
+			Max = max,
+			Min = min
+		};
 
 		var telemetry = new MetricTelemetry
 		{

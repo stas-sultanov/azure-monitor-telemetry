@@ -10,7 +10,7 @@ using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Types;
 
 /// <summary>
-/// Provides extension methods for the <see cref="TelemetryTracker"/> class.
+/// Provides extension methods for the <see cref="TelemetryClient"/> class.
 /// </summary>
 public static class Extensions
 {
@@ -19,7 +19,7 @@ public static class Extensions
 	/// <summary>
 	/// Tracks an instance of <see cref="HttpTelemetryPublishResult"/> as dependency telemetry.
 	/// </summary>
-	/// <param name="telemetryTracker">The telemetry tracker instance.</param>
+	/// <param name="telemetryClient">The telemetry tracker instance.</param>
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="publishResult">The result of the publish operation.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
@@ -28,7 +28,7 @@ public static class Extensions
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void TrackDependency
 	(
-		this TelemetryTracker telemetryTracker,
+		this TelemetryClient telemetryClient,
 		String id,
 		HttpTelemetryPublishResult publishResult,
 		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
@@ -49,17 +49,17 @@ public static class Extensions
 			Id = id,
 			Measurements = measurementsWithCount,
 			Name = name,
-			Operation = telemetryTracker.Operation,
+			Operation = telemetryClient.Operation,
 			Properties = properties,
 			ResultCode = publishResult.StatusCode.ToString(),
 			Success = publishResult.Success,
 			Target = publishResult.Url.Host,
 			Tags = tags,
-			Type = DependencyType.AzureMonitor,
+			Type = TelemetryDependencyTypes.AzureMonitor,
 			Time = publishResult.Time
 		};
 
-		telemetryTracker.Add(telemetry);
+		telemetryClient.Add(telemetry);
 	}
 
 	#endregion

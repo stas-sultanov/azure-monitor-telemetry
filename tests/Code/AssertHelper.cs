@@ -204,12 +204,15 @@ internal static class AssertHelper
 		ExceptionTelemetry telemetry,
 		IReadOnlyList<ExceptionInfo> exceptions,
 		KeyValuePair<String, Double>[] measurements,
+		String? problemId,
 		SeverityLevel? severityLevel
 	)
 	{
 		// Assert.AreEqual(exception, telemetry.Exception, nameof(ExceptionTelemetry.Exception));
 
 		CollectionAssert.AreEquivalent(measurements, telemetry.Measurements, measurementComparer, nameof(ExceptionTelemetry.Measurements));
+
+		Assert.AreEqual(problemId, telemetry.ProblemId, nameof(ExceptionTelemetry.ProblemId));
 
 		Assert.AreEqual(severityLevel, telemetry.SeverityLevel, nameof(ExceptionTelemetry.SeverityLevel));
 	}

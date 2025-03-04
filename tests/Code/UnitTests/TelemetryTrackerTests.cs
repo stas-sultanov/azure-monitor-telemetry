@@ -4,6 +4,7 @@
 namespace Azure.Monitor.Telemetry.UnitTests;
 
 using System;
+using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -15,30 +16,30 @@ using Azure.Monitor.Telemetry.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
-/// Tests for <see cref="TelemetryTracker"/> class.
+/// Tests for <see cref="TelemetryClient"/> class.
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public sealed class TelemetryTrackerTests
+public sealed class TelemetryClientTests
 {
 	#region Fields
 
 	private readonly TelemetryFactory factory;
 	private readonly HttpTelemetryPublisherMock publisher;
-	private readonly TelemetryTracker tracker;
+	private readonly TelemetryClient telemetryClient;
 
 	#endregion
 
 	#region Constructors
 
 	/// <summary>
-	/// Initializes a new instance of <see cref="TelemetryTrackerTests"/> class.
+	/// Initializes a new instance of <see cref="TelemetryClientTests"/> class.
 	/// </summary>
-	public TelemetryTrackerTests()
+	public TelemetryClientTests()
 	{
-		factory = new(nameof(TelemetryTrackerTests));
+		factory = new(nameof(TelemetryClientTests));
 		publisher = new();
-		tracker = new TelemetryTracker(publisher)
+		telemetryClient = new TelemetryClient(publisher)
 		{
 			Operation = factory.Operation
 		};
@@ -52,10 +53,10 @@ public sealed class TelemetryTrackerTests
 	public async Task Method_PublishAsync_ShouldReturnEmptySuccess_WhenNoItems()
 	{
 		// arrange
-		var telemetryTracker = new TelemetryTracker([]);
+		var telemetryClient = new TelemetryClient([]);
 
 		// act
-		var result = await telemetryTracker.PublishAsync();
+		var result = await telemetryClient.PublishAsync();
 
 		// assert
 		Assert.AreEqual(0, result.Length);
@@ -72,9 +73,9 @@ public sealed class TelemetryTrackerTests
 		var telemetry = factory.Create_TraceTelemetry_Min("Test");
 
 		// act
-		tracker.Add(telemetry);
+		telemetryClient.Add(telemetry);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as TraceTelemetry;
 
@@ -92,15 +93,15 @@ public sealed class TelemetryTrackerTests
 	public void ActivityScopeBegin()
 	{
 		// arrange
-		var originalOperation = tracker.Operation;
+		var originalOperation = telemetryClient.Operation;
 		var expectedId = TelemetryFactory.GetActivityId();
 
 		// act
-		tracker.ActivityScopeBegin(expectedId, out var actualOperation);
+		telemetryClient.ActivityScopeBegin(expectedId, out var actualOperation);
 
-		var scopeOpeartion = tracker.Operation;
+		var scopeOpeartion = telemetryClient.Operation;
 
-		tracker.ActivityScopeEnd(actualOperation);
+		telemetryClient.ActivityScopeEnd(actualOperation);
 
 		// assert
 		AssertHelper.AreEqual(originalOperation, actualOperation);
@@ -112,15 +113,15 @@ public sealed class TelemetryTrackerTests
 	public void ActivityScopeBegin_Overload()
 	{
 		// arrange
-		var originalOperation = tracker.Operation;
+		var originalOperation = telemetryClient.Operation;
 		var expectedId = TelemetryFactory.GetActivityId();
 
 		// act
-		tracker.ActivityScopeBegin(() => expectedId, out var time, out var timestamp, out var activityId, out var actualOperation);
+		telemetryClient.ActivityScopeBegin(() => expectedId, out var time, out var timestamp, out var activityId, out var actualOperation);
 
-		var scopeOpeartion = tracker.Operation;
+		var scopeOpeartion = telemetryClient.Operation;
 
-		tracker.ActivityScopeEnd(actualOperation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(actualOperation, timestamp, out var duration);
 
 		// assert
 		Assert.IsTrue(time < DateTime.UtcNow);
@@ -151,9 +152,9 @@ public sealed class TelemetryTrackerTests
 		var runLocation = "test-server";
 
 		// act
-		tracker.TrackAvailability(time, duration, id, name, message, success, runLocation, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackAvailability(time, duration, id, name, message, success, runLocation, factory.Measurements, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as AvailabilityTelemetry;
 
@@ -178,9 +179,9 @@ public sealed class TelemetryTrackerTests
 		_ = TimeSpan.FromSeconds(1);
 
 		// act
-		tracker.TrackDependency(time, duration, id, httpMethod, uri, statusCode, true, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackDependency(time, duration, id, httpMethod, uri, statusCode, true, factory.Measurements, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
 
@@ -193,7 +194,7 @@ public sealed class TelemetryTrackerTests
 
 		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelper.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, DependencyType.HTTP);
+		AssertHelper.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, TelemetryDependencyTypes.HTTP);
 	}
 
 	[TestMethod]
@@ -208,13 +209,13 @@ public sealed class TelemetryTrackerTests
 		var success = true;
 
 		// act
-		tracker.TrackDependencyInProc(time, duration, id, name, success, typeName, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackDependencyInProc(time, duration, id, name, success, typeName, factory.Measurements, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
 
-		var type = DependencyType.InProc + " | " + typeName;
+		var type = TelemetryDependencyTypes.InProc + " | " + typeName;
 
 		// assert
 		Assert.IsNotNull(actualResult);
@@ -231,9 +232,9 @@ public sealed class TelemetryTrackerTests
 		var name = "test";
 
 		// act
-		tracker.TrackEvent(name, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackEvent(name, factory.Measurements, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as EventTelemetry;
 
@@ -251,12 +252,13 @@ public sealed class TelemetryTrackerTests
 		// arrange
 		var exception = new Exception("Test exception");
 		var exceptions = exception.Convert();
+		var problemId = Random.Shared.Next(1000).ToString(CultureInfo.InvariantCulture);
 		var severityLevel = SeverityLevel.Error;
 
 		// act
-		tracker.TrackException(exception, severityLevel, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackException(exception, problemId, severityLevel, factory.Measurements, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as ExceptionTelemetry;
 
@@ -265,11 +267,34 @@ public sealed class TelemetryTrackerTests
 
 		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelper.PropertiesAreEqual(actualResult, exceptions, factory.Measurements, severityLevel);
+		AssertHelper.PropertiesAreEqual(actualResult, exceptions, factory.Measurements, problemId, severityLevel);
 	}
 
 	[TestMethod]
 	public async Task Method_TrackMetric()
+	{
+		// arrange
+		var name = "test";
+		var @namespace = "tests";
+		var value = 6;
+
+		// act
+		telemetryClient.TrackMetric(@namespace, name, value, factory.Properties, factory.Tags);
+
+		_ = await telemetryClient.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as MetricTelemetry;
+
+		// assert
+		Assert.IsNotNull(actualResult);
+
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+
+		AssertHelper.PropertiesAreEqual(actualResult, name, @namespace, value);
+	}
+
+	[TestMethod]
+	public async Task Method_TrackMetric_Overload()
 	{
 		// arrange
 		var name = "test";
@@ -283,9 +308,9 @@ public sealed class TelemetryTrackerTests
 		};
 
 		// act
-		tracker.TrackMetric(@namespace, name, value, valueAggregation, factory.Properties, factory.Tags);
+		telemetryClient.TrackMetric(@namespace, name, value, valueAggregation.Count, valueAggregation.Max, valueAggregation.Min, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as MetricTelemetry;
 
@@ -308,9 +333,9 @@ public sealed class TelemetryTrackerTests
 		var url = new Uri("https://gostas.dev");
 
 		// act
-		tracker.TrackPageView(time, duration, id, name, url, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackPageView(time, duration, id, name, url, factory.Measurements, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as PageViewTelemetry;
 
@@ -335,9 +360,9 @@ public sealed class TelemetryTrackerTests
 		var success = true;
 
 		// act
-		tracker.TrackRequest(time, duration, id, url, responseCode, success, name, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackRequest(time, duration, id, url, responseCode, success, name, factory.Measurements, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as RequestTelemetry;
 
@@ -357,9 +382,9 @@ public sealed class TelemetryTrackerTests
 		var severityLevel = SeverityLevel.Information;
 
 		// act
-		tracker.TrackTrace(message, severityLevel, factory.Properties, factory.Tags);
+		telemetryClient.TrackTrace(message, severityLevel, factory.Properties, factory.Tags);
 
-		_ = await tracker.PublishAsync();
+		_ = await telemetryClient.PublishAsync();
 
 		var actualResult = publisher.Buffer.Dequeue() as TraceTelemetry;
 

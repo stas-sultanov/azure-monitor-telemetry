@@ -19,7 +19,7 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 {
 	#region Data
 
-	private TelemetryTracker TelemetryTracker { get; }
+	private TelemetryClient TelemetryClient { get; }
 
 	#endregion
 
@@ -45,12 +45,12 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 			}
 		)
 	{
-		TelemetryTracker = new TelemetryTracker
+		TelemetryClient = new TelemetryClient
 		(
 			TelemetryPublishers,
 			[
-				new (TelemetryTagKey.CloudRole, "Tester"),
-				new (TelemetryTagKey.CloudRoleInstance, Environment.MachineName)
+				new (TelemetryTagKeys.CloudRole, "Tester"),
+				new (TelemetryTagKeys.CloudRoleInstance, Environment.MachineName)
 			]
 		);
 	}
@@ -62,17 +62,17 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 	[TestMethod]
 	public async Task PublishSomeTelemetryAsync()
 	{
-		TelemetryTracker.Operation = new()
+		TelemetryClient.Operation = new()
 		{
 			Id = ActivityTraceId.CreateRandom().ToString(),
 			Name = nameof(MultiplePublishersTests)
 		};
 
-		TelemetryTracker.TrackEvent("start");
+		TelemetryClient.TrackEvent("start");
 
-		TelemetryTracker.TrackTrace("started", SeverityLevel.Verbose);
+		TelemetryClient.TrackTrace("started", SeverityLevel.Verbose);
 
-		_ = await TelemetryTracker.PublishAsync();
+		_ = await TelemetryClient.PublishAsync();
 	}
 
 	#endregion

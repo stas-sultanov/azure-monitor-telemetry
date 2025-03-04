@@ -6,7 +6,7 @@ namespace Azure.Monitor.Telemetry;
 /// <summary>
 /// Provides a set of constant string keys used for telemetry tagging in Azure Monitor.
 /// </summary>
-public static class TelemetryTagKey
+public static class TelemetryTagKeys
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public const String ApplicationVersion = @"ai.application.ver";

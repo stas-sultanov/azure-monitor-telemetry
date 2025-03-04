@@ -22,36 +22,36 @@ public static class Extensions
 	internal static IReadOnlyDictionary<String, String> WellKnownDomainToDependencyType { get; } = new Dictionary<String, String>()
 	{
 	// Azure Blob
-		{ ".blob.core.windows.net", DependencyType.AzureBlob },
-		{ ".blob.core.chinacloudapi.cn", DependencyType.AzureBlob },
-		{ ".blob.core.cloudapi.de", DependencyType.AzureBlob },
-		{ ".blob.core.usgovcloudapi.net", DependencyType.AzureBlob },
+		{ ".blob.core.windows.net", TelemetryDependencyTypes.AzureBlob },
+		{ ".blob.core.chinacloudapi.cn", TelemetryDependencyTypes.AzureBlob },
+		{ ".blob.core.cloudapi.de", TelemetryDependencyTypes.AzureBlob },
+		{ ".blob.core.usgovcloudapi.net", TelemetryDependencyTypes.AzureBlob },
 	// Azure Cosmos DB
-		{".documents.azure.com", DependencyType.AzureCosmosDB },
-		{".documents.chinacloudapi.cn", DependencyType.AzureCosmosDB },
-		{".documents.cloudapi.de", DependencyType.AzureCosmosDB },
-		{".documents.usgovcloudapi.net", DependencyType.AzureCosmosDB },
+		{".documents.azure.com", TelemetryDependencyTypes.AzureCosmosDB },
+		{".documents.chinacloudapi.cn", TelemetryDependencyTypes.AzureCosmosDB },
+		{".documents.cloudapi.de", TelemetryDependencyTypes.AzureCosmosDB },
+		{".documents.usgovcloudapi.net", TelemetryDependencyTypes.AzureCosmosDB },
 	// Azure Iot
-		{".azure-devices.net", DependencyType.AzureIotHub},
+		{".azure-devices.net", TelemetryDependencyTypes.AzureIotHub},
 	// Azure Monitor
-		{ ".applicationinsights.azure.com", DependencyType.AzureMonitor },
+		{ ".applicationinsights.azure.com", TelemetryDependencyTypes.AzureMonitor },
 	// Azure Queue
-		{ ".queue.core.windows.net", DependencyType.AzureQueue },
-		{ ".queue.core.chinacloudapi.cn", DependencyType.AzureQueue },
-		{ ".queue.core.cloudapi.de", DependencyType.AzureQueue },
-		{ ".queue.core.usgovcloudapi.net", DependencyType.AzureQueue },
+		{ ".queue.core.windows.net", TelemetryDependencyTypes.AzureQueue },
+		{ ".queue.core.chinacloudapi.cn", TelemetryDependencyTypes.AzureQueue },
+		{ ".queue.core.cloudapi.de", TelemetryDependencyTypes.AzureQueue },
+		{ ".queue.core.usgovcloudapi.net", TelemetryDependencyTypes.AzureQueue },
 	// Azure Search
-		{ ".search.windows.net", DependencyType.AzureSearch},
+		{ ".search.windows.net", TelemetryDependencyTypes.AzureSearch},
 	// Azure Service Bus
-		{".servicebus.windows.net", DependencyType.AzureServiceBus },
-		{".servicebus.chinacloudapi.cn", DependencyType.AzureServiceBus },
-		{".servicebus.cloudapi.de", DependencyType.AzureServiceBus },
-		{".servicebus.usgovcloudapi.net", DependencyType.AzureServiceBus },
+		{".servicebus.windows.net", TelemetryDependencyTypes.AzureServiceBus },
+		{".servicebus.chinacloudapi.cn", TelemetryDependencyTypes.AzureServiceBus },
+		{".servicebus.cloudapi.de", TelemetryDependencyTypes.AzureServiceBus },
+		{".servicebus.usgovcloudapi.net", TelemetryDependencyTypes.AzureServiceBus },
 	// Azure Table
-		{".table.core.windows.net", DependencyType.AzureTable},
-		{".table.core.chinacloudapi.cn", DependencyType.AzureTable},
-		{".table.core.cloudapi.de", DependencyType.AzureTable},
-		{".table.core.usgovcloudapi.net", DependencyType.AzureTable}
+		{".table.core.windows.net", TelemetryDependencyTypes.AzureTable},
+		{".table.core.chinacloudapi.cn", TelemetryDependencyTypes.AzureTable},
+		{".table.core.cloudapi.de", TelemetryDependencyTypes.AzureTable},
+		{".table.core.usgovcloudapi.net", TelemetryDependencyTypes.AzureTable}
 	};
 
 	#endregion
@@ -74,7 +74,7 @@ public static class Extensions
 			return type;
 		}
 
-		return DependencyType.HTTP;
+		return TelemetryDependencyTypes.HTTP;
 	}
 
 	#endregion

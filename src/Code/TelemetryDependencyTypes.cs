@@ -4,12 +4,12 @@
 namespace Azure.Monitor.Telemetry;
 
 /// <summary>
-/// Provides constants and methods for identifying dependency types.
+/// Contains well-known dependency types.
 /// </summary>
 /// <remarks>
 /// Constants values should not be changed otherwise there will be no aggregation with data which is published by other implementations of the client.
 /// </remarks>
-public static class DependencyType
+public static class TelemetryDependencyTypes
 {
 	#region Constants
 

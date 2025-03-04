@@ -32,9 +32,9 @@ public sealed class DistributedTests : IntegrationTestsBase
 
 	#endregion
 
-	private TelemetryTracker ClientTelemetryTracker { get; }
-	private TelemetryTracker Service0TelemetryTracker { get; }
-	private TelemetryTracker Service1TelemetryTracker { get; }
+	private TelemetryClient ClientTelemetryClient { get; }
+	private TelemetryClient Service0TelemetryClient { get; }
+	private TelemetryClient Service1TelemetryClient { get; }
 
 	#region Constructors
 
@@ -53,40 +53,40 @@ public sealed class DistributedTests : IntegrationTestsBase
 			}
 		)
 	{
-		ClientTelemetryTracker = new TelemetryTracker
+		ClientTelemetryClient = new TelemetryClient
 		(
 			TelemetryPublishers,
 			[
-				new(TelemetryTagKey.CloudRole, "Frontend"),
-				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(0,100).ToString(CultureInfo.InvariantCulture)),
-				new(TelemetryTagKey.DeviceType, "Browser"),
-				new(TelemetryTagKey.LocationIp, clientIP)
+				new(TelemetryTagKeys.CloudRole, "Frontend"),
+				new(TelemetryTagKeys.CloudRoleInstance, Random.Shared.Next(0,100).ToString(CultureInfo.InvariantCulture)),
+				new(TelemetryTagKeys.DeviceType, "Browser"),
+				new(TelemetryTagKeys.LocationIp, clientIP)
 			]
 		);
 
-		clientTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ClientTelemetryTracker, TelemetryFactory.GetActivityId);
+		clientTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ClientTelemetryClient, TelemetryFactory.GetActivityId);
 
-		Service0TelemetryTracker = new TelemetryTracker
+		Service0TelemetryClient = new TelemetryClient
 		(
 			TelemetryPublishers,
 			[
-				new(TelemetryTagKey.CloudRole, "Watchman"),
-				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(100,200).ToString(CultureInfo.InvariantCulture)),
-				new(TelemetryTagKey.LocationIp, service0IP)
+				new(TelemetryTagKeys.CloudRole, "Watchman"),
+				new(TelemetryTagKeys.CloudRoleInstance, Random.Shared.Next(100,200).ToString(CultureInfo.InvariantCulture)),
+				new(TelemetryTagKeys.LocationIp, service0IP)
 			]
 		);
 
-		Service1TelemetryTracker = new TelemetryTracker
+		Service1TelemetryClient = new TelemetryClient
 		(
 			TelemetryPublishers,
 			[
-				new(TelemetryTagKey.CloudRole, "Backend"),
-				new(TelemetryTagKey.CloudRoleInstance, Random.Shared.Next(200,300).ToString(CultureInfo.InvariantCulture)),
-				new(TelemetryTagKey.LocationIp, service1IP)
+				new(TelemetryTagKeys.CloudRole, "Backend"),
+				new(TelemetryTagKeys.CloudRoleInstance, Random.Shared.Next(200,300).ToString(CultureInfo.InvariantCulture)),
+				new(TelemetryTagKeys.LocationIp, service1IP)
 			]
 		);
 
-		service1TelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(Service1TelemetryTracker, TelemetryFactory.GetActivityId);
+		service1TelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(Service1TelemetryClient, TelemetryFactory.GetActivityId);
 	}
 
 	#endregion
@@ -110,7 +110,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 		// page view
 		{
 			// set top level operation
-			ClientTelemetryTracker.Operation = new TelemetryOperation
+			ClientTelemetryClient.Operation = new TelemetryOperation
 			{
 				Id = TelemetryFactory.GetOperationId(),
 				Name = "ShowMainPage"
@@ -119,7 +119,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 			// simulate top level operation - page view
 			await TelemetrySimulator.SimulatePageViewAsync
 			(
-				ClientTelemetryTracker,
+				ClientTelemetryClient,
 				"Main",
 				new Uri("https://gostas.dev"),
 				async (cancellationToken) =>
@@ -135,13 +135,13 @@ public sealed class DistributedTests : IntegrationTestsBase
 
 					await TelemetrySimulator.SimulateDependencyAsync
 					(
-						ClientTelemetryTracker,
+						ClientTelemetryClient,
 						HttpMethod.Get,
 						requestUrl,
 						HttpStatusCode.OK,
 						(cancellationToken) => Service1ServeRequestAsync
 						(
-							ClientTelemetryTracker.Operation,
+							ClientTelemetryClient.Operation,
 							requestUrl,
 							"OK",
 							true,
@@ -158,7 +158,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 		// availability test
 		{
 			// set top level operation
-			Service0TelemetryTracker.Operation = new TelemetryOperation
+			Service0TelemetryClient.Operation = new TelemetryOperation
 			{
 				Id = TelemetryFactory.GetOperationId(),
 				Name = "Availability"
@@ -167,14 +167,14 @@ public sealed class DistributedTests : IntegrationTestsBase
 			// simulate top level operation - availability test
 			await TelemetrySimulator.SimulateAvailabilityAsync
 			(
-				Service0TelemetryTracker,
+				Service0TelemetryClient,
 				"Check Health",
 				"Passed",
 				true,
 				"West Europe",
 				(cancellationToken) => Service1ServeRequestAsync
 				(
-					Service0TelemetryTracker.Operation,
+					Service0TelemetryClient.Operation,
 					new Uri("https://gostas.dev/health"),
 					"OK",
 					true,
@@ -186,13 +186,13 @@ public sealed class DistributedTests : IntegrationTestsBase
 		}
 
 		// publish client telemetry
-		var clientPublishResult = await ClientTelemetryTracker.PublishAsync(cancellationToken);
+		var clientPublishResult = await ClientTelemetryClient.PublishAsync(cancellationToken);
 
 		// publish server telemetry
-		var service0PublishResult = await Service0TelemetryTracker.PublishAsync(cancellationToken);
+		var service0PublishResult = await Service0TelemetryClient.PublishAsync(cancellationToken);
 
 		// publish server telemetry
-		var service1PublishResult = await Service1TelemetryTracker.PublishAsync(cancellationToken);
+		var service1PublishResult = await Service1TelemetryClient.PublishAsync(cancellationToken);
 
 		AssertStandardSuccess(clientPublishResult);
 
@@ -214,7 +214,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 		await Task.Delay(Random.Shared.Next(100), cancellationToken);
 
 		// add Trace
-		Service1TelemetryTracker.TrackTrace("Request from Main Page", SeverityLevel.Information);
+		Service1TelemetryClient.TrackTrace("Request from Main Page", SeverityLevel.Information);
 	}
 
 	private async Task Service1ServeAvailabilityRequestInternalAsync(CancellationToken cancellationToken)
@@ -223,7 +223,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 		await Task.Delay(Random.Shared.Next(100), cancellationToken);
 
 		// add Trace
-		Service1TelemetryTracker.TrackTrace("Health Request", SeverityLevel.Information);
+		Service1TelemetryClient.TrackTrace("Health Request", SeverityLevel.Information);
 	}
 
 	private async Task Service1ServeRequestAsync
@@ -237,9 +237,9 @@ public sealed class DistributedTests : IntegrationTestsBase
 	)
 	{
 		// set top level operation
-		Service1TelemetryTracker.Operation = operation;
+		Service1TelemetryClient.Operation = operation;
 
-		await TelemetrySimulator.SimulateRequestAsync(Service1TelemetryTracker, url, responseCode, success, subsequent, cancellationToken);
+		await TelemetrySimulator.SimulateRequestAsync(Service1TelemetryClient, url, responseCode, success, subsequent, cancellationToken);
 	}
 
 	public static async Task<String> MakeDependencyCallAsyc
