@@ -6,55 +6,38 @@ namespace Azure.Monitor.Telemetry.Publish;
 using System.Net;
 
 /// <summary>
-/// Encapsulates the outcome of publishing telemetry over HTTP.
+/// Represents a result of the Publish operation.
 /// </summary>
-/// <param name="count">The number of telemetry items processed in this operation.</param>
-/// <param name="duration">The time taken to complete the telemetry tracking operation.</param>
-/// <param name="success">A value indicating whether the operation was successful.</param>
-/// <param name="time">The timestamp when the operation was performed.</param>
-/// <param name="url">The ingestion URL used for the telemetry operation.</param>
-/// <param name="statusCode">The HTTP status code received from the telemetry endpoint.</param>
-/// <param name="response">The raw response string received from the telemetry endpoint.</param>
-public sealed class HttpTelemetryPublishResult
-(
-	Int32 count,
-	TimeSpan duration,
-	Boolean success,
-	DateTime time,
-	Uri url,
-	HttpStatusCode statusCode,
-	String response
-)
-	: TelemetryPublishResult
+public sealed class HttpTelemetryPublishResult : TelemetryPublishResult
 {
 	#region Properties
 
 	/// <inheritdoc/>
-	public Int32 Count { get; } = count;
+	public required Int32 Count { get; init; }
 
 	/// <inheritdoc/>
-	public TimeSpan Duration { get; } = duration;
+	public required TimeSpan Duration { get; init; }
 
 	/// <summary>
 	/// The raw response string received from the telemetry endpoint.
 	/// </summary>
-	public String Response { get; } = response;
+	public required String Response { get; init; }
 
 	/// <summary>
 	/// The HTTP status code received from the telemetry endpoint.
 	/// </summary>
-	public HttpStatusCode StatusCode { get; } = statusCode;
+	public required HttpStatusCode StatusCode { get; init; }
 
 	/// <inheritdoc/>
-	public Boolean Success { get; } = success;
+	public required Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	/// <summary>
 	/// The ingestion URL used for the telemetry operation.
 	/// </summary>
-	public Uri Url { get; } = url;
+	public required Uri Url { get; init; }
 
 	#endregion
 }

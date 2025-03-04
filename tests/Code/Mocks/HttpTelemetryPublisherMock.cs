@@ -21,21 +21,33 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 
 	#endregion
 
-	public List<Telemetry> Buffer { get; } = [];
+	public Queue<Telemetry> Buffer { get; } = [];
 
 	/// <inheritdoc/>
 	public Task<TelemetryPublishResult> PublishAsync
 	(
-		IReadOnlyList<Telemetry> telemetryList,
-		KeyValuePair<String, String>[]? tags,
+		IReadOnlyList<Telemetry> telemetryItems,
+		IReadOnlyList<KeyValuePair<String, String>>? tags,
 		CancellationToken cancellationToken
 	)
 	{
 		var time = DateTime.UtcNow;
 
-		Buffer.AddRange(telemetryList);
+		foreach (var item in telemetryItems)
+		{
+			Buffer.Enqueue(item);
+		}
 
-		var publishResult = (TelemetryPublishResult)new HttpTelemetryPublishResult(telemetryList.Count, DateTime.UtcNow.Subtract(time), true, time, MockValidIngestEndpointUri, HttpStatusCode.OK, "OK");
+		var publishResult = (TelemetryPublishResult) new HttpTelemetryPublishResult
+		{
+			Count = telemetryItems.Count,
+			Duration = DateTime.UtcNow.Subtract(time),
+			Response = "OK",
+			StatusCode = HttpStatusCode.OK,
+			Success = true,
+			Time = time,
+			Url = MockValidIngestEndpointUri
+		};
 
 		var result = Task.FromResult(publishResult);
 

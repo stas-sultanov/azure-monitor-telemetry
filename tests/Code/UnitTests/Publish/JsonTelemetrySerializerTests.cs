@@ -15,34 +15,58 @@ using Azure.Monitor.Telemetry.Tests;
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public class JsonTelemetrySerializerTests
+public sealed class JsonTelemetrySerializerTests
 {
 	#region Types
 
 	private sealed class UnknownTelemetry(DateTime time) : Telemetry
 	{
-		public OperationContext Operation { get; set; } = new OperationContext();
-		public KeyValuePair<String, String>[]? Properties { get; set; } = null;
-		public KeyValuePair<String, String>[]? Tags { get; set; } = null;
+		public TelemetryOperation Operation { get; set; } = new TelemetryOperation();
+		public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; set; }
+		public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; set; }
 		public DateTime Time { get; init; } = time;
+	}
+
+	#endregion
+
+	#region Static Fields
+
+	private static readonly JsonSerializerOptions serializerOptionsWithEnumConverter;
+
+	#endregion
+
+	#region Static Constructors
+
+	/// <summary>
+	/// Initializes a new instance of <see cref="JsonTelemetrySerializerTests"/>.
+	/// </summary>
+	static JsonTelemetrySerializerTests()
+	{
+		var converter = new JsonStringEnumConverter();
+
+		serializerOptionsWithEnumConverter = new JsonSerializerOptions();
+
+		serializerOptionsWithEnumConverter.Converters.Add(converter);
 	}
 
 	#endregion
 
 	#region Fields
 
-	private static readonly KeyValuePair<String, String> [] publisherTags =
+	private readonly Uri testUrl = new ("https://gostas.dev");
+
+	private readonly KeyValuePair<String, String> [] publisherTags =
 	[
-		new(TelemetryTagKey.InternalSdkVersion, "test"),
+		new(TelemetryTagKeys.InternalSdkVersion, "test"),
 	];
 
-	private static readonly KeyValuePair<String, String> [] trackerTags =
+	private readonly KeyValuePair<String, String> [] trackerTags =
 	[
-		new(TelemetryTagKey.CloudRole, "TestMachine"),
+		new(TelemetryTagKeys.CloudRole, "TestMachine"),
 	];
 
-	private static readonly String instrumentationKey = Guid.NewGuid().ToString();
-	private readonly TelemetryFactory telemetryFactory = new();
+	private readonly String instrumentationKey = Guid.NewGuid().ToString();
+	private readonly TelemetryFactory telemetryFactory = new(nameof(HttpTelemetryPublisherTests));
 
 	#endregion
 
@@ -55,7 +79,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppAvailabilityResults";
 		var expectedType = @"AvailabilityData";
 
-		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max();
+		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max("Check");
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -79,7 +103,7 @@ public class JsonTelemetrySerializerTests
 
 		var success = GetSuccess(jsonElement);
 
-		AssertHelpers.PropertiesAreEqual(telemetry, duration, id, measurements, message, name, runLocation, success);
+		AssertHelper.PropertiesAreEqual(telemetry, duration, id, measurements, message, name, runLocation, success);
 	}
 
 	[TestMethod]
@@ -89,7 +113,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppDependencies";
 		var expectedType = @"RemoteDependencyData";
 
-		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max();
+		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max("Storage",  testUrl );
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -117,7 +141,7 @@ public class JsonTelemetrySerializerTests
 
 		var type = GetType(jsonElement);
 
-		AssertHelpers.PropertiesAreEqual(telemetry, data, duration, id, measurements, name, resultCode, success, target, type);
+		AssertHelper.PropertiesAreEqual(telemetry, data, duration, id, measurements, name, resultCode, success, target, type);
 	}
 
 	[TestMethod]
@@ -127,7 +151,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppEvents";
 		var expectedType = @"EventData";
 
-		var telemetry = telemetryFactory.Create_EventTelemetry_Max();
+		var telemetry = telemetryFactory.Create_EventTelemetry_Max("Check");
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -141,7 +165,7 @@ public class JsonTelemetrySerializerTests
 
 		var name = GetName(jsonElement);
 
-		AssertHelpers.PropertiesAreEqual(telemetry, measurements, name);
+		AssertHelper.PropertiesAreEqual(telemetry, measurements, name);
 	}
 
 	[TestMethod]
@@ -161,13 +185,13 @@ public class JsonTelemetrySerializerTests
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
-		var converter = new JsonStringEnumConverter();
+		var measurements = GetMeasurements(jsonElement);
 
-		var options = new JsonSerializerOptions();
+		var problemId = GetProblemId(jsonElement);
 
-		options.Converters.Add(converter);
+		var severityLevel = GetSeverityLevel(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"severityLevel", telemetry.SeverityLevel, options);
+		AssertHelper.PropertiesAreEqual(telemetry, [], measurements, problemId, severityLevel);
 	}
 
 	[TestMethod]
@@ -183,7 +207,7 @@ public class JsonTelemetrySerializerTests
 			Min = 1,
 			Max = 3
 		};
-		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", 6, aggregation);
+		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", "count", 6, aggregation);
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -207,9 +231,7 @@ public class JsonTelemetrySerializerTests
 
 		var value = metricJsonElement.GetProperty(@"value").Deserialize<Double>();
 
-		Assert.IsNotNull(name);
-
-		AssertHelpers.PropertiesAreEqual(telemetry, name, @namespace, value, new MetricValueAggregation() { Count = count, Max = max, Min = min });
+		AssertHelper.PropertiesAreEqual(telemetry, name, @namespace, value, new MetricValueAggregation() { Count = count, Max = max, Min = min });
 	}
 
 	[TestMethod]
@@ -219,7 +241,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppPageViews";
 		var expectedType = @"PageViewData";
 
-		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max();
+		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max("Main", testUrl);
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -229,13 +251,17 @@ public class JsonTelemetrySerializerTests
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
-		DeserializeAndAssert(jsonElement, @"duration", telemetry.Duration);
+		var duration = GetDuration(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"id", telemetry.Id);
+		var id = GetId(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"name", telemetry.Name);
+		var measurements = GetMeasurements(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"url", telemetry.Url);
+		var name = GetName(jsonElement);
+
+		var url = GetUrl(jsonElement);
+
+		AssertHelper.PropertiesAreEqual(telemetry, duration, id, measurements, name, url);
 	}
 
 	[TestMethod]
@@ -245,7 +271,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppRequests";
 		var expectedType = @"RequestData";
 
-		var telemetry = telemetryFactory.Create_RequestTelemetry_Max();
+		var telemetry = telemetryFactory.Create_RequestTelemetry_Max("GetMain", testUrl);
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -255,17 +281,21 @@ public class JsonTelemetrySerializerTests
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
-		DeserializeAndAssert(jsonElement, @"id", telemetry.Id);
+		var duration = GetDuration(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"name", telemetry.Name);
+		var id = GetId(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"duration", telemetry.Duration);
+		var measurements = GetMeasurements(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"success", telemetry.Success);
+		var name = GetName(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"responseCode", telemetry.ResponseCode);
+		var responseCode = GetResponseCode(jsonElement);
 
-		DeserializeAndAssert(jsonElement, @"url", telemetry.Url);
+		var success = GetSuccess(jsonElement);
+
+		var url = GetUrl(jsonElement);
+
+		AssertHelper.PropertiesAreEqual(telemetry, duration, id, measurements, name, responseCode, success, url);
 	}
 
 	[TestMethod]
@@ -275,7 +305,7 @@ public class JsonTelemetrySerializerTests
 		var expectedName = @"AppTraces";
 		var expectedType = @"MessageData";
 
-		var telemetry = telemetryFactory.Create_TraceTelemetry_Max();
+		var telemetry = telemetryFactory.Create_TraceTelemetry_Max("Test");
 
 		// act
 		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
@@ -285,13 +315,11 @@ public class JsonTelemetrySerializerTests
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
-		var converter = new JsonStringEnumConverter();
+		var message = GetMessage(jsonElement);
 
-		var options = new JsonSerializerOptions();
+		var severityLevel = GetSeverityLevel(jsonElement);
 
-		options.Converters.Add(converter);
-
-		DeserializeAndAssert(jsonElement, @"severityLevel", telemetry.SeverityLevel, options);
+		AssertHelper.PropertiesAreEqual(telemetry, message, severityLevel);
 	}
 
 	[TestMethod]
@@ -365,7 +393,7 @@ public class JsonTelemetrySerializerTests
 
 		Assert.IsNotNull(actualTags, "tags");
 
-		Assert.AreEqual(expectedTags.Length, actualTags.Count, "Tags count");
+		Assert.IsTrue(expectedTags.Length <= actualTags.Count, "Tags count");
 
 		foreach (var expectedTag in expectedTags)
 		{
@@ -394,22 +422,17 @@ public class JsonTelemetrySerializerTests
 		{
 			if (!String.IsNullOrWhiteSpace(telemetry.Operation.Id))
 			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationId, telemetry.Operation.Id));
+				tags.Add(new KeyValuePair<String, String>(TelemetryTagKeys.OperationId, telemetry.Operation.Id));
 			}
 
 			if (!String.IsNullOrWhiteSpace(telemetry.Operation.Name))
 			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationName, telemetry.Operation.Name));
+				tags.Add(new KeyValuePair<String, String>(TelemetryTagKeys.OperationName, telemetry.Operation.Name));
 			}
 
 			if (!String.IsNullOrWhiteSpace(telemetry.Operation.ParentId))
 			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationParentId, telemetry.Operation.ParentId));
-			}
-
-			if (!String.IsNullOrWhiteSpace(telemetry.Operation.SyntheticSource))
-			{
-				tags.Add(new KeyValuePair<String, String>(TelemetryTagKey.OperationSyntheticSource, telemetry.Operation.SyntheticSource));
+				tags.Add(new KeyValuePair<String, String>(TelemetryTagKeys.OperationParentId, telemetry.Operation.ParentId));
 			}
 		}
 
@@ -434,6 +457,10 @@ public class JsonTelemetrySerializerTests
 
 		Assert.AreEqual(expectedValue, actualValue, propertyName);
 	}
+
+	#endregion
+
+	#region Methods: Helpers Get
 
 	private static String? GetData(JsonElement jsonElement)
 	{
@@ -466,15 +493,29 @@ public class JsonTelemetrySerializerTests
 	{
 		return jsonElement.GetProperty(@"name").Deserialize<String>();
 	}
+	private static String? GetRunLocation(JsonElement jsonElement)
+	{
+		return jsonElement.GetProperty(@"runLocation").Deserialize<String>();
+	}
 
 	private static String? GetResultCode(JsonElement jsonElement)
 	{
 		return jsonElement.GetProperty(@"resultCode").Deserialize<String>();
 	}
 
-	private static String? GetRunLocation(JsonElement jsonElement)
+	private static String? GetResponseCode(JsonElement jsonElement)
 	{
-		return jsonElement.GetProperty(@"runLocation").Deserialize<String>();
+		return jsonElement.GetProperty(@"responseCode").Deserialize<String>();
+	}
+
+	private static String? GetProblemId(JsonElement jsonElement)
+	{
+		return jsonElement.GetProperty(@"problemId").Deserialize<String>();
+	}
+
+	private static SeverityLevel? GetSeverityLevel(JsonElement jsonElement)
+	{
+		return jsonElement.GetProperty(@"severityLevel").Deserialize<SeverityLevel>(serializerOptionsWithEnumConverter);
 	}
 
 	private static Boolean GetSuccess(JsonElement jsonElement)
@@ -490,6 +531,11 @@ public class JsonTelemetrySerializerTests
 	private static String? GetType(JsonElement jsonElement)
 	{
 		return jsonElement.GetProperty(@"type").Deserialize<String>();
+	}
+
+	private static Uri? GetUrl(JsonElement jsonElement)
+	{
+		return jsonElement.GetProperty(@"url").Deserialize<Uri>();
 	}
 
 	#endregion

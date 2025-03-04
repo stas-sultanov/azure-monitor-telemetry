@@ -6,7 +6,7 @@ Azure Monitor Telemetry
 
 A lightweight, high-performance library for tracking and publishing telemetry.
 
-## Table of Contents  
+## Table of Contents
 - [Azure Monitor Telemetry](#azure-monitor-telemetry)
 	- [Table of Contents](#table-of-contents)
 	- [Getting Started](#getting-started)
@@ -33,7 +33,7 @@ To use this library, required:
 
 ### Initialization
 
-The `TelemetryTracker` class is the core component for tracking and publishing telemetry.  
+The `TelemetryClient` class is the core component for tracking and publishing telemetry.  
 
 To publish telemetry to **Application Insights**, the constructor of `TelemetryPublisher` must be provided with an instance of a class that implements `TelemetryPublisher` interface.
 
@@ -63,8 +63,8 @@ var telemetryPublisher = new HttpTelemetryPublisher
 // create tags collection
 KeyValuePair<String, String> [] tags = [new (TelemetryTagKey.CloudRole, "local")];
 
-// create telemetry tracker
-var telemetryTracker = new TelemetryTracker(tags, telemetryPublishers: telemetryPublisher);
+// create telemetry telemetryClient
+var telemetryClient = new TelemetryClient(tags, telemetryPublishers: telemetryPublisher);
 ```
 
 #### Single Publisher With Entra Authentication
@@ -73,7 +73,7 @@ Application Insights supports secure access via Entra based authentication, more
 
 The Identity, on behalf of which the code will run, must be granted with the [Monitoring Metrics Publisher](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher) role.
 
-Code sample below demonstrates initialization of TelemetryTracker with Entra based authentication.
+Code sample below demonstrates initialization of TelemetryClient with Entra based authentication.
 
 ```C#
 using Azure.Core;
@@ -101,13 +101,13 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// create telemetry tracker
-var telemetryTracker = new TelemetryTracker(telemetryPublishers: telemetryPublisher);
+// create telemetry telemetryClient
+var telemetryClient = new TelemetryClient(telemetryPublishers: telemetryPublisher);
 ```
 
 #### Multiple Publishers
 
-The code sample below demonstrates initialization of the `TelemetryTracker` for the scenario
+The code sample below demonstrates initialization of the `TelemetryClient` for the scenario
 where it is required to publish telemetry data into multiple instances of **Application Insights**.
 
 ```C#
@@ -146,31 +146,31 @@ var secondTelemetryPublisher = new HttpTelemetryPublisher
 	new Guid("INSERT INSTRUMENTATION KEY 2 HERE")
 );
 
-// create telemetry tracker
-var telemetryTracker = new TelemetryTracker(telemetryPublishers: [firstTelemetryPublisher, secondTelemetryPublisher]);
+// create telemetry telemetryClient
+var telemetryClient = new TelemetryClient(telemetryPublishers: [firstTelemetryPublisher, secondTelemetryPublisher]);
 ```
 
 ### Tracking
 
-To add telemetry to instance of `TelemetryTracker` use `TelemetryTracker.Add` method.
+To add telemetry to instance of `TelemetryClient` use `TelemetryClient.Add` method.
 
 ```C#
 // create telemetry item
 var telemetry = new EventTelemetry(DateTime.UtcNow, @"start");
 
-// add to the tracker
-telemetryTracker.Add(telemetry);
+// add to the telemetryClient
+telemetryClient.Add(telemetry);
 ```
 
 ### Publishing
 
-To publish collected telemetry use `TelemetryTracker.PublishAsync` method.
+To publish collected telemetry use `TelemetryClient.PublishAsync` method.
 
 The collected telemetry data will be published in parallel using all configured instances of `TelemetryPublisher` interface.
 
 ```C#
 // publish collected telemetry
-await telemetryTracker.PublishAsync(cancellationToken);
+await telemetryClient.PublishAsync(cancellationToken);
 ```
 
 # Dependency Tracking
@@ -179,7 +179,7 @@ The library does not provide any automatic publishing of the data.
 
 This library makes use instance of `ConcurrentQueue` to collect and send telemetry data.
 As a result, if the process is terminated suddenly, you could lose telemetry that is stored in the queue.
-It is recommended to track the closing of your process and call the `TelemetryTracker.PublishAsync()` method to ensure no telemetry is lost.
+It is recommended to track the closing of your process and call the `TelemetryClient.PublishAsync()` method to ensure no telemetry is lost.
 
 
 # Extensibility
@@ -187,7 +187,7 @@ It is recommended to track the closing of your process and call the `TelemetryTr
 The library provides several points of potential extensibility.
 
 ## Adding Tags
-You can populate common context by using `tags` argument of the `TelemetryTracker` constructor which will be automatically attached to each telemetry item sent. You can also attach additional property data to each telemetry item sent by using `Telemetry.Tags` property. The ```TelemetryClient``` exposes a method Add that adds telemetry information into the processing queue.
+You can populate common context by using `tags` argument of the `TelemetryClient` constructor which will be automatically attached to each telemetry item sent. You can also attach additional property data to each telemetry item sent by using `Telemetry.Tags` property. The ```TelemetryClient``` exposes a method Add that adds telemetry information into the processing queue.
 
 ### TelemetryPublisher
 If needed it is possible to implement own 

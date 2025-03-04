@@ -1,7 +1,7 @@
 # Azure Monitor Telemetry 
-[![CodeQL](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/github-code-scanning/codeql)
-[![Check](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/check.yml/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/check.yml)
-[![Publish](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/publish.yml/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry-draft/actions/workflows/publish.yml)
+[![CodeQL](https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/github-code-scanning/codeql)
+[![Check](https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/check.yml/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/check.yml)
+[![Release](https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/release.yml/badge.svg)](https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/release.yml)
 [![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 
@@ -9,17 +9,11 @@ A lightweight, high-performance library for tracking and publishing telemetry to
 
 Developed by [Stas Sultanov][StasSultanovLinkedIn], this library is designed for efficiency, prioritizing speed and minimal memory usage.
 
-If this library benefits a business, consider [supporting the author](#support-the-author).
+If this library benefits your business, consider [supporting the author](#support-the-author).
 
 ## Getting Started
 
-To install the library, use the following command:
-
-```sh
-dotnet add package Stas.Azure.Monitor.Telemetry
-```
-
-For further instructions on how to use the library please read [this document](/src/readme.md).
+For instructions on how to use the library please read [this document](/src/readme.md).
 
 ## Why This Library?
 

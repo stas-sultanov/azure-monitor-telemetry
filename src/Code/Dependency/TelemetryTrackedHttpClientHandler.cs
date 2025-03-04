@@ -12,29 +12,26 @@ using System.Threading.Tasks;
 /// A custom <see cref="HttpClientHandler"/> that enables tracking telemetry of HTTP requests.
 /// </summary>
 /// <remarks>
-/// This handler uses a <see cref="TelemetryTracker"/> to track details about HTTP requests and responses, including the request URI, method, status code, and duration.
+/// This handler uses a <see cref="TelemetryClient"/> to track details about HTTP requests and responses, including the request URI, method, status code, and duration.
 /// </remarks>
-/// <param name="telemetryTracker">The telemetry tracker.</param>
-/// <param name="getId">A function that returns a unique identifier for the telemetry operation.</param>
-/// <exception cref="ArgumentNullException">Thrown when <paramref name="telemetryTracker"/> or <paramref name="getId"/> is null.</exception>
+/// <param name="telemetryClient">The telemetry tracker.</param>
+/// <param name="getActivityId">A function that returns a unique identifier for the activity.</param>
 public class TelemetryTrackedHttpClientHandler
 (
-	TelemetryTracker telemetryTracker,
-	Func<String> getId
+	TelemetryClient telemetryClient,
+	Func<String> getActivityId
 )
 	: HttpClientHandler
 {
 	/// <summary>
-	/// A delegate that returns an identifier for the <see cref="DependencyTelemetry"/>.
+	/// A function that returns a unique identifier for the activity.
 	/// </summary>
-	/// <exception cref="ArgumentNullException"> when <paramref name="getId"/> is null.</exception>
-	private readonly Func<String> getId = getId;
+	private readonly Func<String> getActivityId = getActivityId;
 
 	/// <summary>
-	/// The telemetry tracker to track outgoing HTTP requests.
+	/// The telemetry tracker.
 	/// </summary>
-	/// <exception cref="ArgumentNullException"> when <paramref name="telemetryTracker"/> is null.</exception>
-	private readonly TelemetryTracker telemetryTracker = telemetryTracker;
+	private readonly TelemetryClient telemetryClient = telemetryClient;
 
 	/// <inheritdoc/>
 	protected override async Task<HttpResponseMessage> SendAsync
@@ -43,29 +40,36 @@ public class TelemetryTrackedHttpClientHandler
 		CancellationToken cancellationToken
 	)
 	{
-		// capture current time
+		// start stopwatch
+		var stopwatch = Stopwatch.StartNew();
+
+		// get time
 		var time = DateTime.UtcNow;
 
-		// start a timer to measure the duration of the request
-		var timer = Stopwatch.StartNew();
+		// get activity id
+		var id = getActivityId();
 
-		HttpResponseMessage result;
+		// send the HTTP request and capture the response.
+		var result = await base.SendAsync(request, cancellationToken);
 
-		try
-		{
-			// send the HTTP request and capture the response.
-			result = await base.SendAsync(request, cancellationToken);
-		}
-		finally
-		{
-			timer.Stop();
-		}
+		// stop stopwatch
+		stopwatch.Stop();
 
-		// get id for the current dependency telemetry operation
-		var id = getId();
+		// get duration
+		var duration = stopwatch.Elapsed;
 
 		// track telemetry
-		telemetryTracker.TrackDependency(time, id, request.Method, request.RequestUri ?? new Uri("http:none"), result.StatusCode, timer.Elapsed);
+		// if RequestUri is null the host class will throw exception before calling this method
+		telemetryClient.TrackDependency
+		(
+			time,
+			duration,
+			id,
+			request.Method,
+			request.RequestUri!,
+			result.StatusCode,
+			result.IsSuccessStatusCode
+		);
 
 		return result;
 	}

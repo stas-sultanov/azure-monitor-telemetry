@@ -1,7 +1,10 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry;
+namespace Azure.Monitor.Telemetry.Types;
+
+using Azure.Monitor.Telemetry;
+
 /// <summary>
 /// Represents telemetry of an exception that occurred in an application.
 /// </summary>
@@ -9,38 +12,34 @@ namespace Azure.Monitor.Telemetry;
 /// This class is used to track and report exceptions in the application, including their stack traces
 /// and other relevant details. The maximum length of the stack trace is limited to 32768 characters.
 /// </remarks>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the exception has occurred.</param>
-/// <param name="exception">The exception object.</param>
-public sealed class ExceptionTelemetry
-(
-	OperationContext operation,
-	DateTime time,
-	Exception exception
-)
-	: Telemetry
+public sealed class ExceptionTelemetry : Telemetry
 {
 	#region Properties
 
 	/// <summary>
-	/// The exception object.
+	/// A read only list that represents exceptions stack.
 	/// </summary>
-	public Exception Exception { get; } = exception;
+	public required IReadOnlyList<ExceptionInfo> Exceptions { get; init; }
 
 	/// <summary>
-	/// A collection of measurements.
+	/// A read-only list of measurements.
 	/// </summary>
 	/// <remarks>
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double>[]? Measurements { get; init; }
+	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
+
+	/// <summary>
+	/// The problem identifier.
+	/// </summary>
+	public String? ProblemId { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>
 	/// The severity level.
@@ -48,12 +47,12 @@ public sealed class ExceptionTelemetry
 	public SeverityLevel? SeverityLevel { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// The UTC timestamp when the exception has occurred.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	#endregion
 }

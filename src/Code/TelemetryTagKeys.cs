@@ -3,8 +3,12 @@
 
 namespace Azure.Monitor.Telemetry;
 
-public static class TelemetryTagKey
+/// <summary>
+/// Provides a set of constant string keys used for telemetry tagging in Azure Monitor.
+/// </summary>
+public static class TelemetryTagKeys
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public const String ApplicationVersion = @"ai.application.ver";
 	public const String CloudRole = @"ai.cloud.role";
 	public const String CloudRoleInstance = @"ai.cloud.roleInstance";
@@ -31,4 +35,5 @@ public static class TelemetryTagKey
 	public const String UserAccountId = @"ai.user.accountId";
 	public const String UserAuthUserId = @"ai.user.authUserId";
 	public const String UserId = @"ai.user.id";
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

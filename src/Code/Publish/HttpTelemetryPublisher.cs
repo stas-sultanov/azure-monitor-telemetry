@@ -9,13 +9,13 @@ using System.Net.Http.Headers;
 using System.Text;
 
 /// <summary>
-/// Provides telemetry publishing using HTTP protocol.
+/// Provides telemetry publishing via HTTP protocol.
 /// </summary>
 /// <remarks>
 /// Handles publishing of telemetry data to Azure Monitor's ingestion endpoints.
-/// It supports both authenticated (with Bearer token) and unauthenticated scenarios.
-/// For authenticated scenarios, uses v2.1 of the track endpoint.
+/// Supports both unauthenticated and authenticated (via Bearer token) scenarios.
 /// For unauthenticated scenarios, uses the v2 of the track endpoint.
+/// For authenticated scenarios, uses v2.1 of the track endpoint.
 /// For authenticated scenario, the identity, on behalf of which the operation occurs, requires <a href="https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher">Monitoring Metrics Publisher</a> role.
 /// </remarks>
 public sealed class HttpTelemetryPublisher : TelemetryPublisher
@@ -42,14 +42,13 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// </summary>
 	public const String AuthorizationScope = "https://monitor.azure.com//.default";
 
+	#endregion
+
+	#region Static Fields
+
 	private static readonly UTF8Encoding encoding = new(false);
 
 	private static readonly MediaTypeHeaderValue contentTypeHeaderValue = MediaTypeHeaderValue.Parse(@"application/x-json-stream");
-
-	/// <summary>
-	/// The <see cref="AuthorizationScope"/> as array.
-	/// </summary>
-	public static String[] AuthorizationScopes { get; } = [AuthorizationScope];
 
 	#endregion
 
@@ -61,7 +60,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	private readonly HttpClient httpClient;
 	private readonly Uri ingestionEndpoint;
 	private readonly String instrumentationKey;
-	private readonly KeyValuePair<String, String>[]? tags;
+	private readonly IReadOnlyList<KeyValuePair<String, String>>? tags;
 
 	#endregion
 
@@ -74,7 +73,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <param name="ingestionEndpoint">The URI endpoint where telemetry data will be sent. Must be an absolute, non-file, non-UNC URI.</param>
 	/// <param name="instrumentationKey">The instrumentation key used to authenticate with the telemetry service. Cannot be an empty GUID.</param>
 	/// <param name="getAccessToken">Function to get a bearer token for authentication. If not provided, no authentication will be used. Is optional.</param>
-	/// <param name="tags">An array of tags to attach to each telemetry item. Is optional.</param>
+	/// <param name="tags">A read-only list of tags to attach to each telemetry item. Is optional.</param>
 	/// <exception cref="ArgumentException">If <paramref name="ingestionEndpoint"/> is not valid absolute uri.</exception>
 	/// <exception cref="ArgumentException">If <paramref name="instrumentationKey"/> is empty.</exception>
 	public HttpTelemetryPublisher
@@ -83,7 +82,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		Uri ingestionEndpoint,
 		Guid instrumentationKey,
 		Func<CancellationToken, Task<BearerToken>>? getAccessToken = null,
-		KeyValuePair<String, String>[]? tags = null
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		if (!ingestionEndpoint.IsAbsoluteUri || ingestionEndpoint.IsFile || ingestionEndpoint.IsUnc)
@@ -96,13 +95,13 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			throw new ArgumentException("Not valid.", nameof(instrumentationKey));
 		}
 
-		this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-
-		this.getAccessToken = getAccessToken;
+		this.httpClient = httpClient;
 
 		this.ingestionEndpoint = new Uri(ingestionEndpoint, getAccessToken == null ? @"v2/track" : @"v2.1/track");
 
 		this.instrumentationKey = instrumentationKey.ToString();
+
+		this.getAccessToken = getAccessToken;
 
 		this.tags = tags;
 	}
@@ -114,8 +113,8 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <inheritdoc/>
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
-		IReadOnlyList<Telemetry> telemetryList,
-		KeyValuePair<String, String>[]? trackerTags,
+		IReadOnlyList<Telemetry> telemetryItems,
+		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
 		CancellationToken cancellationToken
 	)
 	{
@@ -128,9 +127,9 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			// create stream writer based on memory stream as we want to write text in JSON format
 			using var streamWriter = new StreamWriter(compressedStream, encoding);
 
-			for (var index = 0; index < telemetryList.Count; index++)
+			for (var index = 0; index < telemetryItems.Count; index++)
 			{
-				var telemetryItem = telemetryList[index];
+				var telemetryItem = telemetryItems[index];
 
 				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem, trackerTags, tags);
 			}
@@ -182,22 +181,19 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		httpRequestTimer.Stop();
 
 		// read response content as string
-#if NET462
-		var responseContentAsString = await response.Content.ReadAsStringAsync();
-#else
 		var responseContentAsString = await response.Content.ReadAsStringAsync(cancellationToken);
-#endif
+
 		// create result
 		var result = new HttpTelemetryPublishResult
-		(
-			telemetryList.Count,
-			httpRequestTimer.Elapsed,
-			response.IsSuccessStatusCode,
-			httpRequestTime,
-			ingestionEndpoint,
-			response.StatusCode,
-			responseContentAsString
-		);
+		{
+			Count = telemetryItems.Count,
+			Duration = httpRequestTimer.Elapsed,
+			Response = responseContentAsString,
+			StatusCode = response.StatusCode,
+			Success = response.IsSuccessStatusCode,
+			Time = httpRequestTime,
+			Url = ingestionEndpoint
+		};
 
 		return result;
 	}

@@ -1,9 +1,8 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.IntegrationTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -16,8 +15,21 @@ using Azure.Monitor.Telemetry.Publish;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-public abstract class AzureIntegrationTestsBase : IDisposable
+public abstract class IntegrationTestsBase : IDisposable
 {
+	#region Types
+
+	public sealed class PublisherConfiguration
+	{
+		public required String ConfigPrefix { get; init; }
+
+		public Dictionary<String, String> Tags { get; init; } = [];
+
+		public required Boolean UseAuthentication { get; init; }
+	}
+
+	#endregion
+
 	#region Fields
 
 	private static readonly JsonSerializerOptions jsonSerializerOptions = new()
@@ -25,16 +37,25 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 	};
 
-	private readonly HttpClient httpClient;
+	private readonly HttpClient telemetryPublishHttpClient;
 
 	#endregion
 
 	#region Properties
 
+	/// <summary>
+	/// Test context.
+	/// </summary>
 	protected TestContext TestContext { get; }
 
-	protected TelemetryTracker TelemetryTracker { get; }
+	/// <summary>
+	/// Collection of telemetry publishers initialized from the configuration.
+	/// </summary>
+	protected IReadOnlyList<TelemetryPublisher> TelemetryPublishers { get; }
 
+	/// <summary>
+	/// The token credential used to authenticate calls to Azure resources.
+	/// </summary>
 	protected DefaultAzureCredential TokenCredential { get; }
 
 	#endregion
@@ -42,15 +63,14 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 	#region Constructors
 
 	/// <summary>
-	/// Initialize instance.
+	/// Initializes a new instance of the <see cref="IntegrationTestsBase"/> class.
 	/// </summary>
-	/// <param name="testContext">Test context.</param>
-	/// <param name="configKeyPrefixList">The list of configuration key prefixes</param>
-	public AzureIntegrationTestsBase
+	/// <param name="testContext">The test context</param>
+	/// <param name="configList">List of configurations.</param>
+	public IntegrationTestsBase
 	(
 		TestContext testContext,
-		KeyValuePair<String, String>[] trackerTags,
-		params Tuple<String, Boolean, KeyValuePair<String, String>[]>[] configList
+		params IReadOnlyCollection<PublisherConfiguration> configList
 	)
 	{
 		TestContext = testContext;
@@ -58,56 +78,52 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 		// create token credential
 		TokenCredential = new DefaultAzureCredential();
 
-		var tokenRequestContext = new TokenRequestContext(HttpTelemetryPublisher.AuthorizationScopes);
+		var tokenRequestContext = new TokenRequestContext([HttpTelemetryPublisher.AuthorizationScope]);
 
-		var token = TokenCredential.GetTokenAsync(tokenRequestContext, CancellationToken.None).Result;
+		var token = TokenCredential.GetToken(tokenRequestContext);
 
-		httpClient = new HttpClient();
+		telemetryPublishHttpClient = new HttpClient();
 
 		var telemetryPublishers = new List<TelemetryPublisher>();
 
 		foreach (var config in configList)
 		{
-			var ingestionEndpointParamName = config.Item1 + "IngestionEndpoint";
+			var ingestionEndpointParamName = config.ConfigPrefix + "IngestionEndpoint";
 			var ingestionEndpointParam = TestContext.Properties[ingestionEndpointParamName]?.ToString() ?? throw new ArgumentException($"Parameter {ingestionEndpointParamName} has not been provided.");
 			var ingestionEndpoint = new Uri(ingestionEndpointParam);
 
-			var instrumentationKeyParamName = config.Item1 + "InstrumentationKey";
+			var instrumentationKeyParamName = config.ConfigPrefix + "InstrumentationKey";
 			var instrumentationKeyParam = TestContext.Properties[instrumentationKeyParamName]?.ToString() ?? throw new ArgumentException($"Parameter {instrumentationKeyParamName} has not been provided.");
 			var instrumentationKey = new Guid(instrumentationKeyParam);
 
-			var publisherTags = config.Item3;
+			var publisherTags = config.Tags.ToArray();
 
 			TelemetryPublisher publisher;
 
-			if (!config.Item2)
+			if (!config.UseAuthentication)
 			{
-				publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, tags: publisherTags);
+				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, tags: publisherTags);
 			}
 			else
 			{
 				Task<BearerToken> getAccessToken(CancellationToken cancellationToken)
 				{
-					var result = new BearerToken(token.Token, token.ExpiresOn);
+					var result = new BearerToken
+					{
+						ExpiresOn = token.ExpiresOn,
+						Value = token.Token
+					};
 
 					return Task.FromResult(result);
 				}
 
-				publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, getAccessToken, publisherTags);
+				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, getAccessToken, publisherTags);
 			}
 
 			telemetryPublishers.Add(publisher);
 		}
 
-		KeyValuePair<String, String>[] extraTrackerTags =
-		[
-			new (TelemetryTagKey.CloudRole, "Test Agent"),
-			new (TelemetryTagKey.CloudRoleInstance, Environment.MachineName)
-		];
-
-		var operation = new OperationContext(ActivityTraceId.CreateRandom().ToString(), $"TEST #{DateTime.UtcNow:yyMMddHHmm}");
-
-		TelemetryTracker = new TelemetryTracker([.. telemetryPublishers], operation, [.. extraTrackerTags, .. trackerTags]);
+		TelemetryPublishers = telemetryPublishers.AsReadOnly();
 	}
 
 	#endregion
@@ -117,7 +133,7 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 	/// <inheritdoc/>
 	public virtual void Dispose()
 	{
-		httpClient.Dispose();
+		telemetryPublishHttpClient.Dispose();
 
 		GC.SuppressFinalize(this);
 	}
@@ -125,11 +141,6 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 	#endregion
 
 	#region Methods
-
-	protected static String GettTraceId()
-	{
-		return ActivityTraceId.CreateRandom().ToString();
-	}
 
 	protected static void AssertStandardSuccess(TelemetryPublishResult[] telemetryPublishResults)
 	{
@@ -156,11 +167,11 @@ public abstract class AzureIntegrationTestsBase : IDisposable
 				return;
 			}
 
-			Assert.AreEqual(result.Count, response.ItemsAccepted);
+			Assert.AreEqual(result.Count, response.ItemsAccepted, nameof(HttpTelemetryPublishResponse.ItemsAccepted));
 
-			Assert.AreEqual(result.Count, response.ItemsReceived);
+			Assert.AreEqual(result.Count, response.ItemsReceived, nameof(HttpTelemetryPublishResponse.ItemsReceived));
 
-			Assert.AreEqual(0, response.Errors.Length);
+			Assert.AreEqual(0, response.Errors.Count, nameof(HttpTelemetryPublishResponse.Errors));
 		}
 	}
 

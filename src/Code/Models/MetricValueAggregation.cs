@@ -9,17 +9,17 @@ namespace Azure.Monitor.Telemetry;
 public sealed class MetricValueAggregation
 {
 	/// <summary>
-	/// The number of values in the sample set
+	/// The number of values in the sample set.
 	/// </summary>
-	public Int32 Count { get; set; }
-
-	/// <summary>
-	/// The min value of the metric across the sample set.
-	/// </summary>
-	public Double Min { get; set; }
+	public Int32 Count { get; init; }
 
 	/// <summary>
 	/// The max value of the metric across the sample set.
 	/// </summary>
-	public Double Max { get; set; }
+	public Double Max { get; init; }
+
+	/// <summary>
+	/// The min value of the metric across the sample set.
+	/// </summary>
+	public Double Min { get; init; }
 }

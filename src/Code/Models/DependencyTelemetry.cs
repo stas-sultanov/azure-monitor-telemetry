@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry;
+namespace Azure.Monitor.Telemetry.Types;
 
 /// <summary>
 /// Represents telemetry of a dependency call in an application.
@@ -13,53 +13,38 @@ namespace Azure.Monitor.Telemetry;
 /// - Azure storage operations
 /// - Custom dependencies
 /// </remarks>
-/// <param name="operation">The distributed operation context.</param>
-/// <param name="time">The UTC timestamp when the dependency call was initiated.</param>
-/// <param name="id">The unique identifier.</param>
-/// <param name="name">The name of the command initiated the dependency call.</param>
-public sealed class DependencyTelemetry
-(
-	OperationContext operation,
-	DateTime time,
-	String id,
-	String name
-)
-	: Telemetry
+public sealed class DependencyTelemetry : ActivityTelemetry
 {
 	#region Properties
 
 	/// <summary>
-	/// This field is the command initiated by this dependency call.
+	/// The command initiated by this dependency call.
 	/// </summary>
-	/// <example>SQL statement and HTTP URL with all query parameters.</example>
+	/// <example>SQL statement or HTTP URL with all query parameters.</example>
 	public String? Data { get; init; }
 
-	/// <summary>
-	/// The time taken to complete the dependency call.
-	/// </summary>
+	/// <inheritdoc/>
 	public TimeSpan Duration { get; init; }
 
-	/// <summary>
-	/// The unique identifier.
-	/// </summary>
-	public String Id { get; } = id;
+	/// <inheritdoc/>
+	public required String Id { get; init; }
 
 	/// <summary>
-	/// A collection of measurements.
+	/// A read-only list of measurements.
 	/// </summary>
 	/// <remarks>
 	/// Maximum key length: 150 characters.
 	/// Is null by default.
 	/// </remarks>
-	public KeyValuePair<String, Double>[]? Measurements { get; init; }
+	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the command initiated the dependency call.
 	/// </summary>
-	public String Name { get; } = name;
+	public required String Name { get; init; }
 
 	/// <inheritdoc/>
-	public OperationContext Operation { get; } = operation;
+	public required TelemetryOperation Operation { get; init; }
 
 	/// <summary>
 	/// This field is the result code of a dependency call.
@@ -68,7 +53,7 @@ public sealed class DependencyTelemetry
 	public String? ResultCode { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Properties { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.
@@ -76,7 +61,7 @@ public sealed class DependencyTelemetry
 	public Boolean Success { get; init; }
 
 	/// <inheritdoc/>
-	public KeyValuePair<String, String>[]? Tags { get; init; }
+	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
 	/// This field is the target site of a dependency call.
@@ -87,7 +72,7 @@ public sealed class DependencyTelemetry
 	/// <summary>
 	/// The UTC timestamp when the dependency call was initiated.
 	/// </summary>
-	public DateTime Time { get; } = time;
+	public required DateTime Time { get; init; }
 
 	/// <summary>
 	/// This field is the dependency type name.

@@ -1,0 +1,8 @@
+<Solution>
+	<Folder Name="/Solution Items/">
+		<File Path=".editorconfig" />
+		<File Path=".gitignore" />
+	</Folder>
+	<Project Path="src/Azure.Monitor.Telemetry.csproj" />
+	<Project Path="tests/Azure.Monitor.Telemetry.Tests.csproj" />
+</Solution>

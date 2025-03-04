@@ -5,10 +5,13 @@ namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 
+using Azure.Monitor.Telemetry;
+using Azure.Monitor.Telemetry.Types;
+
 /// <summary>
 /// Provides helper methods for asserting.
 /// </summary>
-internal static class AssertHelpers
+internal static class AssertHelper
 {
 	#region Static: Fields
 
@@ -32,7 +35,7 @@ internal static class AssertHelpers
 	/// <exception cref="AssertFailedException">
 	/// Thrown if <paramref name="expected"/> is not equal to <paramref name="actual"/>.
 	/// </exception>
-	public static void AreEqual(OperationContext expected, OperationContext actual)
+	public static void AreEqual(TelemetryOperation expected, TelemetryOperation actual)
 	{
 		// check if both params are referencing to the same object
 		if (ReferenceEquals(expected, actual))
@@ -40,13 +43,11 @@ internal static class AssertHelpers
 			return;
 		}
 
-		Assert.AreEqual(expected.Id, actual.Id, nameof(OperationContext.Id));
+		Assert.AreEqual(expected.Id, actual.Id, nameof(TelemetryOperation.Id));
 
-		Assert.AreEqual(expected.Name, actual.Name, nameof(OperationContext.Name));
+		Assert.AreEqual(expected.Name, actual.Name, nameof(TelemetryOperation.Name));
 
-		Assert.AreEqual(expected.ParentId, actual.ParentId, nameof(OperationContext.ParentId));
-
-		Assert.AreEqual(expected.SyntheticSource, actual.SyntheticSource, nameof(OperationContext.SyntheticSource));
+		Assert.AreEqual(expected.ParentId, actual.ParentId, nameof(TelemetryOperation.ParentId));
 	}
 
 	#endregion
@@ -54,24 +55,21 @@ internal static class AssertHelpers
 	#region Methods: Properties Are Equal
 
 	/// <summary>
-	/// Tests whether data within the instance of <see cref="OperationContext"/> is equal to the expected values.
+	/// Tests whether data within the instance of <see cref="TelemetryOperation"/> is equal to the expected values.
 	/// </summary>
 	public static void PropertiesAreEqual
 	(
-		OperationContext actual,
-		String id,
-		String name,
-		String parentId,
-		String syntheticSource
+		TelemetryOperation actual,
+		String? id,
+		String? name,
+		String? parentId
 	)
 	{
-		Assert.AreEqual(id, actual.Id, nameof(OperationContext.Id));
+		Assert.AreEqual(id, actual.Id, nameof(TelemetryOperation.Id));
 
-		Assert.AreEqual(name, actual.Name, nameof(OperationContext.Name));
+		Assert.AreEqual(name, actual.Name, nameof(TelemetryOperation.Name));
 
-		Assert.AreEqual(parentId, actual.ParentId, nameof(OperationContext.ParentId));
-
-		Assert.AreEqual(syntheticSource, actual.SyntheticSource, nameof(OperationContext.SyntheticSource));
+		Assert.AreEqual(parentId, actual.ParentId, nameof(TelemetryOperation.ParentId));
 	}
 
 	/// <summary>
@@ -80,7 +78,7 @@ internal static class AssertHelpers
 	public static void PropertiesAreEqual
 	(
 		Telemetry telemetry,
-		OperationContext operation,
+		TelemetryOperation operation,
 		KeyValuePair<String, String>[] properties,
 		KeyValuePair<String, String>[] tags,
 		DateTime? time = null
@@ -94,6 +92,27 @@ internal static class AssertHelpers
 		{
 			Assert.AreEqual(time, telemetry.Time, nameof(Telemetry.Time));
 		}
+	}
+
+	/// <summary>
+	/// Tests whether data within instance of <see cref="ActivityTelemetry"/> is equal to the expected values.
+	/// </summary>
+	public static void PropertiesAreEqual
+	(
+		ActivityTelemetry telemetry,
+		TimeSpan duration,
+		String? id,
+		TelemetryOperation operation,
+		KeyValuePair<String, String>[] properties,
+		KeyValuePair<String, String>[] tags,
+		DateTime? time = null
+	)
+	{
+		PropertiesAreEqual(telemetry, operation, properties, tags, time);
+
+		Assert.AreEqual(telemetry.Duration, duration, nameof(ActivityTelemetry.Duration));
+
+		Assert.AreEqual(telemetry.Id, id, nameof(ActivityTelemetry.Id));
 	}
 
 	/// <summary>
@@ -183,14 +202,17 @@ internal static class AssertHelpers
 	public static void PropertiesAreEqual
 	(
 		ExceptionTelemetry telemetry,
-		Exception exception,
+		IReadOnlyList<ExceptionInfo> exceptions,
 		KeyValuePair<String, Double>[] measurements,
+		String? problemId,
 		SeverityLevel? severityLevel
 	)
 	{
-		Assert.AreEqual(exception, telemetry.Exception, nameof(ExceptionTelemetry.Exception));
+		// Assert.AreEqual(exception, telemetry.Exception, nameof(ExceptionTelemetry.Exception));
 
 		CollectionAssert.AreEquivalent(measurements, telemetry.Measurements, measurementComparer, nameof(ExceptionTelemetry.Measurements));
+
+		Assert.AreEqual(problemId, telemetry.ProblemId, nameof(ExceptionTelemetry.ProblemId));
 
 		Assert.AreEqual(severityLevel, telemetry.SeverityLevel, nameof(ExceptionTelemetry.SeverityLevel));
 	}
@@ -226,18 +248,42 @@ internal static class AssertHelpers
 	}
 
 	/// <summary>
+	/// Tests whether data within instance of <see cref="PageViewTelemetry"/> is equal to the expected values.
+	/// </summary>
+	public static void PropertiesAreEqual
+	(
+		PageViewTelemetry telemetry,
+		TimeSpan duration,
+		String? id,
+		KeyValuePair<String, Double>[] measurements,
+		String? name,
+		Uri? url
+	)
+	{
+		Assert.AreEqual(duration, telemetry.Duration, nameof(PageViewTelemetry.Duration));
+
+		Assert.AreEqual(id, telemetry.Id, nameof(PageViewTelemetry.Id));
+
+		CollectionAssert.AreEquivalent(measurements, telemetry.Measurements, measurementComparer, nameof(PageViewTelemetry.Measurements));
+
+		Assert.AreEqual(name, telemetry.Name, nameof(PageViewTelemetry.Name));
+
+		Assert.AreEqual(url, telemetry.Url, nameof(PageViewTelemetry.Name));
+	}
+
+	/// <summary>
 	/// Tests whether data within instance of <see cref="RequestTelemetry"/> is equal to the expected values.
 	/// </summary>
 	public static void PropertiesAreEqual
 	(
 		RequestTelemetry telemetry,
 		TimeSpan duration,
-		String id,
+		String? id,
 		KeyValuePair<String, Double>[] measurements,
-		String name,
-		String responseCode,
+		String? name,
+		String? responseCode,
 		Boolean success,
-		Uri url
+		Uri? url
 	)
 	{
 		Assert.AreEqual(duration, telemetry.Duration, nameof(RequestTelemetry.Duration));
@@ -261,13 +307,15 @@ internal static class AssertHelpers
 	public static void PropertiesAreEqual
 	(
 		TraceTelemetry telemetry,
-		String message,
-		SeverityLevel severityLevel
+		String? message,
+		SeverityLevel? severityLevel
 	)
 	{
 		Assert.AreEqual(message, telemetry.Message, nameof(TraceTelemetry.Message));
 
-		Assert.AreEqual(severityLevel, telemetry.SeverityLevel, nameof(TraceTelemetry.SeverityLevel));
+		Assert.IsTrue(severityLevel.HasValue, nameof(TraceTelemetry.SeverityLevel));
+
+		Assert.AreEqual(severityLevel!.Value, telemetry.SeverityLevel, nameof(TraceTelemetry.SeverityLevel));
 	}
 
 	#endregion

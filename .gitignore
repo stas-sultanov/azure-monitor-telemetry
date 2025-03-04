@@ -22,6 +22,9 @@
 *.nupkg
 *.snupkg
 
+# Old Visual Studio Solution file
+*.sln
+
 # Visual Studio cache/options directory
 .vs/
 
