@@ -8,17 +8,16 @@ A lightweight, high-performance library for tracking and publishing telemetry.
 
 ## Table of Contents
 - [Getting Started](#getting-started)
-		- [Prerequisites](#prerequisites)
-		- [Initialization](#initialization)
-			- [Single Publisher](#single-publisher)
-			- [Single Publisher With Entra Authentication](#single-publisher-with-entra-authentication)
-			- [Multiple Publishers](#multiple-publishers)
-		- [Tracking](#tracking)
-		- [Publishing](#publishing)
+	- [Prerequisites](#prerequisites)
+	- [Initialization](#initialization)
+		- [Single Publisher](#single-publisher)
+		- [Single Publisher With Entra Authentication](#single-publisher-with-entra-authentication)
+		- [Multiple Publishers](#multiple-publishers)
+	- [Tracking](#tracking)
+	- [Publishing](#publishing)
 - [Dependency Tracking](#dependency-tracking)
 - [Extensibility](#extensibility)
-	- [Adding Tags](#adding-tags)
-		- [TelemetryPublisher](#telemetrypublisher)
+- [Examples](#examples)
 
 ## Getting Started
 
@@ -35,13 +34,65 @@ The `TelemetryClient` class is the core component for tracking and publishing te
 
 To publish telemetry to **Application Insights**, the constructor of `TelemetryPublisher` must be provided with an instance of a class that implements `TelemetryPublisher` interface.
 
+Application Insights supports secure access via Entra based authentication, more info [here][AppInsightsEntraAuth].
+
+The Identity, on behalf of which the code will run, must be granted with the [Monitoring Metrics Publisher](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher) role.
+
+Code sample below demonstrates
+
+
 The library supports multiple telemetry publishers, enabling collected telemetry to be published to multiple **Application Insights** instances.
 
 The library includes `HttpTelemetryPublisher`, the default implementation of `TelemetryPublisher` interface. 
 
-#### Single Publisher
 
-Example demonstrates initialization with a single publisher:  
+### Tracking
+
+To add telemetry to instance of `TelemetryClient` use `TelemetryClient.Add` method.
+
+```C#
+// create telemetry item
+var telemetry = new EventTelemetry(DateTime.UtcNow, @"start");
+
+// add to the telemetryClient
+telemetryClient.Add(telemetry);
+```
+
+### Publishing
+
+To publish collected telemetry use `TelemetryClient.PublishAsync` method.
+
+The collected telemetry data will be published in parallel using all configured instances of `TelemetryPublisher` interface.
+
+```C#
+// publish collected telemetry
+await telemetryClient.PublishAsync(cancellationToken);
+```
+
+# Dependency Tracking
+
+The library does not provide any automatic publishing of the data. 
+
+This library makes use instance of `ConcurrentQueue` to collect and send telemetry data.
+As a result, if the process is terminated suddenly, you could lose telemetry that is stored in the queue.
+It is recommended to track the closing of your process and call the `TelemetryClient.PublishAsync()` method to ensure no telemetry is lost.
+
+
+# Extensibility
+
+The library provides several points of potential extensibility.
+
+## Adding Tags
+You can populate common context by using `tags` argument of the `TelemetryClient` constructor which will be automatically attached to each telemetry item sent. You can also attach additional property data to each telemetry item sent by using `Telemetry.Tags` property. The ```TelemetryClient``` exposes a method Add that adds telemetry information into the processing queue.
+
+### TelemetryPublisher
+If needed it is possible to implement own 
+
+## Examples
+
+### Init with Single Publisher
+
+Example demonstrates initialization of `TelemetryClient`with one publisher.
 
 ```C#
 using Azure.Monitor.Telemetry;
@@ -65,13 +116,9 @@ KeyValuePair<String, String> [] tags = [new (TelemetryTagKey.CloudRole, "local")
 var telemetryClient = new TelemetryClient(tags, telemetryPublishers: telemetryPublisher);
 ```
 
-#### Single Publisher With Entra Authentication
+### Init with Entra Auth
 
-Application Insights supports secure access via Entra based authentication, more info [here][AppInsightsEntraAuth].
-
-The Identity, on behalf of which the code will run, must be granted with the [Monitoring Metrics Publisher](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher) role.
-
-Code sample below demonstrates initialization of TelemetryClient with Entra based authentication.
+ initialization of TelemetryClient with Entra based authentication.
 
 ```C#
 using Azure.Core;
@@ -103,7 +150,7 @@ var telemetryPublisher = new HttpTelemetryPublisher
 var telemetryClient = new TelemetryClient(telemetryPublishers: telemetryPublisher);
 ```
 
-#### Multiple Publishers
+### Init with Multiple Publishers
 
 The code sample below demonstrates initialization of the `TelemetryClient` for the scenario
 where it is required to publish telemetry data into multiple instances of **Application Insights**.
@@ -147,48 +194,6 @@ var secondTelemetryPublisher = new HttpTelemetryPublisher
 // create telemetry telemetryClient
 var telemetryClient = new TelemetryClient(telemetryPublishers: [firstTelemetryPublisher, secondTelemetryPublisher]);
 ```
-
-### Tracking
-
-To add telemetry to instance of `TelemetryClient` use `TelemetryClient.Add` method.
-
-```C#
-// create telemetry item
-var telemetry = new EventTelemetry(DateTime.UtcNow, @"start");
-
-// add to the telemetryClient
-telemetryClient.Add(telemetry);
-```
-
-### Publishing
-
-To publish collected telemetry use `TelemetryClient.PublishAsync` method.
-
-The collected telemetry data will be published in parallel using all configured instances of `TelemetryPublisher` interface.
-
-```C#
-// publish collected telemetry
-await telemetryClient.PublishAsync(cancellationToken);
-```
-
-# Dependency Tracking
-
-The library does not provide any automatic publishing of the data. 
-
-This library makes use instance of `ConcurrentQueue` to collect and send telemetry data.
-As a result, if the process is terminated suddenly, you could lose telemetry that is stored in the queue.
-It is recommended to track the closing of your process and call the `TelemetryClient.PublishAsync()` method to ensure no telemetry is lost.
-
-
-# Extensibility
-
-The library provides several points of potential extensibility.
-
-## Adding Tags
-You can populate common context by using `tags` argument of the `TelemetryClient` constructor which will be automatically attached to each telemetry item sent. You can also attach additional property data to each telemetry item sent by using `Telemetry.Tags` property. The ```TelemetryClient``` exposes a method Add that adds telemetry information into the processing queue.
-
-### TelemetryPublisher
-If needed it is possible to implement own 
 
 [AppInsights]: https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview
 [AppInsightsEntraAuth]: https://learn.microsoft.com/azure/azure-monitor/app/azure-ad-authentication
