@@ -7,9 +7,7 @@ Azure Monitor Telemetry
 A lightweight, high-performance library for tracking and publishing telemetry.
 
 ## Table of Contents
-- [Azure Monitor Telemetry](#azure-monitor-telemetry)
-	- [Table of Contents](#table-of-contents)
-	- [Getting Started](#getting-started)
+- [Getting Started](#getting-started)
 		- [Prerequisites](#prerequisites)
 		- [Initialization](#initialization)
 			- [Single Publisher](#single-publisher)
