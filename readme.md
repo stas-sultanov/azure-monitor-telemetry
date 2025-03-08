@@ -7,7 +7,7 @@
 
 A lightweight, high-performance library for tracking and publishing telemetry.
 
-Developed by [Stas Sultanov][StasSultanovLinkedIn], this library is designed for efficiency, prioritizing speed and minimal memory usage.
+Developed by [Stas Sultanov][linked_in_profile], this library is designed for efficiency, prioritizing speed and minimal memory usage.
 
 If this library benefits your business, consider [supporting the author](#support-the-author).
 
@@ -17,22 +17,27 @@ For instructions on how to use the library please read [this document](/src/read
 
 ## Why This Library?
 
-Any qualified engineer will naturally ask: why use this library if Microsoft provides the official SDK(s)?
+Any qualified engineer will naturally ask: why use this library if Microsoft provides the official one?
 
 Well, there are several compelling reasons why the author chose to invest life time and effort into creating this library:
 
-- [Microsoft.ApplicationInsights][MSAppInsigthsNuget2_23] has flaws in implementation.<br/>
-  For instance, take a look on the way how it handles Entra based authentication.<br/>
-  The implementation has an issue, which is described by the author [here][AppInsightsDotNetGitHubAuthIssue].
-- [Microsoft.ApplicationInsights][MSAppInsigthsNuget2_23] does not reference NET462 directly, which support end on [12 Jan 2027][NETLifeCycle].<br/>
-  The Microsoft library references NET452 and NET46 which support ended on [26 Apr 2022][NETLifeCycle].
-- [Microsoft.ApplicationInsights][MSAppInsigthsNuget2_23] considered for deprecation.<br/>
-  As for Dec 2024 Microsoft recommends switching to Azure Monitor [OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable) Distro.
-- The [OpenTelemetry][OpenTelemetry] is not designed to be used for plugins development.<br/>
+- [Microsoft.ApplicationInsights][app_insights_nuget_2_23] has flaws in implementation.<br/>
+  For instance, Entra authentication is implemented the way it makes impossibility to use the library for Plugins development.
+  The issue is described by the author [here][app_insights_issue_auth], with 0 expectation that it will be ever fixed.
+- [Microsoft.ApplicationInsights][app_insights_nuget_2_23] has references.<br/>
+  To [System.Diagnostics.DiagnosticSource](https://www.nuget.org/packages/System.Diagnostics.DiagnosticSource/) v5.0.0 which is deprecated.
+  The package has subsequent references.
+  Extra references adds extra effort on resolving.
+- [Microsoft.ApplicationInsights][app_insights_nuget_2_23] does not reference NET462 directly.
+  NET462 support ends on [12 Jan 2027][dot_net_lifecycle].<br/>
+  The Microsoft library references NET452 and NET46 which support ended on [26 Apr 2022][dot_net_lifecycle].
+- [Microsoft.ApplicationInsights][app_insights_nuget_2_23] considered for deprecation.<br/>
+  As of end of year 2024 Microsoft recommends switching to Azure Monitor [open_telemetry_nuget](https://learn.microsoft.com/azure/azure-monitor/app/open_telemetry_nuget-enable) Distro.
+- The [open_telemetry_nuget][open_telemetry_nuget] is not designed to be used for plugins development.<br/>
   The library heavily rely on use of static data which does not implement thread safe singleton pattern.
-- Both [Microsoft.ApplicationInsights][MSAppInsigthsNuget2_23] and [OpenTelemetry][OpenTelemetry] are extremely heavy in some applications like NET462.<br/>
+- Both [Microsoft.ApplicationInsights][app_insights_nuget_2_23] and [open_telemetry_nuget][open_telemetry_nuget] are extremely heavy in some applications like NET462.<br/>
   This increases memory consumption and time to start.<br/>
-  Take a look at the [comparison](#libraries-size-comparison).
+  Take a look at the [comparison](#libraries-size-comparison) table.
 
 ### Libraries Size Comparison
 
@@ -42,7 +47,7 @@ A comparison of library sizes and file counts when used with Entra-based authent
 | :------------------------------------------- | :----- | :--- | :--- |
 | Stas.Azure.Monitor.Telemetry           1.0.0 <br/> | Files: 1<br/>Size:  42KB | Files:   1<br/>Size:   42KB | Files: 1<br/>Size:  42KB |
 | Microsoft.ApplicationInsights         2.23.0 <br/> Azure.Core                            1.13.2 | Files: 112<br/>Size: 4639KB | Files: 5<br/>Size: 945KB | Files: 5<br/>Size: 945KB |
-| OpenTelemetry                         1.11.1 <br/> Azure.Monitor.OpenTelemetry.Exporter  1.13.0 | Files: 126<br/>Size: 5243KB | Files: 32<br/>Size: 2386KB | Files:  26<br/>Size: 2233KB |
+| open_telemetry_nuget                         1.11.1 <br/> Azure.Monitor.open_telemetry_nuget.Exporter  1.13.0 | Files: 126<br/>Size: 5243KB | Files: 32<br/>Size: 2386KB | Files:  26<br/>Size: 2233KB |
 
 ## Support the Author
 
@@ -56,9 +61,10 @@ If you’d like to make a donation, please use the button below.
 
 Thank you for your support!
 
-[AppInsightsDotNetGitHubAuthIssue]: https://github.com/microsoft/ApplicationInsights-dotnet/issues/2945
-[AzureMonitor]: https://docs.microsoft.com/azure/azure-monitor/overview
-[MSAppInsigthsNuget2_23]: https://www.nuget.org/packages/Microsoft.ApplicationInsights/2.23.0
-[NETLifeCycle]: https://learn.microsoft.com/lifecycle/products/microsoft-net-framework
-[OpenTelemetry]: https://www.nuget.org/packages/OpenTelemetry
-[StasSultanovLinkedIn]: https://www.linkedin.com/in/stas-sultanov
+[app_insights_issue_auth]: https://github.com/microsoft/ApplicationInsights-dotnet/issues/2945
+[app_insights_nuget_2_23]: https://www.nuget.org/packages/Microsoft.ApplicationInsights/2.23.0
+[azure_monitor]: https://docs.microsoft.com/azure/azure-monitor/overview
+[dot_net_lifecycle]: https://learn.microsoft.com/lifecycle/products/microsoft-net-framework
+[linked_in_profile]: https://www.linkedin.com/in/stas-sultanov
+[open_telemetry_nuget]: https://www.nuget.org/packages/open_telemetry_nuget
+[nuget_System_Diagnostics_DiagnosticSource] https://www.nuget.org/packages/System.Diagnostics.DiagnosticSource/
