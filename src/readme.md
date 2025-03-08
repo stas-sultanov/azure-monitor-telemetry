@@ -7,21 +7,40 @@ Azure Monitor Telemetry
 A lightweight, high-performance library for tracking and publishing telemetry.
 
 ## Table of Contents
-- [Getting Started](#getting-started)
-	- [Prerequisites](#prerequisites)
-	- [Initialization](#initialization)
-		- [Single Publisher](#single-publisher)
-		- [Single Publisher With Entra Authentication](#single-publisher-with-entra-authentication)
-		- [Multiple Publishers](#multiple-publishers)
-	- [Tracking](#tracking)
-	- [Publishing](#publishing)
+- [Azure Monitor Telemetry](#azure-monitor-telemetry)
+	- [Table of Contents](#table-of-contents)
+	- [Getting Started](#getting-started)
+		- [Prerequisites](#prerequisites)
+		- [Prerequisites](#prerequisites-1)
+		- [Initialization](#initialization)
+		- [Tracking](#tracking)
+		- [Publishing](#publishing)
 - [Dependency Tracking](#dependency-tracking)
 - [Extensibility](#extensibility)
-- [Examples](#examples)
+	- [Adding Tags](#adding-tags)
+		- [TelemetryPublisher](#telemetrypublisher)
+	- [Examples](#examples)
+		- [Init with Single Publisher](#init-with-single-publisher)
+		- [Init with Entra Auth](#init-with-entra-auth)
+		- [Init with Multiple Publishers](#init-with-multiple-publishers)
 
 ## Getting Started
 
-The library is designed to work with the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka [Application Insights][AppInsights]. 
+The library is designed to work with the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka [Application Insights][app_insights]. 
+
+### Prerequisites
+
+To use the library an [Azure subscription][azure_subscription] and an [Application Insights][app_insights] resource are required.
+
+It is possible to create a new **Application Insights** resource via:
+- [Azure Portal][storage_account_create_portal],
+- 
+[Azure PowerShell][storage_account_create_ps], or the [Azure CLI][storage_account_create_cli].
+Here's an example using the Azure CLI:
+
+```Powershell
+az storage account create --name MyStorageAccount --resource-group MyResourceGroup --location westus --sku Standard_LRS
+```
 
 ### Prerequisites
 To use this library, required:
@@ -195,8 +214,15 @@ var secondTelemetryPublisher = new HttpTelemetryPublisher
 var telemetryClient = new TelemetryClient(telemetryPublishers: [firstTelemetryPublisher, secondTelemetryPublisher]);
 ```
 
+[azure_subscription]: https://azure.microsoft.com/free/dotnet/
 [AppInsights]: https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview
 [AppInsightsEntraAuth]: https://learn.microsoft.com/azure/azure-monitor/app/azure-ad-authentication
 [AzureCLI]: https://learn.microsoft.com/cli/azure/
 [AzureInsightsComponentsResource]: https://learn.microsoft.com/azure/templates/microsoft.insights/components
 [AzurePortal]: https://portal.azure.com
+
+
+[app_insights_create_cli]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=cli
+[app_insights_create_portal]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=portal
+[app_insights_create_ps]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=powershell
+[app_insights_create_rest]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=rest

@@ -5,7 +5,7 @@
 [![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 
-A lightweight, high-performance library for tracking and publishing telemetry to [Azure Monitor][AzureMonitor].
+A lightweight, high-performance library for tracking and publishing telemetry.
 
 Developed by [Stas Sultanov][StasSultanovLinkedIn], this library is designed for efficiency, prioritizing speed and minimal memory usage.
 
