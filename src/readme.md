@@ -7,14 +7,11 @@ Azure Monitor Telemetry
 A lightweight, high-performance library for tracking and publishing telemetry.
 
 ## Table of Contents
-- [Azure Monitor Telemetry](#azure-monitor-telemetry)
-	- [Table of Contents](#table-of-contents)
-	- [Getting Started](#getting-started)
-		- [Prerequisites](#prerequisites)
-		- [Prerequisites](#prerequisites-1)
-		- [Initialization](#initialization)
-		- [Tracking](#tracking)
-		- [Publishing](#publishing)
+- [Getting Started](#getting-started)
+	- [Prerequisites](#prerequisites)
+	- [Initialization](#initialization)
+	- [Tracking](#tracking)
+	- [Publishing](#publishing)
 - [Dependency Tracking](#dependency-tracking)
 - [Extensibility](#extensibility)
 	- [Adding Tags](#adding-tags)
@@ -26,46 +23,46 @@ A lightweight, high-performance library for tracking and publishing telemetry.
 
 ## Getting Started
 
-The library is designed to work with the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka [Application Insights][app_insights]. 
+The library is designed to work with the Azure resource of [Microsoft.Insights/components][AzureInsightsComponentsResource] type aka [Application Insights][app_insights].
 
 ### Prerequisites
 
 To use the library an [Azure subscription][azure_subscription] and an [Application Insights][app_insights] resource are required.
 
-It is possible to create a new **Application Insights** resource via:
-- [Azure Portal][storage_account_create_portal],
-- 
-[Azure PowerShell][storage_account_create_ps], or the [Azure CLI][storage_account_create_cli].
-Here's an example using the Azure CLI:
+It is possible to create a new **Application Insights** resource via 
+[Bicep][app_insights_create_bicep],
+[Azure Portal][app_insights_create_portal],
+[Azure CLI][app_insights_create_cli],
+[Powershell][app_insights_create_ps],
+[Http Request][app_insights_create_httpapi].
 
-```Powershell
-az storage account create --name MyStorageAccount --resource-group MyResourceGroup --location westus --sku Standard_LRS
-```
+### Authentication
 
-### Prerequisites
-To use this library, required:
-- An instance of **Application Insights** in the same region as services for optimal performance and cost efficiency.
-- An **Ingestion Endpoint and** an **Instrumentation Key**, available in the **Connection String** property of **Application Insights** resource.
-
-### Initialization
-
-The `TelemetryClient` class is the core component for tracking and publishing telemetry.  
-
-To publish telemetry to **Application Insights**, the constructor of `TelemetryPublisher` must be provided with an instance of a class that implements `TelemetryPublisher` interface.
-
-Application Insights supports secure access via Entra based authentication, more info [here][AppInsightsEntraAuth].
+Application Insights supports secure access via Entra based authentication, more info [here][app_insightsEntraAuth].
 
 The Identity, on behalf of which the code will run, must be granted with the [Monitoring Metrics Publisher](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher) role.
 
-Code sample below demonstrates
+### Initialization
 
+The `TelemetryClient` class is the core component for tracking and publishing telemetry.
 
-The library supports multiple telemetry publishers, enabling collected telemetry to be published to multiple **Application Insights** instances.
+To publish telemetry to **Application Insights**, the constructor of `TelemetryClient` class must be provided with one or many instances of a class that implements `TelemetryPublisher` interface.
 
-The library includes `HttpTelemetryPublisher`, the default implementation of `TelemetryPublisher` interface. 
+The library contains class `HttpTelemetryPublisher` which implements `TelemetryPublisher` interface and allows work with **Application Insights** resource via HTTP protocol.
 
+The `TelemetryClient` class supports work with:
 
-### Tracking
+- An instance of **Application Insights** resource in insecure (default) way.<br/>
+  This [code sample](#init-with-single-publisher) demonstrates initialization of `TelemetryClient` class with one instance of `HttpTelemetryPublisher` class.
+- An instance of **Application Insights** resource in secure way via Entra authentication.<br/>
+  This [code sample](#init-with-entra-auth) demonstrates initialization of `TelemetryClient` class with one instance of `HttpTelemetryPublisher` class which is configured to work with Entra authentication.
+- Multiple instances of **Application Insights** resource.<br/>
+  This [code sample](#init-with-multiple-publishers) demonstrates initialization of `TelemetryClient` class with two instances of `HttpTelemetryPublisher` class to send telemetry in different instances of **Application Insights** resource.<br/>
+  Please note that instances of Azure Application Insights resource should be in different Azure Subscriptions.
+
+## Work
+
+### Adding telemetry
 
 To add telemetry to instance of `TelemetryClient` use `TelemetryClient.Add` method.
 
@@ -75,6 +72,18 @@ var telemetry = new EventTelemetry(DateTime.UtcNow, @"start");
 
 // add to the telemetryClient
 telemetryClient.Add(telemetry);
+```
+
+### Tracking telemetry
+
+The `TelemetryClient` class provides a set of *Track* methods.
+The purpose of this methods is to simplify adding telemetry to the `TelemetryClient` storage.
+The major point of *Track* methods is to associate telemetry item with distributed operation that is currently tracked by `TelemetryClient`.
+For most of the cases Track methods will call `DateTime.UtcNow' to get current timestamp for telemetry item.
+
+```C#
+// track event and associate with current distributed operation
+telemetryClient.TrackEvent(@"start");
 ```
 
 ### Publishing
@@ -88,7 +97,7 @@ The collected telemetry data will be published in parallel using all configured 
 await telemetryClient.PublishAsync(cancellationToken);
 ```
 
-# Dependency Tracking
+## Dependency Tracking
 
 The library does not provide any automatic publishing of the data. 
 
@@ -96,22 +105,14 @@ This library makes use instance of `ConcurrentQueue` to collect and send telemet
 As a result, if the process is terminated suddenly, you could lose telemetry that is stored in the queue.
 It is recommended to track the closing of your process and call the `TelemetryClient.PublishAsync()` method to ensure no telemetry is lost.
 
-
-# Extensibility
-
-The library provides several points of potential extensibility.
-
 ## Adding Tags
 You can populate common context by using `tags` argument of the `TelemetryClient` constructor which will be automatically attached to each telemetry item sent. You can also attach additional property data to each telemetry item sent by using `Telemetry.Tags` property. The ```TelemetryClient``` exposes a method Add that adds telemetry information into the processing queue.
-
-### TelemetryPublisher
-If needed it is possible to implement own 
 
 ## Examples
 
 ### Init with Single Publisher
 
-Example demonstrates initialization of `TelemetryClient`with one publisher.
+Example demonstrates initialization of `TelemetryClient` with one publisher.
 
 ```C#
 using Azure.Monitor.Telemetry;
@@ -131,13 +132,13 @@ var telemetryPublisher = new HttpTelemetryPublisher
 // create tags collection
 KeyValuePair<String, String> [] tags = [new (TelemetryTagKey.CloudRole, "local")];
 
-// create telemetry telemetryClient
+// create telemetry Telemetry Client
 var telemetryClient = new TelemetryClient(tags, telemetryPublishers: telemetryPublisher);
 ```
 
 ### Init with Entra Auth
 
- initialization of TelemetryClient with Entra based authentication.
+Example demonstrates initialization of `TelemetryClient` with Entra authentication.
 
 ```C#
 using Azure.Core;
@@ -165,7 +166,7 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// create telemetry telemetryClient
+// create telemetry Telemetry Client
 var telemetryClient = new TelemetryClient(telemetryPublishers: telemetryPublisher);
 ```
 
@@ -210,19 +211,16 @@ var secondTelemetryPublisher = new HttpTelemetryPublisher
 	new Guid("INSERT INSTRUMENTATION KEY 2 HERE")
 );
 
-// create telemetry telemetryClient
+// create telemetry Telemetry Client
 var telemetryClient = new TelemetryClient(telemetryPublishers: [firstTelemetryPublisher, secondTelemetryPublisher]);
 ```
 
 [azure_subscription]: https://azure.microsoft.com/free/dotnet/
-[AppInsights]: https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview
-[AppInsightsEntraAuth]: https://learn.microsoft.com/azure/azure-monitor/app/azure-ad-authentication
-[AzureCLI]: https://learn.microsoft.com/cli/azure/
-[AzureInsightsComponentsResource]: https://learn.microsoft.com/azure/templates/microsoft.insights/components
-[AzurePortal]: https://portal.azure.com
-
-
-[app_insights_create_cli]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=cli
-[app_insights_create_portal]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=portal
-[app_insights_create_ps]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=powershell
-[app_insights_create_rest]: https://learn.microsoft.com/en-us/azure/azure-monitor/app/create-workspace-resource?tabs=rest
+[azure_app_insights]: https://learn.microsoft.com/azure/templates/microsoft.insights/components
+[app_insights]: https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview
+[app_insights_entra_auth]: https://learn.microsoft.com/azure/azure-monitor/app/azure-ad-authentication
+[app_insights_create_bicep]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=bicep#create-an-application-insights-resource
+[app_insights_create_cli]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=cli#create-an-application-insights-resource
+[app_insights_create_portal]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=portal#create-an-application-insights-resource
+[app_insights_create_ps]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=powershell#create-an-application-insights-resource
+[app_insights_create_httpapi]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=rest#create-an-application-insights-resource
