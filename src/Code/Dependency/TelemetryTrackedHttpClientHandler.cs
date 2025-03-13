@@ -60,7 +60,7 @@ public class TelemetryTrackedHttpClientHandler
 
 		// track telemetry
 		// if RequestUri is null the host class will throw exception before calling this method
-		telemetryClient.TrackDependency
+		telemetryClient.TrackDependencyHttp
 		(
 			time,
 			duration,

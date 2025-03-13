@@ -7,7 +7,7 @@ using System.Net.Http;
 
 using Azure.Monitor.Telemetry.Dependency;
 using Azure.Monitor.Telemetry.Mocks;
-using Azure.Monitor.Telemetry.Types;
+using Azure.Monitor.Telemetry.Models;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

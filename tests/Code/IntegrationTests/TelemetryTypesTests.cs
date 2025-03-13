@@ -3,6 +3,7 @@
 
 namespace Azure.Monitor.Telemetry.IntegrationTests;
 
+using Azure.Monitor.Telemetry.Models;
 using Azure.Monitor.Telemetry.Tests;
 
 /// <summary>

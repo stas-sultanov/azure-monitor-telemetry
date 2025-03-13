@@ -7,12 +7,12 @@ using System;
 using System.Runtime.CompilerServices;
 
 using Azure.Monitor.Telemetry;
-using Azure.Monitor.Telemetry.Types;
+using Azure.Monitor.Telemetry.Models;
 
 /// <summary>
 /// Provides extension methods for the <see cref="TelemetryClient"/> class.
 /// </summary>
-public static class Extensions
+public static class TelemetryClientExtensions
 {
 	#region Methods
 
@@ -55,7 +55,7 @@ public static class Extensions
 			Success = publishResult.Success,
 			Target = publishResult.Url.Host,
 			Tags = tags,
-			Type = TelemetryDependencyTypes.AzureMonitor,
+			Type = DependencyTypes.AzureMonitor,
 			Time = publishResult.Time
 		};
 

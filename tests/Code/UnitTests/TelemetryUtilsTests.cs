@@ -1,14 +1,16 @@
 // Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+// Copyright ï¿½ Stas Sultanov.
 
 namespace Azure.Monitor.Telemetry.UnitTests;
 
+using Azure.Monitor.Telemetry.Models;
+
 /// <summary>
-/// Tests for <see cref="TelemetryDependencyTypes"/> class.
+/// Tests for <see cref="TelemetryUtils"/> class.
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public sealed class DependencyTypeTests
+public sealed class TelemetryUtilsTests
 {
 	[TestMethod]
 	public void Method_DetectTypeFromHttp_ShouldReturnAzureBlob()
@@ -17,10 +19,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.blob.core.windows.net");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureBlob, result);
+		Assert.AreEqual(DependencyTypes.AzureBlob, result);
 	}
 
 	[TestMethod]
@@ -30,10 +32,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.documents.azure.com");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureCosmosDB, result);
+		Assert.AreEqual(DependencyTypes.AzureCosmosDB, result);
 	}
 
 	[TestMethod]
@@ -43,10 +45,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.azure-devices.net");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureIotHub, result);
+		Assert.AreEqual(DependencyTypes.AzureIotHub, result);
 	}
 
 	[TestMethod]
@@ -56,10 +58,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.applicationinsights.azure.com");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureMonitor, result);
+		Assert.AreEqual(DependencyTypes.AzureMonitor, result);
 	}
 
 	[TestMethod]
@@ -69,10 +71,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.queue.core.windows.net");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureQueue, result);
+		Assert.AreEqual(DependencyTypes.AzureQueue, result);
 	}
 
 	[TestMethod]
@@ -82,10 +84,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.search.windows.net");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureSearch, result);
+		Assert.AreEqual(DependencyTypes.AzureSearch, result);
 	}
 
 	[TestMethod]
@@ -95,10 +97,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.servicebus.windows.net");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureServiceBus, result);
+		Assert.AreEqual(DependencyTypes.AzureServiceBus, result);
 	}
 
 	[TestMethod]
@@ -108,10 +110,10 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://myaccount.table.core.windows.net");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.AzureTable, result);
+		Assert.AreEqual(DependencyTypes.AzureTable, result);
 	}
 
 	[TestMethod]
@@ -121,9 +123,9 @@ public sealed class DependencyTypeTests
 		var uri = new Uri("https://unknownuri.com");
 
 		// act
-		var result = uri.DetectDependencyTypeFromHttp();
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.AreEqual(TelemetryDependencyTypes.HTTP, result);
+		Assert.AreEqual(DependencyTypes.HTTP, result);
 	}
 }

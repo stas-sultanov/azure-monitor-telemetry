@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry;
+namespace Azure.Monitor.Telemetry.Models;
 
 using System;
 using System.Collections.Generic;
