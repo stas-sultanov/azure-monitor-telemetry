@@ -7,14 +7,14 @@ using System.Net;
 
 using Azure.Monitor.Telemetry.Mocks;
 using Azure.Monitor.Telemetry.Publish;
-using Azure.Monitor.Telemetry.Types;
+using Azure.Monitor.Telemetry.Models;
 
 /// <summary>
-/// Tests for <see cref="Extensions"/> class.
+/// Tests for <see cref="TelemetryClientExtensions"/> class.
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public sealed class ExtensionsTests
+public sealed class TelemetryClientExtensionsTests
 {
 	[TestMethod]
 	public void Method_TrackDependency()
@@ -68,7 +68,7 @@ public sealed class ExtensionsTests
 
 		Assert.AreEqual(publishResult.Url.Host, actualResult.Target, nameof(DependencyTelemetry.Target));
 
-		Assert.AreEqual(TelemetryDependencyTypes.AzureMonitor, actualResult.Type, nameof(DependencyTelemetry.Type));
+		Assert.AreEqual(DependencyTypes.AzureMonitor, actualResult.Type, nameof(DependencyTelemetry.Type));
 	}
 
 	[TestMethod]

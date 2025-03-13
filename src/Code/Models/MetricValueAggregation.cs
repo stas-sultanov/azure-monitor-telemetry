@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry;
+namespace Azure.Monitor.Telemetry.Models;
 
 /// <summary>
 /// Represents the aggregation of metric values within a sample set.

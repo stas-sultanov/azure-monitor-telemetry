@@ -6,10 +6,12 @@ namespace Azure.Monitor.Telemetry;
 using System;
 using System.Collections.Generic;
 
+using Azure.Monitor.Telemetry.Models;
+
 /// <summary>
-/// Provides a set of extension methods.
+/// Provides a set of utility methods.
 /// </summary>
-public static class Extensions
+public static class TelemetryUtils
 {
 	#region Data
 
@@ -22,36 +24,36 @@ public static class Extensions
 	internal static IReadOnlyDictionary<String, String> WellKnownDomainToDependencyType { get; } = new Dictionary<String, String>()
 	{
 	// Azure Blob
-		{ ".blob.core.windows.net", TelemetryDependencyTypes.AzureBlob },
-		{ ".blob.core.chinacloudapi.cn", TelemetryDependencyTypes.AzureBlob },
-		{ ".blob.core.cloudapi.de", TelemetryDependencyTypes.AzureBlob },
-		{ ".blob.core.usgovcloudapi.net", TelemetryDependencyTypes.AzureBlob },
+		{ ".blob.core.windows.net", DependencyTypes.AzureBlob },
+		{ ".blob.core.chinacloudapi.cn", DependencyTypes.AzureBlob },
+		{ ".blob.core.cloudapi.de", DependencyTypes.AzureBlob },
+		{ ".blob.core.usgovcloudapi.net", DependencyTypes.AzureBlob },
 	// Azure Cosmos DB
-		{".documents.azure.com", TelemetryDependencyTypes.AzureCosmosDB },
-		{".documents.chinacloudapi.cn", TelemetryDependencyTypes.AzureCosmosDB },
-		{".documents.cloudapi.de", TelemetryDependencyTypes.AzureCosmosDB },
-		{".documents.usgovcloudapi.net", TelemetryDependencyTypes.AzureCosmosDB },
+		{".documents.azure.com", DependencyTypes.AzureCosmosDB },
+		{".documents.chinacloudapi.cn", DependencyTypes.AzureCosmosDB },
+		{".documents.cloudapi.de", DependencyTypes.AzureCosmosDB },
+		{".documents.usgovcloudapi.net", DependencyTypes.AzureCosmosDB },
 	// Azure Iot
-		{".azure-devices.net", TelemetryDependencyTypes.AzureIotHub},
+		{".azure-devices.net", DependencyTypes.AzureIotHub},
 	// Azure Monitor
-		{ ".applicationinsights.azure.com", TelemetryDependencyTypes.AzureMonitor },
+		{ ".applicationinsights.azure.com", DependencyTypes.AzureMonitor },
 	// Azure Queue
-		{ ".queue.core.windows.net", TelemetryDependencyTypes.AzureQueue },
-		{ ".queue.core.chinacloudapi.cn", TelemetryDependencyTypes.AzureQueue },
-		{ ".queue.core.cloudapi.de", TelemetryDependencyTypes.AzureQueue },
-		{ ".queue.core.usgovcloudapi.net", TelemetryDependencyTypes.AzureQueue },
+		{ ".queue.core.windows.net", DependencyTypes.AzureQueue },
+		{ ".queue.core.chinacloudapi.cn", DependencyTypes.AzureQueue },
+		{ ".queue.core.cloudapi.de", DependencyTypes.AzureQueue },
+		{ ".queue.core.usgovcloudapi.net", DependencyTypes.AzureQueue },
 	// Azure Search
-		{ ".search.windows.net", TelemetryDependencyTypes.AzureSearch},
+		{ ".search.windows.net", DependencyTypes.AzureSearch},
 	// Azure Service Bus
-		{".servicebus.windows.net", TelemetryDependencyTypes.AzureServiceBus },
-		{".servicebus.chinacloudapi.cn", TelemetryDependencyTypes.AzureServiceBus },
-		{".servicebus.cloudapi.de", TelemetryDependencyTypes.AzureServiceBus },
-		{".servicebus.usgovcloudapi.net", TelemetryDependencyTypes.AzureServiceBus },
+		{".servicebus.windows.net", DependencyTypes.AzureServiceBus },
+		{".servicebus.chinacloudapi.cn", DependencyTypes.AzureServiceBus },
+		{".servicebus.cloudapi.de", DependencyTypes.AzureServiceBus },
+		{".servicebus.usgovcloudapi.net", DependencyTypes.AzureServiceBus },
 	// Azure Table
-		{".table.core.windows.net", TelemetryDependencyTypes.AzureTable},
-		{".table.core.chinacloudapi.cn", TelemetryDependencyTypes.AzureTable},
-		{".table.core.cloudapi.de", TelemetryDependencyTypes.AzureTable},
-		{".table.core.usgovcloudapi.net", TelemetryDependencyTypes.AzureTable}
+		{".table.core.windows.net", DependencyTypes.AzureTable},
+		{".table.core.chinacloudapi.cn", DependencyTypes.AzureTable},
+		{".table.core.cloudapi.de", DependencyTypes.AzureTable},
+		{".table.core.usgovcloudapi.net", DependencyTypes.AzureTable}
 	};
 
 	#endregion
@@ -63,8 +65,16 @@ public static class Extensions
 	/// </summary>
 	/// <param name="uri">The HTTP URI.</param>
 	/// <returns>The detected dependency type, or "Http" if the host is not recognized.</returns>
-	public static String DetectDependencyTypeFromHttp(this Uri uri)
+	public static String? DetectDependencyTypeFromHttpUri
+	(
+		Uri uri
+	)
 	{
+		if (uri == null || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+		{
+			return null;
+		}
+
 		var dotIndex = uri.Host.IndexOf('.');
 
 		var domain = uri.Host.Substring(dotIndex);
@@ -74,7 +84,7 @@ public static class Extensions
 			return type;
 		}
 
-		return TelemetryDependencyTypes.HTTP;
+		return DependencyTypes.HTTP;
 	}
 
 	#endregion
@@ -87,7 +97,7 @@ public static class Extensions
 	/// <param name="exception">The exception to convert.</param>
 	/// <param name="maxStackLength">Maximal number of items to put into the <see cref="ExceptionInfo.ParsedStack"/>.</param>
 	/// <returns>A read-only list of items of  <see cref="ExceptionInfo"/> type.</returns>
-	public static IReadOnlyList<ExceptionInfo> Convert
+	public static IReadOnlyList<ExceptionInfo> ConvertExceptionToModel
 	(
 		this Exception exception,
 		Int32 maxStackLength = ExceptionMaxStackLength

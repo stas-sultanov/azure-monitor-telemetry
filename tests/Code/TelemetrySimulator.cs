@@ -61,7 +61,7 @@ internal static class TelemetrySimulator
 		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
 
 		// track telemetry
-		telemetryClient.TrackDependency(time, duration, id, httpMethod, url, statusCode, (Int32) statusCode < 399);
+		telemetryClient.TrackDependencyHttp(time, duration, id, httpMethod, url, statusCode, (Int32) statusCode < 399);
 	}
 
 	public static async Task SimulatePageViewAsync

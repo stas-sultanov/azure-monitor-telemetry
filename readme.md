@@ -6,9 +6,9 @@
 [![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 
-A lightweight, high-performance library for tracking and publishing telemetry.
+A lightweight, high-performance library for tracking and publishing telemetry in distributed systems.
 
-Developed by [Stas Sultanov][linked_in_profile], this library is designed for efficiency, prioritizing speed and minimal memory usage.
+Developed by [Stas Sultanov][linked_in_profile], this library is optimized for efficiency, with a strong focus on speed and minimal memory usage.
 
 If this library benefits your business, consider [supporting the author](#support-the-author).
 
@@ -45,26 +45,29 @@ A comparison of library sizes and file counts when used with Entra-based authent
 
 | Package(s)                                   | NET462 | NET8 | NET9 |
 | :------------------------------------------- | :----- | :--- | :--- |
-| Stas.Azure.Monitor.Telemetry 1.0.0 <br/> | Files: 1<br/>Size:  42KB | Files:   1<br/>Size:   42KB | Files: 1<br/>Size:  42KB |
+| Stas.Azure.Monitor.Telemetry 1.0.0 <br/> | Files: 1<br/>Size:  52KB | Files: 1<br/>Size: 51KB | Files: 1<br/>Size: 51KB |
 | Microsoft.ApplicationInsights 2.23.0 <br/> Azure.Core 1.13.2 | Files: 112<br/>Size: 4639KB | Files: 5<br/>Size: 945KB | Files: 5<br/>Size: 945KB |
-| OpenTelemetry 1.11.1 <br/> Azure.Monitor.open_telemetry_nuget.Exporter  1.13.0 | Files: 126<br/>Size: 5243KB | Files: 32<br/>Size: 2386KB | Files:  26<br/>Size: 2233KB |
+| OpenTelemetry 1.11.2 <br/> Azure.Monitor.OpenTelemetry.Exporter 1.3.0 | Files: 126<br/>Size: 5243KB | Files: 32<br/>Size: 2386KB | Files: 26<br/>Size: 2233KB |
 
-## Quality
+## Quality Assurance
 
 Ensuring high quality is a top priority. This project enforces multiple quality gates to maintain reliability and robustness:
 
-1. The ruleset is configured with a target on the *main* branch and allows changes via pull request only.
-2. The workflow [Check][workflow_check] is configured to run on pull requests to the *main* branch and does the following:
+1. The ruleset is configured with a target on the *main* branch with the following configurations:
+    - Require signed commits ([signed commits][github_docs_verified_commit])
+    - Require a pull request before merging, with the allowed method: *Squash*
+    - Require code scanning results via [CodeQL][github_workflow_code_ql]
+2. The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
     - Checks that the code builds with no errors.
     - Runs unit tests with a coverage threshold of 95%.
     - Runs integration tests with a coverage threshold of 90%.<br/>
       During integration tests, the workflow creates an environment within Azure and disposes of it once the tests complete.
-3. The [CodeQL][workflow_code_ql] workflow is configured to run on pull requests and commits to the *main* branch.
+3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
 4. The project build is configured to:
     - Treat all warnings as errors.
     - Set the warning level to 9999.
     - Enforce code style in the build via [editorconfig](/.editorconfig).
-    - Use dotNet analyzers with analysis level **latest-all**.
+    - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
     - Generate a documentation file to ensure that all public members are documented.
 
 ## Support the Author
@@ -82,10 +85,14 @@ Thank you for your support!
 [app_insights_issue_auth]: https://github.com/microsoft/ApplicationInsights-dotnet/issues/2945
 [app_insights_nuget_2_23]: https://www.nuget.org/packages/Microsoft.ApplicationInsights/2.23.0
 [azure_monitor]: https://docs.microsoft.com/azure/azure-monitor/overview
+[diagnostic_source_nuget]: https://www.nuget.org/packages/System.Diagnostics.DiagnosticSource
 [dot_net_lifecycle]: https://learn.microsoft.com/lifecycle/products/microsoft-net-framework
-[github_rule_sets]: https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets
+[dot_net_analyzers]: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/overview
+[github_docs_rule_sets]: https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets
+[github_docs_verified_commit]: https://docs.github.com/authentication/managing-commit-signature-verification
+[github_docs_artifact_attestations]: https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations
+[github_workflow_code_ql]: https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/github-code-scanning/codeql
+[github_workflow_check]: https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/check.yml
+[github_workflow_release]: https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/release.yml
 [linked_in_profile]: https://www.linkedin.com/in/stas-sultanov
 [open_telemetry_nuget]: https://www.nuget.org/packages/OpenTelemetry
-[diagnostic_source_nuget]: https://www.nuget.org/packages/System.Diagnostics.DiagnosticSource
-[workflow_code_ql]: https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/github-code-scanning/codeql
-[workflow_check]: https://github.com/stas-sultanov/azure-monitor-telemetry/actions/workflows/check.yml

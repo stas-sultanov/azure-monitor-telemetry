@@ -6,11 +6,12 @@ namespace Azure.Monitor.Telemetry;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 
-using Azure.Monitor.Telemetry.Types;
+using Azure.Monitor.Telemetry.Models;
 
 /// <summary>
 /// Provides functionality to collect and publish telemetry data.
@@ -299,7 +300,7 @@ public sealed class TelemetryClient
 	}
 
 	/// <summary>
-	/// Tracks a dependency call activity.
+	/// Tracks a dependency call activity via HTTP protocol.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -315,7 +316,7 @@ public sealed class TelemetryClient
 	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
 	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void TrackDependency
+	public void TrackDependencyHttp
 	(
 		DateTime time,
 		TimeSpan duration,
@@ -331,6 +332,8 @@ public sealed class TelemetryClient
 	{
 		var name = String.Concat(httpMethod.Method, " ", uri.AbsolutePath);
 
+		var dependencyType = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
+
 		var telemetry = new DependencyTelemetry
 		{
 			Data = uri.ToString(),
@@ -344,7 +347,7 @@ public sealed class TelemetryClient
 			Success = success,
 			Tags = tags,
 			Target = uri.Host,
-			Type = uri.DetectDependencyTypeFromHttp(),
+			Type = dependencyType,
 			Time = time
 		};
 
@@ -380,7 +383,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var type = String.IsNullOrWhiteSpace(typeName) ? TelemetryDependencyTypes.InProc : TelemetryDependencyTypes.InProc + " | " + typeName;
+		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyTypes.InProc : DependencyTypes.InProc + " | " + typeName;
 
 		var telemetry = new DependencyTelemetry
 		{
@@ -393,6 +396,63 @@ public sealed class TelemetryClient
 			Success = success,
 			Tags = tags,
 			Type = type,
+			Time = time
+		};
+
+		Add(telemetry);
+	}
+
+	/// <summary>
+	/// Tracks a dependency call activity.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
+	/// <param name="duration">The time taken to complete the activity.</param>
+	/// <param name="id">The unique identifier of the activity.</param>
+	/// <param name="dataSource">The name of the instance of SQL Server. Often FQDN of the server.</param>
+	/// <param name="database">The name of the database.</param>
+	/// <param name="commandText">The text of SQL command.</param>
+	/// <param name="resultCode">The result of executing SQL command.</param>
+	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackDependencySql
+	(
+		DateTime time,
+		TimeSpan duration,
+		String id,
+		String dataSource,
+		String database,
+		String commandText,
+		Int32 resultCode,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var dataFullName = String.Concat(dataSource, " | ", database);
+
+		var resultCodeAsString = resultCode == 0 ? null : resultCode.ToString(CultureInfo.InvariantCulture);
+
+		var success = resultCode >= 0;
+
+		var telemetry = new DependencyTelemetry
+		{
+			Data = commandText,
+			Duration = duration,
+			Id = id,
+			Measurements = measurements,
+			Name = dataFullName,
+			Operation = Operation,
+			Properties = properties,
+			ResultCode = resultCodeAsString,
+			Success = success,
+			Tags = tags,
+			Target = dataFullName,
+			Type = DependencyTypes.SQL,
 			Time = time
 		};
 
@@ -458,7 +518,7 @@ public sealed class TelemetryClient
 	{
 		var time = DateTime.UtcNow;
 
-		var exceptions = exception.Convert();
+		var exceptions = exception.ConvertExceptionToModel();
 
 		var telemetry = new ExceptionTelemetry
 		{

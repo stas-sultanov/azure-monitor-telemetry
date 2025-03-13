@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry;
+namespace Azure.Monitor.Telemetry.Models;
 
 /// <summary>
 /// Contains well-known dependency types.
@@ -9,7 +9,7 @@ namespace Azure.Monitor.Telemetry;
 /// <remarks>
 /// Constants values should not be changed otherwise there will be no aggregation with data which is published by other implementations of the client.
 /// </remarks>
-public static class TelemetryDependencyTypes
+public static class DependencyTypes
 {
 	#region Constants
 

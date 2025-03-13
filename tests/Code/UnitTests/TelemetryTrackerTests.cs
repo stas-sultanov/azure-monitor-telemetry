@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Mocks;
 using Azure.Monitor.Telemetry.Tests;
-using Azure.Monitor.Telemetry.Types;
+using Azure.Monitor.Telemetry.Models;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -171,7 +171,7 @@ public sealed class TelemetryClientTests
 	}
 
 	[TestMethod]
-	public async Task Method_TrackDependency_With_HttpRequest()
+	public async Task Method_TrackDependencyHttp()
 	{
 		// arrange
 		var time = DateTime.UtcNow;
@@ -180,10 +180,9 @@ public sealed class TelemetryClientTests
 		var httpMethod = HttpMethod.Post;
 		var uri = new Uri("http://example.com");
 		var statusCode = HttpStatusCode.OK;
-		_ = TimeSpan.FromSeconds(1);
 
 		// act
-		telemetryClient.TrackDependency(time, duration, id, httpMethod, uri, statusCode, true, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackDependencyHttp(time, duration, id, httpMethod, uri, statusCode, true, factory.Measurements, factory.Properties, factory.Tags);
 
 		_ = await telemetryClient.PublishAsync();
 
@@ -198,7 +197,7 @@ public sealed class TelemetryClientTests
 
 		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
-		AssertHelper.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, TelemetryDependencyTypes.HTTP);
+		AssertHelper.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, DependencyTypes.HTTP);
 	}
 
 	[TestMethod]
@@ -219,7 +218,7 @@ public sealed class TelemetryClientTests
 
 		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
 
-		var type = TelemetryDependencyTypes.InProc + " | " + typeName;
+		var type = DependencyTypes.InProc + " | " + typeName;
 
 		// assert
 		Assert.IsNotNull(actualResult);
@@ -227,6 +226,35 @@ public sealed class TelemetryClientTests
 		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
 		AssertHelper.PropertiesAreEqual(actualResult, null, actualResult.Duration, id, factory.Measurements, name, null, true, null, type);
+	}
+
+	[TestMethod]
+	public async Task Method_TrackDependencySql()
+	{
+		// arrange
+		var time = DateTime.UtcNow;
+		var duration = TimeSpan.FromSeconds(1);
+		var id = TelemetryFactory.GetActivityId();
+		var dataSource = "test.database.windows.net";
+		var database = "test";
+		var commandText = "SELECT * FROM test";
+		var resultCode = 0;
+
+		// act
+		telemetryClient.TrackDependencySql(time, duration, id, dataSource, database, commandText, resultCode, factory.Measurements, factory.Properties, factory.Tags);
+
+		_ = await telemetryClient.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
+
+		var dataFullName = $"{dataSource} | {database}";
+
+		// assert
+		Assert.IsNotNull(actualResult);
+
+		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+
+		AssertHelper.PropertiesAreEqual(actualResult, commandText, actualResult.Duration, id, factory.Measurements, dataFullName, null, true, dataFullName, DependencyTypes.SQL);
 	}
 
 	[TestMethod]
@@ -255,7 +283,7 @@ public sealed class TelemetryClientTests
 	{
 		// arrange
 		var exception = new Exception("Test exception");
-		var exceptions = exception.Convert();
+		var exceptions = exception.ConvertExceptionToModel();
 		var problemId = Random.Shared.Next(1000).ToString(CultureInfo.InvariantCulture);
 		var severityLevel = SeverityLevel.Error;
 

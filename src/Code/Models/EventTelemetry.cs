@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.Types;
+namespace Azure.Monitor.Telemetry.Models;
 
 /// <summary>
 /// Represents telemetry of an event that occurred in an application.
