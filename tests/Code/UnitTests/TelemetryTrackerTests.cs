@@ -90,27 +90,31 @@ public sealed class TelemetryClientTests
 	#region Methods: Activity Scope
 
 	[TestMethod]
-	public void ActivityScopeBegin()
+	public void ActivityScope()
 	{
 		// arrange
-		var originalOperation = telemetryClient.Operation;
+		var expectedOperation = telemetryClient.Operation;
 		var expectedId = TelemetryFactory.GetActivityId();
 
 		// act
-		telemetryClient.ActivityScopeBegin(expectedId, out var actualOperation);
+		telemetryClient.ActivityScopeBegin(expectedId, out var originalOperation);
 
-		var scopeOpeartion = telemetryClient.Operation;
+		var scopeOperation = telemetryClient.Operation;
 
-		telemetryClient.ActivityScopeEnd(actualOperation);
+		telemetryClient.ActivityScopeEnd(originalOperation);
+
+		var afterScopeOperation = telemetryClient.Operation;
 
 		// assert
-		AssertHelper.AreEqual(originalOperation, actualOperation);
+		AssertHelper.AreEqual(expectedOperation, originalOperation);
 
-		AssertHelper.PropertiesAreEqual(scopeOpeartion, actualOperation.Id, actualOperation.Name, expectedId);
+		AssertHelper.AreEqual(expectedOperation, afterScopeOperation);
+
+		AssertHelper.PropertiesAreEqual(scopeOperation, originalOperation.Id, originalOperation.Name, expectedId);
 	}
 
 	[TestMethod]
-	public void ActivityScopeBegin_Overload()
+	public void ActivityScope_Overload()
 	{
 		// arrange
 		var originalOperation = telemetryClient.Operation;
@@ -119,7 +123,7 @@ public sealed class TelemetryClientTests
 		// act
 		telemetryClient.ActivityScopeBegin(() => expectedId, out var time, out var timestamp, out var activityId, out var actualOperation);
 
-		var scopeOpeartion = telemetryClient.Operation;
+		var scopeOperation = telemetryClient.Operation;
 
 		telemetryClient.ActivityScopeEnd(actualOperation, timestamp, out var duration);
 
@@ -132,7 +136,7 @@ public sealed class TelemetryClientTests
 
 		AssertHelper.AreEqual(originalOperation, actualOperation);
 
-		AssertHelper.PropertiesAreEqual(scopeOpeartion, actualOperation.Id, actualOperation.Name, expectedId);
+		AssertHelper.PropertiesAreEqual(scopeOperation, actualOperation.Id, actualOperation.Name, expectedId);
 	}
 
 	#endregion
@@ -394,6 +398,32 @@ public sealed class TelemetryClientTests
 		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
 
 		AssertHelper.PropertiesAreEqual(actualResult, message, severityLevel);
+	}
+
+	[TestMethod]
+	public async Task Method_TrackTrace_WithinScope()
+	{
+		// arrange
+		var expectedOperation = telemetryClient.Operation;
+		var expectedId = TelemetryFactory.GetActivityId();
+		var message = "test";
+		var severityLevel = SeverityLevel.Information;
+
+		// act
+		telemetryClient.ActivityScopeBegin(expectedId, out var originalOperation);
+
+		telemetryClient.TrackTrace(message, severityLevel);
+
+		telemetryClient.ActivityScopeEnd(originalOperation);
+
+		_ = await telemetryClient.PublishAsync();
+
+		var actualResult = publisher.Buffer.Dequeue() as TraceTelemetry;
+
+		// assert
+		Assert.IsNotNull(actualResult);
+
+		Assert.AreEqual(expectedId, actualResult.Operation.ParentId);
 	}
 
 	#endregion
