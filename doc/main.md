@@ -1,10 +1,5 @@
 # Azure Monitor Telemetry
 
-![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)
-![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)
-
-A lightweight, high-performance library for tracking application telemetry with Azure Monitor.
-
 ## Getting Started
 
 The library is designed to work with the Azure [Application Insights][app_insights_info], which is a feature of Azure [Monitor][azure_montior_info].
@@ -20,46 +15,49 @@ It is possible to create a new **Application Insights** resource via
 [Powershell][app_insights_create_ps],
 [REST][app_insights_create_rest].
 
-### Authentication
+## Authentication
 
 **Application Insights** supports secure access via [Entra authentication][app_insights_entra_auth].
 
-The identity running the code must be granted with the [Monitoring Metrics Publisher][azure_rbac_monitoring_metrics_publisher] role.
+- The identity executing the code must be assigned the [Monitoring Metrics Publisher][azure_rbac_monitoring_metrics_publisher] role.
+- The access token must be requested with the audience: `https://monitor.azure.com//.default`.
 
-The authentication token must have `https://monitor.azure.com//.default` as its audience.
-
-### Initialization
+## Initialization
 
 The `TelemetryClient` class is the core component for tracking and publishing telemetry.
 
-To publish telemetry to **Application Insights**, the constructor of the `TelemetryClient` class must be provided with one or more instances of a class that implements the `TelemetryPublisher` interface.
+To send telemetry to Application Insights, provide the `TelemetryClient` constructor with one or more implementations of the `TelemetryPublisher` interface.
 
-The library provides the `HttpTelemetryPublisher` class, which implements the `TelemetryPublisher` interface and allows working with the **Application Insights** resource via the HTTP protocol.
+The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPublisher` that communicates via HTTPS.
 
-The `TelemetryClient` class supports working with:
+### Initialization Scenarios
 
-- An instance of **Application Insights** resource in an insecure (default) way.
-  This [code sample](#init-with-single-publisher) demonstrates the initialization of the `TelemetryClient` class with one instance of the `HttpTelemetryPublisher` class.
-- An instance of **Application Insights** resource in a secure way via Entra authentication.
-  This [code sample](#init-with-entra-auth) demonstrates the initialization of the `TelemetryClient` class with one instance of the `HttpTelemetryPublisher` class configured to work with Entra authentication.
-- Multiple instances of **Application Insights** resource.
-  This [code sample](#http-dependency-tracking) demonstrates the initialization of the `TelemetryClient` class with two instances of the `HttpTelemetryPublisher` class to send telemetry to different instances of the **Application Insights** resource.
+- **Basic (no authentication):**  
+  Initialize `TelemetryClient` with a single `HttpTelemetryPublisher`.
+  Take a look at the [example](#init-with-single-publisher).
+
+- **Entra-based authentication:**  
+  Configure `HttpTelemetryPublisher` to authenticate using an access token.
+  Take a look at the [example](#init-with-entra-auth).
+
+- **Multiple endpoints:**  
+  Provide multiple instances of `HttpTelemetryPublisher` to send data to different Application Insights resources.
+  Take a look at the [example](#init-with-multiple-publishers).
 
 ## Supported Telemetry Types
 
 The library provides support for all telemetry types supported by **Application Insights**.
 
-There are two types of telemetry:
-1. Those which represent information at a specific timestamp:
-    1. [EventTelemetry](/src/Code/Models/EventTelemetry.cs)
-    1. [ExceptionTelemetry](/src/Code/Models/ExceptionTelemetry.cs)
-    1. [MetricTelemetry](/src/Code/Models/MetricTelemetry.cs)
-    1. [TraceTelemetry](/src/Code/Models/TraceTelemetry.cs)
-1. Those which represent an acivity with a start timestamp and duration:
-    1. [AvailabilityTelemetry](/src/Code/Models/AvailabilityTelemetry.cs)
-    1. [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs)
-    1. [PageViewTelemetry](/src/Code/Models/PageViewTelemetry.cs)
-    1. [RequestTelemetry](/src/Code/Models/RequestTelemetry.cs)
+- Timestamp-based telemetry:
+	- [EventTelemetry](/src/Code/Models/EventTelemetry.cs)
+	- [ExceptionTelemetry](/src/Code/Models/ExceptionTelemetry.cs)
+	- [MetricTelemetry](/src/Code/Models/MetricTelemetry.cs)
+	- [TraceTelemetry](/src/Code/Models/TraceTelemetry.cs)
+- Activity-based telemetry:
+	- [AvailabilityTelemetry](/src/Code/Models/AvailabilityTelemetry.cs)
+	- [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs)
+	- [PageViewTelemetry](/src/Code/Models/PageViewTelemetry.cs)
+	- [RequestTelemetry](/src/Code/Models/RequestTelemetry.cs)
 
 ## Adding Telemetry
 
@@ -73,7 +71,7 @@ var telemetry = new EventTelemetry(DateTime.UtcNow, "start");
 telemetryClient.Add(telemetry);
 ```
 
-### Tracking Telemetry
+## Tracking Telemetry
 
 The `TelemetryClient` class provides a set of `Track` methods.
 The purpose of these methods is to simplify adding telemetry to the `TelemetryClient` storage.
@@ -85,7 +83,7 @@ For most cases, Track methods will call `DateTime.UtcNow` to get the current tim
 telemetryClient.TrackEvent("start");
 ```
 
-## Dependency Tracking
+### Dependency Tracking
 
 The library does not provide any automated dependency tracking.
 
@@ -108,16 +106,43 @@ The library does not provide any functionality of publishing data automatically.
 
 ## Using Telemetry Tags
 
-Telemetry tags is a mechanism of enriching telemetry information with specific data like CloudRole of the machine which executes the code.
+Telemetry tags enrich telemetry data with metadata.
 
 The list of standard tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
-There ara verity of ways you may add tags to the telemetry:
-1. The `Telemetry` interface provides a property `Tags` that allows to attach tags to specific telemetry item.
-1. The `TelemetryClient` class constructor accepts an argument 'tags'.
-   In this case provided tags will be automatically attached to each telemetry item published via each `TelemetryPublisher` during the publish operation.
-1. The `HttpTelemetryPublisher` class constructor accepts an argument 'tags'.
-   In this case provided tags will be automatically attached to each telemetry item during publish operation.
+Ways to apply tags:
+- Per instance of object which type implements `Telemetry` interface.
+  Set the `Telemetry.Tags` property on the instance.
+- Per client
+  Pass tags to the `TelemetryClient` constructor.
+  These tags are applied to each telemetry at publish time.
+- Per publisher
+  Pass tags to the `HttpTelemetryPublisher` constructor.
+  These tags are applied to each telemetry at publish time for specific publisher only.
+
+## Distributed Operation Tracking
+
+This library is purpose-built to support **distributed operations**, where a single logical transaction spans multiple components, services, or asynchronous workflows.
+
+To support this, the `TelemetryClient` class provides an `Operation` property that represents the current logical operation.
+Telemetry items tracked while an operation is active will automatically be associated with it.
+
+### How It Works
+
+- The `Operation` property holds a reference to the current distributed operation context.
+- When a telemetry item is added or tracked, it will inherit operation identifiers (`Id`, `Name`, `ParentId`) from this context.
+- This enables **end-to-end correlation** in Application Insights across services.
+
+## Thread Safety
+
+All public types and members of this library are **thread-safe** and can be used concurrently from multiple threads.
+
+- The `TelemetryClient` class is designed to handle telemetry operations from multiple threads in parallel.
+- Internal telemetry storage is implemented using `ConcurrentQueue<T>` to ensure safe concurrent access.
+- The `PublishAsync` method can be safely called while telemetry is being added via `Add` or `Track*` methods.
+- Custom implementations of `TelemetryPublisher` should also be designed to be thread-safe, especially if shared across multiple instances or services.
+
+This thread-safe design makes the library suitable for use in **high-concurrency environments**, such as web servers, background workers, microservices, and serverless applications.
 
 ## Examples
 

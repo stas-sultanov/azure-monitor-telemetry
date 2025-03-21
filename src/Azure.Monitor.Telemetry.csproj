@@ -49,7 +49,7 @@
 				<IncludeSymbols>true</IncludeSymbols>
 				<PackageIcon>icon.png</PackageIcon>
 				<PackageLicenseFile>license.md</PackageLicenseFile>
-				<PackageReadmeFile>readme.md</PackageReadmeFile>
+				<PackageReadmeFile>package.md</PackageReadmeFile>
 				<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 				<PackageTags>Azure;Monitor;Telemetry;ApplicationInsights;</PackageTags>
 				<Product>Azure Light Client</Product>
@@ -61,7 +61,7 @@
 			</PropertyGroup>
 			<ItemGroup>
 				<None Include="icon.png" Pack="True" PackagePath="\" />
-				<None Include="readme.md" Pack="True" PackagePath="\" />
+				<None Include="package.md" Pack="True" PackagePath="\" />
 				<None Include="..\license.md" Pack="True" PackagePath="\" />
 			</ItemGroup>
 			<ItemGroup>

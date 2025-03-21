@@ -14,7 +14,7 @@ If this library benefits your business, consider [supporting the author](#suppor
 
 ## Start Using the Library
 
-For instructions on how to use the library, please read [this](/src/readme.md) document.
+For instructions on how to use the library, please read the [documentation](/doc/main.md).
 
 ## Key Drivers
 
@@ -30,9 +30,11 @@ To achieve this, the following key drivers were considered:
 
 ## Key Concepts
 
-The fundamental concepts that define the design and functionality of this library:
-- Telemetry Tracking - The core feature of this library is the ability to track different types of telemetry, such as activities, exceptions, and custom events.
-- Telemetry Publishing - The library is designed to work with multiple telemetry publishers, allowing seamless and secure data transmission to one or more Azure Application Insights instances.
+The following core principles define the design and functionality of this library:
+
+- **Telemetry Tracking** – Capture a wide range of telemetry types, including activities, exceptions, events, metrics, and traces.
+- **Telemetry Publishing** – Support multiple telemetry destinations, enabling secure and parallel publishing to one or more telemetry endpoints.
+- **Distributed Operation Tracking** – Associate telemetry with logical operations that span services, processes, or asynchronous workflows, enabling end-to-end correlation in distributed systems.
 
 ## Quality Assurance
 
