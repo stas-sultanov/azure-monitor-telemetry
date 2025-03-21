@@ -14,7 +14,7 @@ If this library benefits your business, consider [supporting the author](#suppor
 
 ## Start Using the Library
 
-For instructions on how to use the library, please read the [documentation](/doc/main.md).
+For instructions on how to use the library, please read the [documentation](/doc/).
 
 ## Key Drivers
 

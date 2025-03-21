@@ -73,9 +73,8 @@ telemetryClient.Add(telemetry);
 
 ## Tracking Telemetry
 
-The `TelemetryClient` class provides a set of `Track` methods.
-The purpose of these methods is to simplify adding telemetry to the `TelemetryClient` storage.
-The major point of `Track` methods is to associate telemetry items with the distributed operation that is currently tracked by `TelemetryClient`.
+The `TelemetryClient` class provides a set of `TelemetryClient.Track*` methods.
+The major point of these methods is to associate telemetry items with the distributed operation that is currently tracked by `TelemetryClient`.
 For most cases, Track methods will call `DateTime.UtcNow` to get the current timestamp for the telemetry item.
 
 ```csharp
@@ -133,6 +132,10 @@ Telemetry items tracked while an operation is active will automatically be assoc
 - When a telemetry item is added or tracked, it will inherit operation identifiers (`Id`, `Name`, `ParentId`) from this context.
 - This enables **end-to-end correlation** in Application Insights across services.
 
+### Working with Activity
+
+The `TelemetryClient` class provides methods 
+
 ## Thread Safety
 
 All public types and members of this library are **thread-safe** and can be used concurrently from multiple threads.
@@ -141,8 +144,6 @@ All public types and members of this library are **thread-safe** and can be used
 - Internal telemetry storage is implemented using `ConcurrentQueue<T>` to ensure safe concurrent access.
 - The `PublishAsync` method can be safely called while telemetry is being added via `Add` or `Track*` methods.
 - Custom implementations of `TelemetryPublisher` should also be designed to be thread-safe, especially if shared across multiple instances or services.
-
-This thread-safe design makes the library suitable for use in **high-concurrency environments**, such as web servers, background workers, microservices, and serverless applications.
 
 ## Examples
 

@@ -17,4 +17,4 @@ A lightweight, high-performance library for tracking application telemetry with 
 
 ## How to Use
 
-The documentation is available by this [link](https://github.com/stas-sultanov/azure-monitor-telemetry/doc/main.md).
+The documentation is available by this [link](https://github.com/stas-sultanov/azure-monitor-telemetry/doc/).

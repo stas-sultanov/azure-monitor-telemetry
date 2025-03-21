@@ -43,7 +43,7 @@
 				<Company>Stas Sultanov</Company>
 				<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 				<Copyright>Copyright © Stas Sultanov</Copyright>
-				<Description>A lightweight, high-performance library for tracking and publishing telemetry.</Description>
+				<Description>A lightweight, high-performance library for tracking application telemetry with Azure Monitor.</Description>
 				<EmbedUntrackedSources>true</EmbedUntrackedSources>
 				<EnablePackageValidation>true</EnablePackageValidation>
 				<IncludeSymbols>true</IncludeSymbols>
