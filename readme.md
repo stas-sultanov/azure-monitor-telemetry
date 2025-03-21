@@ -6,15 +6,57 @@
 [![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 
-A lightweight, high-performance library for tracking and publishing telemetry in distributed systems.
+A lightweight, high-performance library for tracking application telemetry with Azure Monitor.
 
-Developed by [Stas Sultanov][linked_in_profile], this library is optimized for efficiency, with a strong focus on speed and minimal memory usage.
+Developed by [Stas Sultanov][linked_in_profile], this library is optimized for efficiency, speed, and minimal memory usage, ensuring seamless telemetry tracking across IT solutions of any architecture—from distributed systems to standalone applications and plugins.
 
 If this library benefits your business, consider [supporting the author](#support-the-author).
 
-## Getting Started
+## Start Using the Library
 
-For instructions on how to use the library, please read [this document](/src/readme.md).
+For instructions on how to use the library, please read [this](/src/readme.md) document.
+
+## Key Drivers
+
+This library has been developed with a strong focus on business adaptability to serve IT solutions of all kinds.<br/>
+To achieve this, the following key drivers were considered:
+
+- **Simplicity** – Minimize the number of classes, relationships, and hierarchies to keep the design as lean as possible.  
+- **Transparency** – Gain full visibility into how telemetry is tracked and published, without unnecessary abstraction layers.  
+- **Efficiency** – Run faster and consume less memory thanks to minimal code and low complexity.  
+- **Responsibility** – Embrace control over how telemetry is tracked and managed, with decisions left to the developer.  
+- **Extensibility** – Extend or customize telemetry handling through clearly defined extension points.  
+- **Versatility** – Apply in any context, from distributed systems to standalone apps and plugins.
+
+## Key Concepts
+
+The fundamental concepts that define the design and functionality of this library:
+- Telemetry Tracking - The core feature of this library is the ability to track different types of telemetry, such as activities, exceptions, and custom events.
+- Telemetry Publishing - The library is designed to work with multiple telemetry publishers, allowing seamless and secure data transmission to one or more Azure Application Insights instances.
+
+## Quality Assurance
+
+This library has been designed with a requirement to meet the most rigorous quality standards demanded by businesses operating in highly regulated and performance-critical environments.<br/>
+This commitment is reflected in the following safeguards:
+
+1. The ruleset is configured with a target on the *main* branch with the following configurations:
+    - Require [signed commits][github_docs_verified_commit].
+    - Require a pull request before merging, with the allowed method: *Squash*.
+    - Require code scanning results via [CodeQL][github_workflow_code_ql].
+2. The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
+    - Checks that the code builds with no errors.
+    - Runs unit tests with a coverage threshold of 95%.
+    - Runs integration tests with a coverage threshold of 90%.<br/>
+      The workflow creates an environment within Azure, runs integration tests and disposes Azure resources once the tests complete.
+3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
+4. The project build is configured to: 
+    - Treat all warnings as errors.
+    - Set the warning level to 9999.
+    - Enforce code style in the build via [editorconfig](/.editorconfig).
+    - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
+    - Ensure that all public members are documented.
+
+By following these strict quality measures, this library guarantees a reliable, efficient, and scalable telemetry tracking solution that can be trusted by businesses of any size and type.
 
 ## Why This Library?
 
@@ -41,40 +83,19 @@ There are several compelling reasons why the author chose to invest time and eff
 
 ### Libraries Size Comparison
 
-A comparison of library sizes and file counts when used with Entra-based authentication:
+A comparison of sizes and file counts of libraries when used with Entra-based authentication:
 
-| Package(s)                                   | NET462 | NET8 | NET9 |
+| Containing Package(s)                        | NET462 | NET8 | NET9 |
 | :------------------------------------------- | :----- | :--- | :--- |
 | Stas.Azure.Monitor.Telemetry 1.0.0 <br/> | Files: 1<br/>Size:  52KB | Files: 1<br/>Size: 51KB | Files: 1<br/>Size: 51KB |
 | Microsoft.ApplicationInsights 2.23.0 <br/> Azure.Core 1.13.2 | Files: 112<br/>Size: 4639KB | Files: 5<br/>Size: 945KB | Files: 5<br/>Size: 945KB |
 | OpenTelemetry 1.11.2 <br/> Azure.Monitor.OpenTelemetry.Exporter 1.3.0 | Files: 126<br/>Size: 5243KB | Files: 32<br/>Size: 2386KB | Files: 26<br/>Size: 2233KB |
 
-## Quality Assurance
-
-Ensuring high quality is a top priority. This project enforces multiple quality gates to maintain reliability and robustness:
-
-1. The ruleset is configured with a target on the *main* branch with the following configurations:
-    - Require signed commits ([signed commits][github_docs_verified_commit])
-    - Require a pull request before merging, with the allowed method: *Squash*
-    - Require code scanning results via [CodeQL][github_workflow_code_ql]
-2. The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
-    - Checks that the code builds with no errors.
-    - Runs unit tests with a coverage threshold of 95%.
-    - Runs integration tests with a coverage threshold of 90%.<br/>
-      During integration tests, the workflow creates an environment within Azure and disposes of it once the tests complete.
-3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
-4. The project build is configured to:
-    - Treat all warnings as errors.
-    - Set the warning level to 9999.
-    - Enforce code style in the build via [editorconfig](/.editorconfig).
-    - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
-    - Generate a documentation file to ensure that all public members are documented.
-
 ## Support the Author
 
 Donations help the author know that the time and effort spent on this library is valued.
 
-The author resides in a country affected by heavy military conflict since February 2022, making it extremely difficult to find stable employment. Donations provide significant support during these challenging times.
+The author resides in a country affected by heavy military conflict since February 2022, making it extremely difficult to find stable income. Donations provide significant support during these challenging times.
 
 If you’d like to make a donation, please use the button below.
 

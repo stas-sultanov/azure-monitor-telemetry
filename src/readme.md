@@ -3,18 +3,15 @@
 ![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)
 
-A lightweight, high-performance library for tracking and publishing telemetry in distributed systems.
+A lightweight, high-performance library for tracking application telemetry with Azure Monitor.
 
 ## Getting Started
 
-The library is designed to work with the Azure [Application Insights][app_insights_info] resource, also known as [Microsoft.Insights/components][azure_resource_app_insights].
-
-The library does not provide any auto instrumentation and sampling.<br/>
-Sampling is considered a direct responsibility of the engineer using this library.
+The library is designed to work with the Azure [Application Insights][app_insights_info], which is a feature of Azure [Monitor][azure_montior_info].
 
 ### Prerequisites
 
-To use the library, you need an [Azure subscription][azure_subscription] and an [Application Insights][app_insights_info] resource.
+To use the library, an [Azure subscription][azure_subscription] and an [Application Insights][app_insights_info] resource are required.
 
 It is possible to create a new **Application Insights** resource via 
 [Bicep][app_insights_create_bicep],
@@ -27,7 +24,7 @@ It is possible to create a new **Application Insights** resource via
 
 **Application Insights** supports secure access via [Entra authentication][app_insights_entra_auth].
 
-The identity running the code must be granted the [Monitoring Metrics Publisher][azure_rbac_monitoring_metrics_publisher] role.
+The identity running the code must be granted with the [Monitoring Metrics Publisher][azure_rbac_monitoring_metrics_publisher] role.
 
 The authentication token must have `https://monitor.azure.com//.default` as its audience.
 
@@ -41,13 +38,12 @@ The library provides the `HttpTelemetryPublisher` class, which implements the `T
 
 The `TelemetryClient` class supports working with:
 
-- An instance of **Application Insights** resource in an insecure (default) way.<br/>
+- An instance of **Application Insights** resource in an insecure (default) way.
   This [code sample](#init-with-single-publisher) demonstrates the initialization of the `TelemetryClient` class with one instance of the `HttpTelemetryPublisher` class.
-- An instance of **Application Insights** resource in a secure way via Entra authentication.<br/>
+- An instance of **Application Insights** resource in a secure way via Entra authentication.
   This [code sample](#init-with-entra-auth) demonstrates the initialization of the `TelemetryClient` class with one instance of the `HttpTelemetryPublisher` class configured to work with Entra authentication.
-- Multiple instances of **Application Insights** resource.<br/>
-  This [code sample](#init-with-multiple-publishers) demonstrates the initialization of the `TelemetryClient` class with two instances of the `HttpTelemetryPublisher` class to send telemetry to different instances of the **Application Insights** resource.<br/>
-  Note that instances of the Azure Application Insights resource should be in different Azure Subscriptions.
+- Multiple instances of **Application Insights** resource.
+  This [code sample](#http-dependency-tracking) demonstrates the initialization of the `TelemetryClient` class with two instances of the `HttpTelemetryPublisher` class to send telemetry to different instances of the **Application Insights** resource.
 
 ## Supported Telemetry Types
 
@@ -59,7 +55,7 @@ There are two types of telemetry:
     1. [ExceptionTelemetry](/src/Code/Models/ExceptionTelemetry.cs)
     1. [MetricTelemetry](/src/Code/Models/MetricTelemetry.cs)
     1. [TraceTelemetry](/src/Code/Models/TraceTelemetry.cs)
-1. Those which represent activity with a start timestamp and duration:
+1. Those which represent an acivity with a start timestamp and duration:
     1. [AvailabilityTelemetry](/src/Code/Models/AvailabilityTelemetry.cs)
     1. [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs)
     1. [PageViewTelemetry](/src/Code/Models/PageViewTelemetry.cs)
@@ -67,7 +63,7 @@ There are two types of telemetry:
 
 ## Adding Telemetry
 
-The `TelemetryClient` provides a method `Add` that adds an instance of a class that implements the `Telemetry` interface into the processing queue.
+The `TelemetryClient` class provides a method `Add` that adds an instance of a class that implements the `Telemetry` interface into the processing queue.
 
 ```csharp
 // create telemetry item
@@ -79,9 +75,9 @@ telemetryClient.Add(telemetry);
 
 ### Tracking Telemetry
 
-The `TelemetryClient` class provides a set of *Track* methods.
+The `TelemetryClient` class provides a set of `Track` methods.
 The purpose of these methods is to simplify adding telemetry to the `TelemetryClient` storage.
-The major point of *Track* methods is to associate telemetry items with the distributed operation that is currently tracked by `TelemetryClient`.
+The major point of `Track` methods is to associate telemetry items with the distributed operation that is currently tracked by `TelemetryClient`.
 For most cases, Track methods will call `DateTime.UtcNow` to get the current timestamp for the telemetry item.
 
 ```csharp
@@ -97,7 +93,7 @@ The library provides [TelemetryTrackedHttpClientHandler](/src/Code/Dependency/Te
 
 The [code sample](#init-with-multiple-publishers) demonstrates use of **TelemetryTrackedHttpClientHandler** class to track calls by Azure Storage Queue Client.
 
-### Publishing
+## Publishing
 
 To publish collected telemetry, use the `TelemetryClient.PublishAsync` method.
 
@@ -118,9 +114,9 @@ The list of standard tags can be found in [TelemetryTagKeys](/src/Code/Telemetry
 
 There ara verity of ways you may add tags to the telemetry:
 1. The `Telemetry` interface provides a property `Tags` that allows to attach tags to specific telemetry item.
-1. The `TelemetryClient` class constructor accepts an argument 'tags'.<br/>
+1. The `TelemetryClient` class constructor accepts an argument 'tags'.
    In this case provided tags will be automatically attached to each telemetry item published via each `TelemetryPublisher` during the publish operation.
-1. The `HttpTelemetryPublisher` class constructor accepts an argument 'tags'.<br/>
+1. The `HttpTelemetryPublisher` class constructor accepts an argument 'tags'.
    In this case provided tags will be automatically attached to each telemetry item during publish operation.
 
 ## Examples
@@ -232,8 +228,7 @@ var telemetryClient = new TelemetryClient(telemetryPublishers: [firstTelemetryPu
 
 ### Http Dependency Tracking
 
-The code sample below demonstrates initialization of the `TelemetryClient` for the scenario
-where it is required to publish telemetry data into multiple instances of **Application Insights**.
+The code sample below demonstrates tracking of Http request with `TelemetryTrackedHttpClientHandler` class.
 
 ```csharp
 using System.Diagnostics;
@@ -296,6 +291,7 @@ _ = await telemetryClient.PublishAsync();
 
 ```
 
+[azure_montior_info]: https://learn.microsoft.com/azure/azure-monitor/fundamentals/overview
 [azure_subscription]: https://azure.microsoft.com/free/dotnet/
 [azure_resource_app_insights]: https://learn.microsoft.com/azure/templates/microsoft.insights/components
 [azure_rbac_monitoring_metrics_publisher]: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher
