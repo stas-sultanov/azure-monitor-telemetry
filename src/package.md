@@ -1,9 +1,6 @@
-![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)
-![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)
-
 ## About
 
-A lightweight, high-performance library for tracking application telemetry with Azure Monitor.
+A lightweight library for tracking application telemetry with Azure Monitor.
 
 ## Key Features
 

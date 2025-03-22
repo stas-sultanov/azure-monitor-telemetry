@@ -6,8 +6,6 @@
 [![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 
-A lightweight, high-performance library for tracking application telemetry with Azure Monitor.
-
 Developed by [Stas Sultanov][linked_in_profile], this library is optimized for efficiency, speed, and minimal memory usage, ensuring seamless telemetry tracking across IT solutions of any architecture—from distributed systems to standalone applications and plugins.
 
 If this library benefits your business, consider [supporting the author](#support-the-author).
@@ -27,14 +25,6 @@ To achieve this, the following key drivers were considered:
 - **Responsibility** – Embrace control over how telemetry is tracked and managed, with decisions left to the developer.  
 - **Extensibility** – Extend or customize telemetry handling through clearly defined extension points.  
 - **Versatility** – Apply in any context, from distributed systems to standalone apps and plugins.
-
-## Key Concepts
-
-The following core principles define the design and functionality of this library:
-
-- **Telemetry Tracking** – Capture a wide range of telemetry types, including activities, exceptions, events, metrics, and traces.
-- **Telemetry Publishing** – Support multiple telemetry destinations, enabling secure and parallel publishing to one or more telemetry endpoints.
-- **Distributed Operation Tracking** – Associate telemetry with logical operations that span services, processes, or asynchronous workflows, enabling end-to-end correlation in distributed systems.
 
 ## Quality Assurance
 
@@ -58,7 +48,7 @@ This commitment is reflected in the following safeguards:
     - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
     - Ensure that all public members are documented.
 
-By following these strict quality measures, this library guarantees a reliable, efficient, and scalable telemetry tracking solution that can be trusted by businesses of any size and type.
+By following these strict quality measures, this library guarantees a reliable and efficient telemetry tracking solution that can be trusted by businesses of any size and type.
 
 ## Why This Library?
 
@@ -69,9 +59,9 @@ There are several compelling reasons why the author chose to invest time and eff
 - [Microsoft.ApplicationInsights][app_insights_nuget_2_23] has flaws in its implementation.<br/>
   For instance, Entra authentication is implemented in a way that makes it impossible to use the library for plugin development.<br/>
   The issue is described by the author [here][app_insights_issue_auth], with little expectation that it will ever be fixed.
-- [Microsoft.ApplicationInsights][app_insights_nuget_2_23] has extra dependencies.<br/>
+- [Microsoft.ApplicationInsights][app_insights_nuget_2_23] has dependencies.<br/>
   For instance, [System.Diagnostics.DiagnosticSource](https://www.nuget.org/packages/System.Diagnostics.DiagnosticSource/) >= v5.0.0, which is deprecated and has subsequent dependencies.<br/>
-  Extra dependencies add extra effort in resolving issues, especially in cases like plugin development.
+  In case of plugin development, dependencies bring potential issue with multiple version resolve.
 - [Microsoft.ApplicationInsights][app_insights_nuget_2_23] references NET452 and NET46 instead of NET462.<br/>
   Support for NET452 and NET46 ended on [April 26, 2022][dot_net_lifecycle].<br/>
   Support for NET462 ends on [January 12, 2027][dot_net_lifecycle].
@@ -87,8 +77,8 @@ There are several compelling reasons why the author chose to invest time and eff
 
 A comparison of sizes and file counts of libraries when used with Entra-based authentication:
 
-| Containing Package(s)                        | NET462 | NET8 | NET9 |
-| :------------------------------------------- | :----- | :--- | :--- |
+| Containing Package(s) | NET462 | NET8 | NET9 |
+| :-------------------- | :----- | :--- | :--- |
 | Stas.Azure.Monitor.Telemetry 1.0.0 <br/> | Files: 1<br/>Size:  52KB | Files: 1<br/>Size: 51KB | Files: 1<br/>Size: 51KB |
 | Microsoft.ApplicationInsights 2.23.0 <br/> Azure.Core 1.13.2 | Files: 112<br/>Size: 4639KB | Files: 5<br/>Size: 945KB | Files: 5<br/>Size: 945KB |
 | OpenTelemetry 1.11.2 <br/> Azure.Monitor.OpenTelemetry.Exporter 1.3.0 | Files: 126<br/>Size: 5243KB | Files: 32<br/>Size: 2386KB | Files: 26<br/>Size: 2233KB |
