@@ -1,5 +1,5 @@
 // Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+// Copyright Â© Stas Sultanov.
 
 namespace Azure.Monitor.Telemetry.UnitTests;
 

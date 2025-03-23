@@ -13,7 +13,7 @@
 - [Using Telemetry Tags](#using-telemetry-tags)
 - [Distributed Operation Tracking](#distributed-operation-tracking)
 	- [How It Works](#how-it-works)
-	- [Working with Activity](#working-with-activity)
+	- [Working via Activity Scope](#working-via-activity-scope)
 - [Thread Safety](#thread-safety)
 - [Examples](#examples)
 	- [Initialize](#initialize)
@@ -31,7 +31,7 @@ The following core concepts define the architecture and behavior of this library
 
 ## Getting Started
 
-The library is designed to work with the Azure [Application Insights][app_insights_info], which is a feature of Azure [Monitor][azure_montior_info].
+The library is designed to work with the Azure [Application Insights][app_insights_info], a feature of Azure [Monitor][azure_montior_info].
 
 ### Prerequisites
 
@@ -55,7 +55,7 @@ Application Insights supports secure access via [Entra authentication][app_insig
 
 The `TelemetryClient` class is the core component for tracking and publishing telemetry.
 
-To send telemetry to Application Insights, provide the `TelemetryClient` constructor with one or more implementations of the `TelemetryPublisher` interface.
+To enable telemetry publishing to Application Insights, provide the `TelemetryClient` constructor with one or more implementations of the `TelemetryPublisher` interface.
 
 The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPublisher` that communicates via HTTPS.
 
@@ -103,7 +103,7 @@ telemetryClient.Add(telemetry);
 ## Tracking Telemetry
 
 The `TelemetryClient` class provides a set of `TelemetryClient.Track*` methods.
-The major point of these methods is to associate telemetry items with the distributed operation that is currently tracked by `TelemetryClient`.
+These methods simplify tracking and automatically associate telemetry with the current distributed operation.
 For most cases, Track methods will call `DateTime.UtcNow` to get the current timestamp for the telemetry item.
 
 ```csharp
@@ -119,11 +119,11 @@ The library puts responsibility for dependency tracking on software development 
 
 The library provides [TelemetryTrackedHttpClientHandler](/src/Code/Dependency/TelemetryTrackedHttpClientHandler.cs) class that allows tracking of HTTP requests.
 
-The [code sample](#init-with-multiple-publishers) demonstrates use of **TelemetryTrackedHttpClientHandler** class to track calls by Azure Storage Queue Client.
+Refer to the [example](#init-with-multiple-publishers).
 
 ## Publishing
 
-The library puts responsibility for data publishing on software development engineer and does not provide any automated data publishing mechanisms out of the box.
+The library puts responsibility for data publishing on software engineer and does not provide any automated data publishing mechanisms out of the box.
 
 To publish collected telemetry, use the `TelemetryClient.PublishAsync` method.
 
@@ -138,17 +138,17 @@ The collected telemetry data will be published in parallel using all configured 
 
 Telemetry tags enrich telemetry data with metadata.
 
+It simple key-value pairs of string type.
+
 The list of standard tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
 Ways to apply tags:
-- Per instance of object which type implements `Telemetry` interface.
+- Per instance of object which type implements `Telemetry` interface.<br/>
   Set the `Telemetry.Tags` property on the instance.
-- Per client
-  Pass tags to the `TelemetryClient` constructor.
-  These tags are applied to each telemetry at publish time.
-- Per publisher
-  Pass tags to the `HttpTelemetryPublisher` constructor.
-  These tags are applied to each telemetry at publish time for specific publisher only.
+- Per client - pass tags to the `TelemetryClient` constructor.<br/>
+  These tags are automatically included in all telemetry items published by the client.
+- Per publisher - pass tags to the `HttpTelemetryPublisher` constructor.<br/>
+  These tags are automatically included in all telemetry items published by specified publisher only.
 
 ## Distributed Operation Tracking
 
@@ -160,27 +160,53 @@ Telemetry items tracked while an operation is active will automatically be assoc
 ### How It Works
 
 - The `TelemetryClient.Operation` property holds a reference to the current distributed operation context.
-- The `TelemetryClient.Operation` utilizes `System.Threading.AsyncLocal<T>` to store data, this makes referenced `TelemetryOperation` object to be available by subsequent operations.
+- The `TelemetryClient.Operation` utilizes [AsyncLocal\<T\>][dot_net_async_local_info] to store data, this makes referenced `TelemetryOperation` object to be available within async operations.
 - When a telemetry is tracked with `TelemetryClient.Track*` method, the `Telemetry.Operation` properties is set to `TelemetryClient.Operation` property value. 
 
-### Working with Activity
+### Working via Activity Scope
 
-The `TelemetryClient` class provides methods 
+The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with `TelemetryClient.Operation`.
+
+The `TelemetryClient.ActivityScopeBegin` intended to begin activity scope and `TelemetryClient.ActivityScopeEnd` ends the scope accordingly.
+
+Any telemetry captured within the scope will have activity id as it's parent, unless there will be nested activity scope.
+
+The sample below demonstrates use of methods for tracking dependency of in-proc type.
+
+```csharp
+// sample function that generates activity id
+var getActivityId = () => Guid.NewGuid().ToString();
+
+// begin activity scope
+telemetryClient.ActivityScopeBegin(getActivityId, out var time, out var timestamp, out var activityId, out var operation);
+
+// operations that should be tracked
+// ....................................
+
+// a variable that indicates if the operation was successful
+var success = true;
+
+// end activity scope
+telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
+
+// track dependency as in proc
+telemetryClient.TrackDependencyInProc(time, duration, activityId, "Envelope", success, "Custom");
+```
 
 ## Thread Safety
 
 All public types and members of this library are **thread-safe** and can be used concurrently from multiple threads.
 
 - The `TelemetryClient` class is designed to handle telemetry operations from multiple threads in parallel.
-- Internal telemetry storage is implemented using `ConcurrentQueue<T>` to ensure safe concurrent access.
-- The `PublishAsync` method can be safely called while telemetry is being added via `Add` or `Track*` methods.
+- Internal telemetry storage is implemented using [ConcurrentQueue\<T\>][dot_net_concurrent_queue_info] to ensure safe concurrent access.
+- The `TelemetryClient.PublishAsync` method can be safely called while telemetry is being added via `TelemetryClient.Add` or `TelemetryClient.Track*` methods.
 - Custom implementations of `TelemetryPublisher` should also be designed to be thread-safe, especially if shared across multiple instances or services.
 
 ## Examples
 
 ### Initialize
 
-Example demonstrates initialization of `TelemetryClient` with one publisher.
+The following example shows how to initialize the `TelemetryClient`.
 
 Prerequisite
 ```bash
@@ -212,7 +238,7 @@ var telemetryClient = new TelemetryClient([telemetryPublisher], tags);
 
 ### Initialize with Authentication
 
-Example demonstrates initialization of `TelemetryClient` with Entra authentication.
+The following example shows how to initialize the `TelemetryClient` with Entra authentication.
 
 Prerequisite
 ```bash
@@ -400,3 +426,5 @@ _ = await telemetryClient.PublishAsync();
 [app_insights_create_portal]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=portal#create-an-application-insights-resource
 [app_insights_create_ps]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=powershell#create-an-application-insights-resource
 [app_insights_create_rest]: https://learn.microsoft.com/azure/azure-monitor/app/create-workspace-resource?tabs=rest#create-an-application-insights-resource
+[dot_net_async_local_info]: https://learn.microsoft.com/dotnet/api/system.threading.asynclocal-1
+[dot_net_concurrent_queue_info]: https://learn.microsoft.com/dotnet/api/system.collections.concurrent.concurrentqueue-1

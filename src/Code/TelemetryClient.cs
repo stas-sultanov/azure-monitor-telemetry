@@ -300,7 +300,7 @@ public sealed class TelemetryClient
 	}
 
 	/// <summary>
-	/// Tracks a dependency call activity via HTTP protocol.
+	/// Tracks an HTTP dependency call activity.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
@@ -403,7 +403,7 @@ public sealed class TelemetryClient
 	}
 
 	/// <summary>
-	/// Tracks a dependency call to SQL server.
+	/// Tracks a SQL call dependency activity.
 	/// </summary>
 	/// <remarks>
 	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.

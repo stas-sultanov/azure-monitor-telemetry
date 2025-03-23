@@ -6,13 +6,14 @@
 [![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 
-Developed by [Stas Sultanov][linked_in_profile], this library is optimized for efficiency, speed, and minimal memory usage, ensuring seamless telemetry tracking across IT solutions of any architecture—from distributed systems to standalone applications and plugins.
+A lightweight telemetry library optimized for speed, memory efficiency, and simplicity.<br/>
+Designed for use in distributed systems, standalone applications, and plugin-based architectures.
 
 If this library benefits your business, consider [supporting the author](#support-the-author).
 
 ## Start Using the Library
 
-For instructions on how to use the library, please read the [documentation](/doc/).
+For usage instructions, refer to the [documentation](/doc/).
 
 ## Key Drivers
 
@@ -28,7 +29,7 @@ To achieve this, the following key drivers were considered:
 
 ## Quality Assurance
 
-This library has been designed with a requirement to meet the most rigorous quality standards demanded by businesses operating in highly regulated and performance-critical environments.<br/>
+This library is built to meet the highest quality standards expected in regulated and performance-critical environments.<br/>
 This commitment is reflected in the following safeguards:
 
 1. The ruleset is configured with a target on the *main* branch with the following configurations:
@@ -39,7 +40,7 @@ This commitment is reflected in the following safeguards:
     - Checks that the code builds with no errors.
     - Runs unit tests with a coverage threshold of 95%.
     - Runs integration tests with a coverage threshold of 90%.<br/>
-      The workflow creates an environment within Azure, runs integration tests and disposes Azure resources once the tests complete.
+      The workflow provisions a temporary Azure environment, executes integration tests, and disposes of the resources upon completion.
 3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
 4. The project build is configured to: 
     - Treat all warnings as errors.
@@ -48,11 +49,11 @@ This commitment is reflected in the following safeguards:
     - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
     - Ensure that all public members are documented.
 
-By following these strict quality measures, this library guarantees a reliable and efficient telemetry tracking solution that can be trusted by businesses of any size and type.
+These strict quality controls ensure a reliable, efficient telemetry solution suitable for businesses of any size.
 
 ## Why This Library?
 
-Any qualified engineer will naturally ask: why use this library if Microsoft provides an official one?
+It's fair to ask: why use this library when Microsoft already provides an official SDK?
 
 There are several compelling reasons why the author chose to invest time and effort into creating this library:
 
@@ -71,7 +72,7 @@ There are several compelling reasons why the author chose to invest time and eff
   It heavily relies on static types and members that do not implement a thread-safe singleton pattern.
 - Both [Microsoft.ApplicationInsights][app_insights_nuget_2_23] and [OpenTelemetry][open_telemetry_nuget] are extremely heavy in some applications like NET462.<br/>
   This increases memory consumption and startup time.<br/>
-  Take a look at the [comparison](#libraries-size-comparison) table.
+  Take a look at the [comparison](#libraries-size-comparison).
 
 ### Libraries Size Comparison
 
