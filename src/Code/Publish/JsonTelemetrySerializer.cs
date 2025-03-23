@@ -54,14 +54,14 @@ public static class JsonTelemetrySerializer
 	/// <param name="streamWriter">The StreamWriter to which the serialized JSON will be written.</param>
 	/// <param name="instrumentationKey">The instrumentation key associated with the telemetry data.</param>
 	/// <param name="telemetry">The telemetry data to be serialized.</param>
-	/// <param name="trackerTags">A list of tags to attach to each telemetry item. From <see cref="TelemetryClient"/>.</param>
-	/// <param name="publisherTags">A list of tags to attach to each telemetry item. From <see cref="HttpTelemetryPublisher"/>.</param>
+	/// <param name="clientTags">A read-only list of tags to attach to each telemetry item. From <see cref="TelemetryClient"/>.</param>
+	/// <param name="publisherTags">A read-only list of tags to attach to each telemetry item. From <see cref="HttpTelemetryPublisher"/>.</param>
 	public static void Serialize
 	(
 		StreamWriter streamWriter,
 		String instrumentationKey,
 		Telemetry telemetry,
-		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
+		IReadOnlyList<KeyValuePair<String, String>>? clientTags,
 		IReadOnlyList<KeyValuePair<String, String>>? publisherTags
 	)
 	{
@@ -191,10 +191,10 @@ public static class JsonTelemetrySerializer
 			// serialize telemetry item tags
 			scopeHasItems |= WriteListItemsIfListValid(streamWriter, telemetry.Tags, scopeHasItems);
 
-			// serialize tracker tags
-			scopeHasItems |= WriteListItemsIfListValid(streamWriter, trackerTags, scopeHasItems);
+			// serialize client tags
+			scopeHasItems |= WriteListItemsIfListValid(streamWriter, clientTags, scopeHasItems);
 
-			// serialize common tags first
+			// serialize publisher tags
 			_ = WriteListItemsIfListValid(streamWriter, publisherTags, scopeHasItems);
 		}
 

@@ -6,8 +6,8 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 using System.Net;
 
 using Azure.Monitor.Telemetry.Mocks;
-using Azure.Monitor.Telemetry.Publish;
 using Azure.Monitor.Telemetry.Models;
+using Azure.Monitor.Telemetry.Publish;
 
 /// <summary>
 /// Tests for <see cref="TelemetryClientExtensions"/> class.

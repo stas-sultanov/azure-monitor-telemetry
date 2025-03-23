@@ -6,12 +6,13 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 using System;
 using System.Globalization;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Mocks;
-using Azure.Monitor.Telemetry.Tests;
 using Azure.Monitor.Telemetry.Models;
+using Azure.Monitor.Telemetry.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -43,6 +44,38 @@ public sealed class TelemetryClientTests
 		{
 			Operation = factory.Operation
 		};
+	}
+
+	#endregion
+
+	#region Methods: Tests Constructors
+
+	[TestMethod]
+	public void Constructor_ThrowsArgumentNullException_IfPublisherIsNull()
+	{
+		// arrange
+		TelemetryPublisher? publisher = null;
+
+		// act
+		var argumentNullException = Assert.ThrowsExactly<ArgumentNullException>
+		(
+			() => _ = new TelemetryClient(publisher!)
+		);
+	}
+
+	[TestMethod]
+	public void Constructor_ThrowsArgumentNullException_IfPublishersContainsNull()
+	{
+		// arrange
+		TelemetryPublisher? publisher = null;
+
+		TelemetryPublisher[] publishers = [publisher!];
+
+		// act
+		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
+		(
+			() => _ = new TelemetryClient(publishers)
+		);
 	}
 
 	#endregion
@@ -432,7 +465,7 @@ public sealed class TelemetryClientTests
 	public async Task Method_TrackTrace_WithinScope()
 	{
 		// arrange
-		var expectedOperation = telemetryClient.Operation;
+		_ = telemetryClient.Operation;
 		var expectedId = TelemetryFactory.GetActivityId();
 		var message = "test";
 		var severityLevel = SeverityLevel.Information;

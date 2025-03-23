@@ -14,4 +14,4 @@ A lightweight library for tracking application telemetry with Azure Monitor.
 
 ## How to Use
 
-The documentation is available by this [link](https://github.com/stas-sultanov/azure-monitor-telemetry/doc/).
+The documentation is available by this [link](https://github.com/stas-sultanov/azure-monitor-telemetry/tree/main/doc).

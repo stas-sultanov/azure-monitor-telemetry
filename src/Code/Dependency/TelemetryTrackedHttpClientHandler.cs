@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 /// <remarks>
 /// This handler uses a <see cref="TelemetryClient"/> to track details about HTTP requests and responses, including the request URI, method, status code, and duration.
 /// </remarks>
-/// <param name="telemetryClient">The telemetry tracker.</param>
+/// <param name="telemetryClient">The telemetry client.</param>
 /// <param name="getActivityId">A function that returns a unique identifier for the activity.</param>
 public class TelemetryTrackedHttpClientHandler
 (
@@ -29,7 +29,7 @@ public class TelemetryTrackedHttpClientHandler
 	private readonly Func<String> getActivityId = getActivityId;
 
 	/// <summary>
-	/// The telemetry tracker.
+	/// The telemetry client.
 	/// </summary>
 	private readonly TelemetryClient telemetryClient = telemetryClient;
 

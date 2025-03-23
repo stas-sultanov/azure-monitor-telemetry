@@ -7,8 +7,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Azure.Monitor.Telemetry.Publish;
 using Azure.Monitor.Telemetry.Models;
+using Azure.Monitor.Telemetry.Publish;
 using Azure.Monitor.Telemetry.Tests;
 
 /// <summary>

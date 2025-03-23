@@ -103,7 +103,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 
 		this.getAccessToken = getAccessToken;
 
-		this.tags = tags;
+		this.tags = tags == null ? null : [.. tags];
 	}
 
 	#endregion
@@ -114,7 +114,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryItems,
-		IReadOnlyList<KeyValuePair<String, String>>? trackerTags,
+		IReadOnlyList<KeyValuePair<String, String>>? tags,
 		CancellationToken cancellationToken
 	)
 	{
@@ -131,7 +131,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			{
 				var telemetryItem = telemetryItems[index];
 
-				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem, trackerTags, tags);
+				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem, tags, this.tags);
 			}
 		}
 

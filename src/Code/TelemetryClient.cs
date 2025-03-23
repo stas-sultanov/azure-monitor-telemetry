@@ -19,38 +19,79 @@ using Azure.Monitor.Telemetry.Models;
 /// <remarks>
 /// Utilizes <see cref="ConcurrentQueue{T}"/> to collect telemetry items and publish in a batch through configured telemetry publishers.
 /// </remarks>
-/// <param name="telemetryPublishers">A read only list of telemetry publishers to publish the telemetry data.</param>
-/// <param name="tags">A read-only list of tags to attach to each telemetry item during publish. Is optional.</param>
 public sealed class TelemetryClient
-(
-	IReadOnlyList<TelemetryPublisher> telemetryPublishers,
-	IReadOnlyList<KeyValuePair<String, String>>? tags = null
-)
 {
 	#region Fields
 
 	private static readonly TelemetryPublishResult[] emptyPublishResult = [];
-	private readonly ConcurrentQueue<Telemetry> items = new();
-	private readonly IReadOnlyList<KeyValuePair<String, String>>? tags = tags;
-	private readonly AsyncLocal<TelemetryOperation> operation = new();
-	private readonly IReadOnlyList<TelemetryPublisher> telemetryPublishers = telemetryPublishers;
+	private readonly ConcurrentQueue<Telemetry> items;
+	private readonly AsyncLocal<TelemetryOperation> operation;
+	private readonly TelemetryPublisher[] publishers;
+	private readonly IReadOnlyList<KeyValuePair<String, String>>? tags;
 
 	#endregion
 
-	#region Constructor
+	#region Constructors
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
-	/// <param name="telemetryPublisher">A telemetry publisher to publish the telemetry data.</param>
+	/// <param name="publisher">A telemetry publisher to publish the telemetry data.</param>
 	/// <param name="tags">A read-only list of tags to attach to each telemetry item during publish. Is optional.</param>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publisher"/> is null.</exception>
 	public TelemetryClient
 	(
-		TelemetryPublisher telemetryPublisher,
+		TelemetryPublisher publisher,
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
-		: this([telemetryPublisher], tags)
 	{
+		if (publisher == null)
+		{
+			throw new ArgumentNullException(nameof(publisher));
+		}
+
+		items = new();
+
+		operation = new();
+
+		publishers = [publisher];
+
+		this.tags = tags == null ? null : [.. tags];
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
+	/// </summary>
+	/// <param name="publishers">A read only list of telemetry publishers to publish the telemetry data.</param>
+	/// <param name="tags">A read-only list of tags to attach to each telemetry item during publish. Is optional.</param>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publishers"/> is null.</exception>
+	/// <exception cref="ArgumentException">Thrown if any publisher in <paramref name="publishers"/> is null.</exception>
+	public TelemetryClient
+	(
+		IReadOnlyList<TelemetryPublisher> publishers,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		if (publishers == null)
+		{
+			throw new ArgumentNullException(nameof(publishers));
+		}
+
+		for (var index = 0; index < publishers.Count; index++)
+		{
+			if (publishers[index] == null)
+			{
+				throw new ArgumentException($"The publisher at index {index} is null.", nameof(publishers));
+			}
+		}
+
+		items = new();
+
+		operation = new();
+
+		this.publishers = [.. publishers];
+
+		this.tags = tags == null ? null : [.. tags];
 	}
 
 	#endregion
@@ -107,23 +148,23 @@ public sealed class TelemetryClient
 
 		// create a list to store telemetry items
 		// List.Capacity do not use ConcurrentQueue.Count because it takes time to calculate and it may change 
-		var telemetryList = new List<Telemetry>();
+		var telemetryItems = new List<Telemetry>();
 
 		// dequeue all items from the queue
 		while (items.TryDequeue(out var telemetry))
 		{
-			telemetryList.Add(telemetry);
+			telemetryItems.Add(telemetry);
 		}
 
 		// create a list to store publish results
-		var resultList = new Task<TelemetryPublishResult>[telemetryPublishers.Count];
+		var resultList = new Task<TelemetryPublishResult>[publishers.Length];
 
-		// publish telemetry items to all configured senders
-		for (var publisherIndex = 0; publisherIndex < telemetryPublishers.Count; publisherIndex++)
+		// publish telemetry items via all configured publishers
+		for (var publisherIndex = 0; publisherIndex < publishers.Length; publisherIndex++)
 		{
-			var sender = telemetryPublishers[publisherIndex];
+			var publisher = publishers[publisherIndex];
 
-			resultList[publisherIndex] = sender.PublishAsync(telemetryList, tags, cancellationToken);
+			resultList[publisherIndex] = publisher.PublishAsync(telemetryItems, tags, cancellationToken);
 		}
 
 		// wait for all publishers to complete
