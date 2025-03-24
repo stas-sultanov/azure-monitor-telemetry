@@ -6,10 +6,11 @@
 [![NuGet Version](https://img.shields.io/nuget/v/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Stas.Azure.Monitor.Telemetry)](https://www.nuget.org/packages/Stas.Azure.Monitor.Telemetry)
 
-A lightweight telemetry library optimized for speed, memory efficiency, and simplicity.<br/>
-Designed for use in distributed systems, standalone applications, and plugin-based architectures.
+A lightweight library for tracking application telemetry with Azure Monitor.
 
-If this library benefits your business, consider [supporting the author](#support-the-author).
+Created by [Stas Sultanov][linked_in_profile], the library designed for use in distributed systems, standalone applications, and plugin-based architectures.
+
+Consider [supporting the author](#support-the-author), if this library benefits your business.
 
 ## Start Using the Library
 

@@ -31,7 +31,7 @@ The following core concepts define the architecture and behavior of this library
 
 ## Getting Started
 
-The library is designed to work with the Azure [Application Insights][app_insights_info], a feature of Azure [Monitor][azure_montior_info].
+The library is designed to work with Azure [Application Insights][app_insights_info], a feature of Azure [Monitor][azure_montior_info].
 
 ### Prerequisites
 
@@ -62,27 +62,25 @@ The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPu
 ### Initialization Scenarios
 
 - **Basic (no authentication):**  
-  Initialize `TelemetryClient` with a single `HttpTelemetryPublisher`.
-  Take a look at the [example](#initialize).
-
+  Initialize `TelemetryClient` with a single `HttpTelemetryPublisher`.<br/>
+  See the [example](#initialize) below.
 - **Entra-based authentication:**  
-  Configure `HttpTelemetryPublisher` to authenticate using an access token.
-  Take a look at the [example](#initialize-with-authentication).
-
+  Configure `HttpTelemetryPublisher` to authenticate using an access token.<br/>
+  See the [example](#initialize-with-authentication) below.
 - **Multiple endpoints:**  
-  Provide multiple instances of `HttpTelemetryPublisher` to send data to different Application Insights resources.
-  Take a look at the [example](#initialize-with-multiple-publishers).
+  Provide multiple instances of `HttpTelemetryPublisher` to send data to different Application Insights resources.<br/>
+  See the [example](#initialize-with-multiple-publishers) below.
 
 ## Supported Telemetry Types
 
 The library provides support for all telemetry types supported by Application Insights.
 
-- Point in time telemetry:
+- Point-in-time Telemetry:
 	- [EventTelemetry](/src/Code/Models/EventTelemetry.cs)
 	- [ExceptionTelemetry](/src/Code/Models/ExceptionTelemetry.cs)
 	- [MetricTelemetry](/src/Code/Models/MetricTelemetry.cs)
 	- [TraceTelemetry](/src/Code/Models/TraceTelemetry.cs)
-- Activity telemetry:
+- Activity Telemetry:
 	- [AvailabilityTelemetry](/src/Code/Models/AvailabilityTelemetry.cs)
 	- [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs)
 	- [PageViewTelemetry](/src/Code/Models/PageViewTelemetry.cs)
@@ -113,7 +111,7 @@ telemetryClient.TrackEvent("start");
 
 ### Dependency Tracking
 
-The library puts responsibility for dependency tracking on software development engineer and does not provide any automated dependency tracking out of the box.
+The library puts responsibility for dependency tracking on software engineer and does not provide any automated dependency tracking out of the box.
 
 ### HTTP Dependency Tracking
 
@@ -145,14 +143,14 @@ The list of standard tags can be found in [TelemetryTagKeys](/src/Code/Telemetry
 Ways to apply tags:
 - Per instance of object which type implements `Telemetry` interface.<br/>
   Set the `Telemetry.Tags` property on the instance.
-- Per client - pass tags to the `TelemetryClient` constructor.<br/>
+- Per Client - pass tags to the `TelemetryClient` constructor.<br/>
   These tags are automatically included in all telemetry items published by the client.
-- Per publisher - pass tags to the `HttpTelemetryPublisher` constructor.<br/>
+- Per Publisher - pass tags to the `HttpTelemetryPublisher` constructor.<br/>
   These tags are automatically included in all telemetry items published by specified publisher only.
 
 ## Distributed Operation Tracking
 
-This library is purpose-built to support **distributed operations**, where a single logical transaction spans multiple components, services, or asynchronous workflows.
+The library is intentionally designed to support distributed operations, where a single logical flow spans services, components, or asynchronous boundaries.
 
 To support this, the `TelemetryClient` class provides a `TelemetryClient.Operation` property that represents the current logical operation.
 Telemetry items tracked while an operation is active will automatically be associated with it.
@@ -206,7 +204,7 @@ All public types and members of this library are **thread-safe** and can be used
 
 ### Initialize
 
-The following example shows how to initialize the `TelemetryClient`.
+The following example demonstrates how to initialize the `TelemetryClient`.
 
 Prerequisite
 ```bash
@@ -218,10 +216,10 @@ Program
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
-// create an HTTP Client for telemetry publisher
+// create HTTP Client for Telemetry Publisher
 using var httpClient = new HttpClient();
 
-// create telemetry publisher
+// create Telemetry Publisher
 var telemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -232,13 +230,14 @@ var telemetryPublisher = new HttpTelemetryPublisher
 // create tags collection
 KeyValuePair<String, String> [] tags = [new (TelemetryTagKeys.CloudRole, "local")];
 
-// create telemetry Telemetry Client
+// create Telemetry Client
 var telemetryClient = new TelemetryClient([telemetryPublisher], tags);
 ```
 
 ### Initialize with Authentication
 
-The following example shows how to initialize the `TelemetryClient` with Entra authentication.
+
+The following example demonstrates how to initialize the `TelemetryClient` with Entra authentication.
 
 Prerequisite
 ```bash
@@ -253,13 +252,13 @@ using Azure.Identity;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
-// create an HTTP Client for telemetry publisher
+// create HTTP Client for Telemetry Publisher
 using var httpClient = new HttpClient();
 
 // create authorization token source
 var tokenCredential = new DefaultAzureCredential();
 
-// Create telemetry publisher with Entra authentication
+// create Telemetry Publisher with Entra authentication
 var telemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -277,13 +276,13 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// create telemetry Telemetry Client
+// create Telemetry Client
 var telemetryClient = new TelemetryClient([telemetryPublisher]);
 ```
 
 ### Initialize with Multiple Publishers
 
-The code sample below demonstrates initialization of the `TelemetryClient` for the scenario
+The following example demonstrates initialization of the `TelemetryClient` for the scenario
 where it is required to publish telemetry data into multiple instances of Application Insights.
 
 Prerequisite
@@ -299,13 +298,13 @@ using Azure.Identity;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
-// create an HTTP Client for telemetry publisher
+// create HTTP Client for Telemetry Publisher
 using var httpClient = new HttpClient();
 
 // create authorization token source
 var tokenCredential = new DefaultAzureCredential();
 
-// create first telemetry publisher with Entra based authentication
+// create first Telemetry Publisher with Entra authentication
 var firstTelemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -325,7 +324,7 @@ var firstTelemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// create second telemetry publisher without Entra based authentication
+// create second Telemetry Publisher with no authentication
 var secondTelemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -333,13 +332,13 @@ var secondTelemetryPublisher = new HttpTelemetryPublisher
 	new Guid("INSERT INSTRUMENTATION KEY 2 HERE")
 );
 
-// create telemetry Telemetry Client
+// create Telemetry Client
 var telemetryClient = new TelemetryClient([firstTelemetryPublisher, secondTelemetryPublisher]);
 ```
 
 ### Http Dependency Tracking
 
-The code sample below demonstrates tracking of Http request of `QueueServiceClient` class with `TelemetryTrackedHttpClientHandler` class.
+The following example demonstrates tracking of Http request of `QueueServiceClient` class with `TelemetryTrackedHttpClientHandler` class.
 
 Prerequisite
 ```bash
@@ -358,13 +357,13 @@ using Azure.Monitor.Telemetry.Dependency;
 using Azure.Monitor.Telemetry.Publish;
 using Azure.Storage.Queues;
 
-// create an HTTP Client for telemetry publisher
+// create HTTP Client for Telemetry Publisher
 using var httpClient = new HttpClient();
 
 // create authorization token source
 var tokenCredential = new DefaultAzureCredential();
 
-// Create telemetry publisher with Entra authentication
+// Create Telemetry Publisher with Entra authentication
 var telemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -382,7 +381,7 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// create telemetry Telemetry Client
+// create Telemetry Client
 var telemetryClient = new TelemetryClient([telemetryPublisher]);
 
 // create Http Client Handler
