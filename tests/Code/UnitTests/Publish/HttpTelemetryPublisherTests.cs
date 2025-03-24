@@ -43,7 +43,7 @@ public sealed partial class HttpTelemetryPublisherTests
 		// act
 		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
 		(
-			() => _ = _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
+			() => _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
 		);
 
 		// assert
@@ -60,7 +60,7 @@ public sealed partial class HttpTelemetryPublisherTests
 		// act
 		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
 		(
-			() => _ = _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
+			() => _ = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey)
 		);
 
 		// assert
