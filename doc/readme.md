@@ -8,18 +8,18 @@
 - [Adding Telemetry](#adding-telemetry)
 - [Tracking Telemetry](#tracking-telemetry)
 	- [Dependency Tracking](#dependency-tracking)
-	- [HTTP Dependency Tracking](#http-dependency-tracking)
+	- [HTTP Calls](#http-calls)
 - [Publishing](#publishing)
 - [Using Telemetry Tags](#using-telemetry-tags)
 - [Distributed Operation Tracking](#distributed-operation-tracking)
 	- [How It Works](#how-it-works)
-	- [Working via Activity Scope](#working-via-activity-scope)
+	- [Using Activity Scope](#using-activity-scope)
 - [Thread Safety](#thread-safety)
 - [Examples](#examples)
 	- [Initialize](#initialize)
 	- [Initialize with Authentication](#initialize-with-authentication)
 	- [Initialize with Multiple Publishers](#initialize-with-multiple-publishers)
-	- [Http Dependency Tracking](#http-dependency-tracking-1)
+	- [HTTP Dependency Tracking](#http-dependency-tracking)
 
 ## Key Concepts
 
@@ -31,13 +31,13 @@ The following core concepts define the architecture and behavior of this library
 
 ## Getting Started
 
-The library is designed to work with Azure [Application Insights][app_insights_info], a feature of Azure [Monitor][azure_montior_info].
+The library works with Azure [Application Insights][app_insights_info], a feature of Azure [Monitor][azure_montior_info].
 
 ### Prerequisites
 
 To use the library, an [Azure subscription][azure_subscription] and an [Application Insights][app_insights_info] resource are required.
 
-It is possible to create a new Application Insights resource via 
+The Application Insights resource can be created via 
 [Bicep][app_insights_create_bicep],
 [CLI][app_insights_create_cli],
 [Portal][app_insights_create_portal],
@@ -63,13 +63,13 @@ The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPu
 
 - **Basic (no authentication):**  
   Initialize `TelemetryClient` with a single `HttpTelemetryPublisher`.<br/>
-  See the [example](#initialize) below.
+  Refer to the [example](#initialize) below.
 - **Entra-based authentication:**  
   Configure `HttpTelemetryPublisher` to authenticate using an access token.<br/>
-  See the [example](#initialize-with-authentication) below.
-- **Multiple endpoints:**  
+  Refer to the [example](#initialize-with-authentication) below.
+- **Multiple Publishers:**  
   Provide multiple instances of `HttpTelemetryPublisher` to send data to different Application Insights resources.<br/>
-  See the [example](#initialize-with-multiple-publishers) below.
+  Refer to the [example](#initialize-with-multiple-publishers) below.
 
 ## Supported Telemetry Types
 
@@ -111,17 +111,21 @@ telemetryClient.TrackEvent("start");
 
 ### Dependency Tracking
 
-The library puts responsibility for dependency tracking on software engineer and does not provide any automated dependency tracking out of the box.
+The library delegates dependency tracking to the developer.<br/>
+No automated dependency tracking is provided out of the box.
 
-### HTTP Dependency Tracking
+To track decency either use corresponding `TelemetryClient.TrackDependency*` method or create instance of `DependencyTelemetry` class and use `TelemetryClient.Add` method.
+
+### HTTP Calls
 
 The library provides [TelemetryTrackedHttpClientHandler](/src/Code/Dependency/TelemetryTrackedHttpClientHandler.cs) class that allows tracking of HTTP requests.
 
-Refer to the [example](#init-with-multiple-publishers).
+Refer to the [example](#http-dependency-tracking).
 
 ## Publishing
 
-The library puts responsibility for data publishing on software engineer and does not provide any automated data publishing mechanisms out of the box.
+The library delegates telemetry publishing to the developer.</br>
+No automated telemetry publishing is provided out of the box.
 
 To publish collected telemetry, use the `TelemetryClient.PublishAsync` method.
 
@@ -141,8 +145,7 @@ It simple key-value pairs of string type.
 The list of standard tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
 Ways to apply tags:
-- Per instance of object which type implements `Telemetry` interface.<br/>
-  Set the `Telemetry.Tags` property on the instance.
+- Per Item – Set tags on object which type implements `Telemetry` interface.
 - Per Client - pass tags to the `TelemetryClient` constructor.<br/>
   These tags are automatically included in all telemetry items published by the client.
 - Per Publisher - pass tags to the `HttpTelemetryPublisher` constructor.<br/>
@@ -158,10 +161,10 @@ Telemetry items tracked while an operation is active will automatically be assoc
 ### How It Works
 
 - The `TelemetryClient.Operation` property holds a reference to the current distributed operation context.
-- The `TelemetryClient.Operation` utilizes [AsyncLocal\<T\>][dot_net_async_local_info] to store data, this makes referenced `TelemetryOperation` object to be available within async operations.
+- The `TelemetryClient.Operation` utilizes [AsyncLocal\<T\>][dot_net_async_local_info] to store data, this makes the referenced `TelemetryOperation` available across asynchronous contexts.
 - When a telemetry is tracked with `TelemetryClient.Track*` method, the `Telemetry.Operation` properties is set to `TelemetryClient.Operation` property value. 
 
-### Working via Activity Scope
+### Using Activity Scope
 
 The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with `TelemetryClient.Operation`.
 
@@ -198,7 +201,6 @@ All public types and members of this library are **thread-safe** and can be used
 - The `TelemetryClient` class is designed to handle telemetry operations from multiple threads in parallel.
 - Internal telemetry storage is implemented using [ConcurrentQueue\<T\>][dot_net_concurrent_queue_info] to ensure safe concurrent access.
 - The `TelemetryClient.PublishAsync` method can be safely called while telemetry is being added via `TelemetryClient.Add` or `TelemetryClient.Track*` methods.
-- Custom implementations of `TelemetryPublisher` should also be designed to be thread-safe, especially if shared across multiple instances or services.
 
 ## Examples
 
@@ -336,7 +338,7 @@ var secondTelemetryPublisher = new HttpTelemetryPublisher
 var telemetryClient = new TelemetryClient([firstTelemetryPublisher, secondTelemetryPublisher]);
 ```
 
-### Http Dependency Tracking
+### HTTP Dependency Tracking
 
 The following example demonstrates tracking of Http request of `QueueServiceClient` class with `TelemetryTrackedHttpClientHandler` class.
 

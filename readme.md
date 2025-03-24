@@ -8,13 +8,13 @@
 
 A lightweight library for tracking application telemetry with Azure Monitor.
 
-Created by [Stas Sultanov][linked_in_profile], the library designed for use in distributed systems, standalone applications, and plugin-based architectures.
+Created by [Stas Sultanov][linked_in_profile], this library is designed for use in applications of all types.
 
 Consider [supporting the author](#support-the-author), if this library benefits your business.
 
 ## Start Using the Library
 
-For usage instructions, refer to the [documentation](/doc/).
+For usage instructions, refer to the [documentation](/doc/readme.md).
 
 ## Key Drivers
 
@@ -26,22 +26,21 @@ To achieve this, the following key drivers were considered:
 - **Efficiency** – Run faster and consume less memory thanks to minimal code and low complexity.  
 - **Responsibility** – Embrace control over how telemetry is tracked and managed, with decisions left to the developer.  
 - **Extensibility** – Extend or customize telemetry handling through clearly defined extension points.  
-- **Versatility** – Apply in any context, from distributed systems to standalone apps and plugins.
+- **Versatility** – Use in any type of application, from distributed systems to standalone apps and plugins.
 
 ## Quality Assurance
 
 This library is built to meet the highest quality standards expected in regulated and performance-critical environments.<br/>
 This commitment is reflected in the following safeguards:
 
-1. The ruleset is configured with a target on the *main* branch with the following configurations:
+1. The repository is configured with branch protection rules targeting the *main* branch, including the following:
     - Require [signed commits][github_docs_verified_commit].
     - Require a pull request before merging, with the allowed method: *Squash*.
     - Require code scanning results via [CodeQL][github_workflow_code_ql].
 2. The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
     - Checks that the code builds with no errors.
-    - Runs unit tests with a coverage threshold of 95%.
-    - Runs integration tests with a coverage threshold of 90%.<br/>
-      The workflow provisions a temporary Azure environment, executes integration tests, and disposes of the resources upon completion.
+    - Executes unit tests with a coverage threshold of 95%.
+    - Executes integration tests with at least 90% coverage, using a temporary Azure environment that is automatically provisioned and disposed.
 3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
 4. The project build is configured to: 
     - Treat all warnings as errors.
@@ -56,14 +55,14 @@ These strict quality controls ensure a reliable, efficient telemetry solution su
 
 It's fair to ask: why use this library when Microsoft already provides an official SDK?
 
-There are several compelling reasons why the author chose to invest time and effort into creating this library:
+There are several technical reasons why this library was developed:
 
 - [Microsoft.ApplicationInsights][app_insights_nuget_2_23] has flaws in its implementation.<br/>
   For instance, Entra authentication is implemented in a way that makes it impossible to use the library for plugin development.<br/>
   The issue is described by the author [here][app_insights_issue_auth], with little expectation that it will ever be fixed.
 - [Microsoft.ApplicationInsights][app_insights_nuget_2_23] has dependencies.<br/>
-  For instance, [System.Diagnostics.DiagnosticSource](https://www.nuget.org/packages/System.Diagnostics.DiagnosticSource/) >= v5.0.0, which is deprecated and has subsequent dependencies.<br/>
-  In case of plugin development, dependencies bring potential issue with multiple version resolve.
+  For instance, [System.Diagnostics.DiagnosticSource](https://www.nuget.org/packages/System.Diagnostics.DiagnosticSource/) >= v5.0.0, which is deprecated and introduces additional dependency challenges.<br/>
+  In case of plugin development, dependencies can cause version resolution conflicts.
 - [Microsoft.ApplicationInsights][app_insights_nuget_2_23] references NET452 and NET46 instead of NET462.<br/>
   Support for NET452 and NET46 ended on [April 26, 2022][dot_net_lifecycle].<br/>
   Support for NET462 ends on [January 12, 2027][dot_net_lifecycle].
