@@ -6,13 +6,13 @@
 	- [Initialization Scenarios](#initialization-scenarios)
 - [Supported Telemetry Types](#supported-telemetry-types)
 - [Adding Telemetry](#adding-telemetry)
-- [Tracking Telemetry](#tracking-telemetry)
-	- [Dependency Telemetry](#dependency-telemetry)
 - [Publishing](#publishing)
-- [Using Telemetry Tags](#using-telemetry-tags)
 - [Distributed Operation Tracking](#distributed-operation-tracking)
 	- [How It Works](#how-it-works)
 	- [Using Activity Scope](#using-activity-scope)
+- [Tracking Telemetry](#tracking-telemetry)
+	- [Dependency Telemetry](#dependency-telemetry)
+- [Using Telemetry Tags](#using-telemetry-tags)
 - [Thread Safety](#thread-safety)
 - [Examples](#examples)
 	- [Initialize](#initialize)
@@ -102,7 +102,7 @@ telemetryClient.Add(telemetry);
 The library delegates telemetry publishing to the developer.</br>
 No automated telemetry publishing is provided out of the box.
 
-To publish collected telemetry, use the `TelemetryClient.PublishAsync` method.
+To publish collected telemetry, use the `TelemetryClient.PublishAsync` method to publish telemetry using all configured publishers in parallel.
 
 ```csharp
 // publish collected telemetry
@@ -126,7 +126,7 @@ The library is intentionally designed to support distributed operations, where a
 
 The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with `TelemetryClient.Operation`.
 
-The `TelemetryClient.ActivityScopeBegin` intended to begin activity scope and `TelemetryClient.ActivityScopeEnd` ends the scope accordingly.
+The `TelemetryClient.ActivityScopeBegin` begins the scope and `TelemetryClient.ActivityScopeEnd` ends the scope accordingly.
 
 Any telemetry captured within the scope will have activity id as it's parent, unless there will be nested activity scope.
 
@@ -137,9 +137,9 @@ Refer to the [example](#dependency-tracking) below.
 
 The `TelemetryClient` class provides a set of `TelemetryClient.Track*` methods.
 
-When a telemetry is tracked with `TelemetryClient.Track*` method, the `Telemetry.Operation` properties is set to `TelemetryClient.Operation` property value. 
+When telemetry is tracked with `TelemetryClient.Track*` method, the `Telemetry.Operation` properties is set to `TelemetryClient.Operation` property value. 
 
-For most cases, Track methods will call `DateTime.UtcNow` to get the current timestamp for the telemetry item.
+In most cases, Track methods will call `DateTime.UtcNow` to get the current timestamp for the telemetry item.
 
 ```csharp
 // track event and associate with current distributed operation
@@ -151,7 +151,7 @@ telemetryClient.TrackEvent("start");
 The library delegates dependency tracking to the developer.<br/>
 No automated dependency tracking is provided out of the box.
 
-To track decency either use corresponding `TelemetryClient.TrackDependency*` method or create instance of `DependencyTelemetry` class and use `TelemetryClient.Add` method.<br/>
+To track dependencies either use corresponding `TelemetryClient.TrackDependency*` method or create instance of [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs) class and use `TelemetryClient.Add` method.<br/>
 Refer to the [example](#dependency-tracking) below.
 
 For a well-known dependency types refer to the [DependencyTypes](/src/Code/Models/DependencyTypes.cs).
@@ -163,15 +163,15 @@ Refer to the [example](#dependency-tracking-via-http-client-handler).
 
 Telemetry tags enrich telemetry data with metadata.
 
-It simple key-value pairs of string type.
+These are simple key-value pairs of string type.
 
 The list of standard tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
 Ways to apply tags:
-- Per Item – Set tags on object which type implements `Telemetry` interface.
-- Per Client - pass tags to the `TelemetryClient` constructor.<br/>
+- Per Item – Set `Telemetry.Tags` property.
+- Per Client - Pass tags to the `TelemetryClient` constructor.<br/>
   These tags are automatically included in all telemetry items published by the client.
-- Per Publisher - pass tags to the `HttpTelemetryPublisher` constructor.<br/>
+- Per Publisher - Pass tags to the `HttpTelemetryPublisher` constructor.<br/>
   These tags are automatically included in all telemetry items published by specified publisher only.
 
 ## Thread Safety
@@ -386,7 +386,7 @@ _ = await telemetryClient.PublishAsync();
 
 ### Dependency Tracking via HTTP Client Handler
 
-The following example demonstrates tracking of Http request of `HttpClient` class with `TelemetryTrackedHttpClientHandler` class.
+The following example demonstrates tracking of HTTP request of `HttpClient` class with `TelemetryTrackedHttpClientHandler` class.
 
 Prerequisite
 ```bash
