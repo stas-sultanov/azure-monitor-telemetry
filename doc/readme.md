@@ -17,7 +17,7 @@
 - [Examples](#examples)
 	- [Initialize](#initialize)
 	- [Initialize with Authentication](#initialize-with-authentication)
-	- [Initialize with Multiple Publishers](#initialize-with-multiple-publishers)
+	- [Initialize with Multiple Destinations](#initialize-with-multiple-destinations)
 	- [Dependency Tracking](#dependency-tracking)
 	- [Dependency Tracking via HTTP Client Handler](#dependency-tracking-via-http-client-handler)
 
@@ -66,9 +66,9 @@ The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPu
 - **Entra-based authentication:**  
   Configure `HttpTelemetryPublisher` to authenticate using an access token.<br/>
   Refer to the [example](#initialize-with-authentication) below.
-- **Multiple Publishers:**  
+- **Multiple Destinations:**  
   Provide multiple instances of `HttpTelemetryPublisher` to send data to different Application Insights resources.<br/>
-  Refer to the [example](#initialize-with-multiple-publishers) below.
+  Refer to the [example](#initialize-with-multiple-destinations) below.
 
 ## Supported Telemetry Types
 
@@ -263,7 +263,7 @@ var telemetryPublisher = new HttpTelemetryPublisher
 var telemetryClient = new TelemetryClient(telemetryPublisher);
 ```
 
-### Initialize with Multiple Publishers
+### Initialize with Multiple Destinations
 
 The following example demonstrates initialization of the `TelemetryClient` for the scenario
 where it is required to publish telemetry data into multiple instances of Application Insights.
