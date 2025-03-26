@@ -11,7 +11,7 @@ public interface Telemetry
 	#region Properties
 
 	/// <summary>
-	/// The details about the operation being performed.
+	/// The associated operation context.
 	/// </summary>
 	public TelemetryOperation Operation { get; }
 
