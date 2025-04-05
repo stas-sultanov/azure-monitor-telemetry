@@ -56,7 +56,7 @@ public sealed class TelemetryClient
 
 		publishers = [publisher];
 
-		this.tags = tags == null ? null : [.. tags];
+		this.tags = tags == null || tags.Count == 0 ? null : [.. tags];
 	}
 
 	/// <summary>

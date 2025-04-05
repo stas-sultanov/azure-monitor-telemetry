@@ -103,7 +103,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 
 		this.getAccessToken = getAccessToken;
 
-		this.tags = tags == null ? null : [.. tags];
+		this.tags = tags == null || tags.Count == 0 ? null : [.. tags];
 	}
 
 	#endregion
