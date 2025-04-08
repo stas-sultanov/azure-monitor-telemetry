@@ -3,16 +3,15 @@
 	<PropertyGroup>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<AssemblyName>Azure.Monitor.Telemetry.Tests</AssemblyName>
-		<EnableNETAnalyzers>True</EnableNETAnalyzers>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<RootNamespace>Azure.Monitor.Telemetry.Tests</RootNamespace>
 		<TargetFramework>net9.0</TargetFramework>
 		<TestingExtensionsProfile>None</TestingExtensionsProfile>
 		<TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,6 +31,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="Code\UnitTests\Publish\JsonTelemetrySerializerTests.cs" />
 		<None Include="infrastructure.bicep" CopyToPublishDirectory="Always" />
 	</ItemGroup>
 

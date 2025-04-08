@@ -16,10 +16,10 @@ internal sealed class TelemetryFactory
 {
 	#region Properties
 
-	public KeyValuePair<String, Double>[] Measurements { get; set; }
+	public KeyValuePair<String, Double>[] Measurements { get; init; }
 	public TelemetryOperation Operation { get; }
-	public KeyValuePair<String, String>[] Properties { get; set; }
-	public KeyValuePair<String, String>[] Tags { get; set; }
+	public KeyValuePair<String, String>[] Properties { get; init; }
+	public KeyValuePair<String, String>[] Tags { get; init; } = [];
 
 	#endregion
 
@@ -39,8 +39,6 @@ internal sealed class TelemetryFactory
 		};
 
 		Properties = [new("key", "value")];
-
-		Tags = [new(TelemetryTagKeys.CloudRole, Environment.MachineName), new(TelemetryTagKeys.CloudRoleInstance, Environment.ProcessId.ToString(CultureInfo.InvariantCulture))];
 	}
 
 	#endregion

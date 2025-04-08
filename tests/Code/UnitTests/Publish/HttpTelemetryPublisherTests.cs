@@ -6,7 +6,6 @@ namespace Azure.Monitor.Telemetry.UnitTests;
 using System;
 using System.Net.Http;
 
-using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 using Azure.Monitor.Telemetry.Tests;
 

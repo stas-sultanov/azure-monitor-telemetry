@@ -127,10 +127,10 @@ public sealed class TelemetryClientTests
 	{
 		// arrange
 		var expectedOperation = telemetryClient.Operation;
-		var expectedId = TelemetryFactory.GetActivityId();
+		var activityId = TelemetryFactory.GetActivityId();
 
 		// act
-		telemetryClient.ActivityScopeBegin(expectedId, out var originalOperation);
+		telemetryClient.ActivityScopeBegin(activityId, out var originalOperation);
 
 		var scopeOperation = telemetryClient.Operation;
 
@@ -143,7 +143,11 @@ public sealed class TelemetryClientTests
 
 		AssertHelper.AreEqual(expectedOperation, afterScopeOperation);
 
-		AssertHelper.PropertiesAreEqual(scopeOperation, originalOperation.Id, originalOperation.Name, expectedId);
+		AssertHelper.AreEqual(scopeOperation, x => x.Id, originalOperation.Id);
+
+		AssertHelper.AreEqual(scopeOperation, x => x.Name, originalOperation.Name);
+
+		AssertHelper.AreEqual(scopeOperation, x => x.ParentId, activityId);
 	}
 
 	[TestMethod]
@@ -169,7 +173,11 @@ public sealed class TelemetryClientTests
 
 		AssertHelper.AreEqual(originalOperation, actualOperation);
 
-		AssertHelper.PropertiesAreEqual(scopeOperation, actualOperation.Id, actualOperation.Name, expectedId);
+		AssertHelper.AreEqual(scopeOperation, x => x.Id, originalOperation.Id);
+
+		AssertHelper.AreEqual(scopeOperation, x => x.Name, originalOperation.Name);
+
+		AssertHelper.AreEqual(scopeOperation, x => x.ParentId, activityId);
 	}
 
 	#endregion
@@ -193,14 +201,32 @@ public sealed class TelemetryClientTests
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as AvailabilityTelemetry;
+		var actual = publisher.Buffer.Dequeue() as AvailabilityTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Duration, duration);
 
-		AssertHelper.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, message, name, runLocation, success);
+		AssertHelper.AreEqual(actual, x => x.Id, id);
+
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
+
+		AssertHelper.AreEqual(actual, x => x.Message, message);
+
+		AssertHelper.AreEqual(actual, x => x.Name, name);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.RunLocation, runLocation);
+
+		AssertHelper.AreEqual(actual, x => x.Success, success);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.AreEqual(actual, x => x.Time, time);
 	}
 
 	[TestMethod]
@@ -213,24 +239,49 @@ public sealed class TelemetryClientTests
 		var httpMethod = HttpMethod.Post;
 		var uri = new Uri("http://example.com");
 		var statusCode = HttpStatusCode.OK;
+		var success = true;
 
 		// act
-		telemetryClient.TrackDependencyHttp(time, duration, id, httpMethod, uri, statusCode, true, factory.Measurements, factory.Properties, factory.Tags);
+		telemetryClient.TrackDependencyHttp(time, duration, id, httpMethod, uri, statusCode, success, factory.Measurements, factory.Properties, factory.Tags);
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
+		var actual = publisher.Buffer.Dequeue() as DependencyTelemetry;
 
 		var data = uri.ToString();
 		var name = $"{httpMethod.Method} {uri.AbsolutePath}";
 		var resultCode = statusCode.ToString();
+		var target = uri.Host;
+		var type = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Data, data);
 
-		AssertHelper.PropertiesAreEqual(actualResult, data, actualResult.Duration, id, factory.Measurements, name, resultCode, true, uri.Host, DependencyTypes.HTTP);
+		AssertHelper.AreEqual(actual, x => x.Duration, duration);
+
+		AssertHelper.AreEqual(actual, x => x.Id, id);
+
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
+
+		AssertHelper.AreEqual(actual, x => x.Name, name);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.ResultCode, resultCode);
+
+		AssertHelper.AreEqual(actual, x => x.Success, success);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.AreEqual(actual, x => x.Target, target);
+
+		AssertHelper.AreEqual(actual, x => x.Time, time);
+
+		AssertHelper.AreEqual(actual, x => x.Type, type);
 	}
 
 	[TestMethod]
@@ -249,16 +300,38 @@ public sealed class TelemetryClientTests
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
+		var actual = publisher.Buffer.Dequeue() as DependencyTelemetry;
 
 		var type = DependencyTypes.InProc + " | " + typeName;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Data, null);
 
-		AssertHelper.PropertiesAreEqual(actualResult, null, actualResult.Duration, id, factory.Measurements, name, null, true, null, type);
+		AssertHelper.AreEqual(actual, x => x.Duration, duration);
+
+		AssertHelper.AreEqual(actual, x => x.Id, id);
+
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
+
+		AssertHelper.AreEqual(actual, x => x.Name, name);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.ResultCode, null);
+
+		AssertHelper.AreEqual(actual, x => x.Success, success);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.AreEqual(actual, x => x.Target, null);
+
+		AssertHelper.AreEqual(actual, x => x.Time, time);
+
+		AssertHelper.AreEqual(actual, x => x.Type, type);
 	}
 
 	[TestMethod]
@@ -278,16 +351,39 @@ public sealed class TelemetryClientTests
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as DependencyTelemetry;
-
+		var actual = publisher.Buffer.Dequeue() as DependencyTelemetry;
 		var dataFullName = $"{dataSource} | {database}";
+		var resultCodeAsString = resultCode == 0 ? null : resultCode.ToString(CultureInfo.InvariantCulture);
+		var success = resultCode >= 0;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Data, commandText);
 
-		AssertHelper.PropertiesAreEqual(actualResult, commandText, actualResult.Duration, id, factory.Measurements, dataFullName, null, true, dataFullName, DependencyTypes.SQL);
+		AssertHelper.AreEqual(actual, x => x.Duration, duration);
+
+		AssertHelper.AreEqual(actual, x => x.Id, id);
+
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
+
+		AssertHelper.AreEqual(actual, x => x.Name, dataFullName);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.ResultCode, resultCodeAsString);
+
+		AssertHelper.AreEqual(actual, x => x.Success, success);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.AreEqual(actual, x => x.Target, dataFullName);
+
+		AssertHelper.AreEqual(actual, x => x.Time, time);
+
+		AssertHelper.AreEqual(actual, x => x.Type, DependencyTypes.SQL);
 	}
 
 	[TestMethod]
@@ -295,20 +391,29 @@ public sealed class TelemetryClientTests
 	{
 		// arrange
 		var name = "test";
+		var time = DateTime.UtcNow;
 
 		// act
 		telemetryClient.TrackEvent(name, factory.Measurements, factory.Properties, factory.Tags);
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as EventTelemetry;
+		var actual = publisher.Buffer.Dequeue() as EventTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Measurements, name);
+		AssertHelper.AreEqual(actual, x => x.Name, name);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.IsTrue(actual, x => x.Time, p => p > time);
 	}
 
 	[TestMethod]
@@ -319,20 +424,31 @@ public sealed class TelemetryClientTests
 		var exceptions = exception.ConvertExceptionToModel();
 		var problemId = Random.Shared.Next(1000).ToString(CultureInfo.InvariantCulture);
 		var severityLevel = SeverityLevel.Error;
+		var time = DateTime.UtcNow;
 
 		// act
 		telemetryClient.TrackException(exception, problemId, severityLevel, factory.Measurements, factory.Properties, factory.Tags);
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as ExceptionTelemetry;
+		var actual = publisher.Buffer.Dequeue() as ExceptionTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
 
-		AssertHelper.PropertiesAreEqual(actualResult, exceptions, factory.Measurements, problemId, severityLevel);
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.ProblemId, problemId);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.SeverityLevel, severityLevel);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.IsTrue(actual, x => x.Time, p => p > time);
 	}
 
 	[TestMethod]
@@ -341,6 +457,7 @@ public sealed class TelemetryClientTests
 		// arrange
 		var name = "test";
 		var @namespace = "tests";
+		var time = DateTime.UtcNow;
 		var value = 6;
 
 		// act
@@ -348,14 +465,24 @@ public sealed class TelemetryClientTests
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as MetricTelemetry;
+		var actual = publisher.Buffer.Dequeue() as MetricTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Name, name);
 
-		AssertHelper.PropertiesAreEqual(actualResult, name, @namespace, value);
+		AssertHelper.AreEqual(actual, x => x.Namespace, @namespace);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.IsTrue(actual, x => x.Time, p => p > time);
+
+		AssertHelper.AreEqual(actual, x => x.Value, value);
 	}
 
 	[TestMethod]
@@ -364,6 +491,7 @@ public sealed class TelemetryClientTests
 		// arrange
 		var name = "test";
 		var @namespace = "tests";
+		var time = DateTime.UtcNow;
 		var value = 6;
 		var valueAggregation = new MetricValueAggregation
 		{
@@ -377,14 +505,26 @@ public sealed class TelemetryClientTests
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as MetricTelemetry;
+		var actual = publisher.Buffer.Dequeue() as MetricTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Name, name);
 
-		AssertHelper.PropertiesAreEqual(actualResult, name, @namespace, value, valueAggregation);
+		AssertHelper.AreEqual(actual, x => x.Namespace, @namespace);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.IsTrue(actual, x => x.Time, p => p > time);
+
+		AssertHelper.AreEqual(actual, x => x.Value, value);
+
+		AssertHelper.AreEqual(actual, x => x.ValueAggregation, valueAggregation);
 	}
 
 	[TestMethod]
@@ -402,14 +542,28 @@ public sealed class TelemetryClientTests
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as PageViewTelemetry;
+		var actual = publisher.Buffer.Dequeue() as PageViewTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Duration, duration);
 
-		AssertHelper.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, name, url);
+		AssertHelper.AreEqual(actual, x => x.Id, id);
+
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
+
+		AssertHelper.AreEqual(actual, x => x.Name, name);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.AreEqual(actual, x => x.Time, time);
+
+		AssertHelper.AreEqual(actual, x => x.Url, url);
 	}
 
 	[TestMethod]
@@ -429,14 +583,32 @@ public sealed class TelemetryClientTests
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as RequestTelemetry;
+		var actual = publisher.Buffer.Dequeue() as RequestTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Duration, duration);
 
-		AssertHelper.PropertiesAreEqual(actualResult, actualResult.Duration, id, factory.Measurements, name, responseCode, success, url);
+		AssertHelper.AreEqual(actual, x => x.Id, id);
+
+		AssertHelper.AreEqual(actual, x => x.Measurements, factory.Measurements);
+
+		AssertHelper.AreEqual(actual, x => x.Name, name);
+
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.ResponseCode, responseCode);
+
+		AssertHelper.AreEqual(actual, x => x.Success, success);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.AreEqual(actual, x => x.Time, time);
+
+		AssertHelper.AreEqual(actual, x => x.Url, url);
 	}
 
 	[TestMethod]
@@ -445,20 +617,29 @@ public sealed class TelemetryClientTests
 		// arrange
 		var message = "test";
 		var severityLevel = SeverityLevel.Information;
+		var time = DateTime.UtcNow;
 
 		// act
 		telemetryClient.TrackTrace(message, severityLevel, factory.Properties, factory.Tags);
 
 		_ = await telemetryClient.PublishAsync();
 
-		var actualResult = publisher.Buffer.Dequeue() as TraceTelemetry;
+		var actual = publisher.Buffer.Dequeue() as TraceTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		AssertHelper.PropertiesAreEqual(actualResult, factory.Operation, factory.Properties, factory.Tags);
+		AssertHelper.AreEqual(actual, x => x.Message, message);
 
-		AssertHelper.PropertiesAreEqual(actualResult, message, severityLevel);
+		AssertHelper.AreEqual(actual, x => x.Operation, factory.Operation);
+
+		AssertHelper.AreEqual(actual, x => x.Properties, factory.Properties);
+
+		AssertHelper.AreEqual(actual, x => x.SeverityLevel, severityLevel);
+
+		AssertHelper.AreEqual(actual, x => x.Tags, factory.Tags);
+
+		AssertHelper.IsTrue(actual, x => x.Time, p => p > time);
 	}
 
 	[TestMethod]

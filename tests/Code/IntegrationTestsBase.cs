@@ -23,8 +23,6 @@ public abstract class IntegrationTestsBase : IDisposable
 	{
 		public required String ConfigPrefix { get; init; }
 
-		public Dictionary<String, String> Tags { get; init; } = [];
-
 		public required Boolean UseAuthentication { get; init; }
 	}
 
@@ -95,8 +93,6 @@ public abstract class IntegrationTestsBase : IDisposable
 			var instrumentationKeyParamName = config.ConfigPrefix + "InstrumentationKey";
 			var instrumentationKeyParam = TestContext.Properties[instrumentationKeyParamName]?.ToString() ?? throw new ArgumentException($"Parameter {instrumentationKeyParamName} has not been provided.");
 			var instrumentationKey = new Guid(instrumentationKeyParam);
-
-			var publisherTags = config.Tags.ToArray();
 
 			TelemetryPublisher publisher;
 
