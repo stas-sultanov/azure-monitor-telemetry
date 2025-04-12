@@ -25,12 +25,12 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <summary>
 	/// Name of the HTTP Authorization header.
 	/// </summary>
-	private const String AuthorizationHeaderName = @"Authorization";
+	private const String AuthorizationHeaderName = "Authorization";
 
 	/// <summary>
 	/// Prefix for the HTTP Authorization header value.
 	/// </summary>
-	private const String AuthorizationHeaderValuePrefix = @"Bearer ";
+	private const String AuthorizationHeaderValuePrefix = "Bearer ";
 
 	/// <summary>
 	/// Value of the Content-Encoding header.
@@ -48,7 +48,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 
 	private static readonly UTF8Encoding encoding = new(false);
 
-	private static readonly MediaTypeHeaderValue contentTypeHeaderValue = MediaTypeHeaderValue.Parse(@"application/x-json-stream");
+	private static readonly MediaTypeHeaderValue contentTypeHeaderValue = MediaTypeHeaderValue.Parse("application/x-json-stream");
 
 	#endregion
 
@@ -94,7 +94,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 
 		this.httpClient = httpClient;
 
-		this.ingestionEndpoint = new Uri(ingestionEndpoint, getAccessToken == null ? @"v2/track" : @"v2.1/track");
+		this.ingestionEndpoint = new Uri(ingestionEndpoint, getAccessToken == null ? "v2/track" : "v2.1/track");
 
 		this.instrumentationKey = instrumentationKey.ToString();
 

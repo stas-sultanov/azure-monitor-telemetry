@@ -44,7 +44,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 			testContext,
 			new PublisherConfiguration()
 			{
-				ConfigPrefix = @"Azure.Monitor.AuthOn.",
+				ConfigPrefix = "Azure.Monitor.AuthOn.",
 				UseAuthentication = true
 			}
 		)
@@ -62,7 +62,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		queueClientHttpClientTransport = new HttpClientTransport(handler);
 
-		var queueServiceUriParamName = @"Azure.Queue.Default.ServiceUri";
+		var queueServiceUriParamName = "Azure.Queue.Default.ServiceUri";
 		var queueServiceUriParam = TestContext.Properties[queueServiceUriParamName]?.ToString() ?? throw new ArgumentException($"Parameter {queueServiceUriParamName} has not been provided.");
 		var queueServiceUri = new Uri(queueServiceUriParam);
 

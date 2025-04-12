@@ -48,7 +48,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 			testContext,
 			new PublisherConfiguration()
 			{
-				ConfigPrefix = @"Azure.Monitor.AuthOn.",
+				ConfigPrefix = "Azure.Monitor.AuthOn.",
 				UseAuthentication = true
 			}
 		)

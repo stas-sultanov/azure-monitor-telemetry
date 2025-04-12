@@ -73,8 +73,8 @@ public sealed class JsonTelemetrySerializerTests
 	[TestMethod]
 	public void Method_Serialize_AvailabilityTelemetry()
 	{
-		const String expectedName = @"AppAvailabilityResults";
-		const String expectedType = @"AvailabilityData";
+		const String expectedName = "AppAvailabilityResults";
+		const String expectedType = "AvailabilityData";
 
 		// arrange
 		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max("Check");
@@ -85,79 +85,56 @@ public sealed class JsonTelemetrySerializerTests
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(telemetry, t => t.Duration, @"duration", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Id, @"id", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Message, @"message", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Name, @"name", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", dataElement);
-		DeserializeAndAssert(telemetry, t => t.RunLocation, @"runLocation", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Success, @"success", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Time, @"time", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Duration, "duration", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Id, "id", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Message, "message", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Name, "name", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", dataElement);
+		DeserializeAndAssert(telemetry, t => t.RunLocation, "runLocation", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Success, "success", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Time, "time", rootElement);
 	}
 
 	[TestMethod]
-	public void Method_Serialize_DependencyTelemetry_Max()
+	public void Method_Serialize_DependencyTelemetry()
 	{
-		const String expectedName = @"AppDependencies";
-		const String expectedType = @"RemoteDependencyData";
+		const String expectedName = "AppDependencies";
+		const String expectedType = "RemoteDependencyData";
 
 		// arrange
-		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max("Storage", new Uri("https://dependency.sample.url"));
+		var telemetryMax = telemetryFactory.Create_DependencyTelemetry_Max("Storage", new Uri("https://dependency.sample.url"));
+		var telemetryMin = TelemetryFactory.Create_DependencyTelemetry_Min("Storage");
+		var telemetryList = new [] {telemetryMax, telemetryMin};
 
-		// act
-		var asString = Serialize(instrumentationKey, telemetry);
+		foreach (var telemetry in telemetryList)
+		{
+			// act
+			var asString = Serialize(instrumentationKey, telemetry);
 
-		// assert
-		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
+			// assert
+			DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(telemetry, t => t.Data, @"data", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Duration, @"duration", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Id, @"id", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Name, @"name", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(telemetry, t => t.ResultCode, @"resultCode", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Success, @"success", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Target, @"target", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Type, @"type", dataElement);
-	}
-
-	[TestMethod]
-	public void Method_Serialize_DependencyTelemetry_Min()
-	{
-		const String expectedName = @"AppDependencies";
-		const String expectedType = @"RemoteDependencyData";
-
-		// arrange
-		var telemetry = TelemetryFactory.Create_DependencyTelemetry_Min("Storage");
-
-		// act
-		var asString = Serialize(instrumentationKey, telemetry);
-
-		// assert
-		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
-
-		DeserializeAndAssert(telemetry, t => t.Data, @"data", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Duration, @"duration", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Id, @"id", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Name, @"name", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(telemetry, t => t.ResultCode, @"resultCode", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Success, @"success", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Target, @"target", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Type, @"type", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Data, "data", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Duration, "duration", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Id, "id", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Name, "name", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+			DeserializeAndAssert(telemetry, t => t.ResultCode, "resultCode", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Success, "success", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Target, "target", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+			DeserializeAndAssert(telemetry, t => t.Type, "type", dataElement);
+		}
 	}
 
 	[TestMethod]
 	public void Method_Serialize_EventTelemetry()
 	{
-		const String expectedName = @"AppEvents";
-		const String expectedType = @"EventData";
+		const String expectedName = "AppEvents";
+		const String expectedType = "EventData";
 
 		// arrange
 		var telemetry = telemetryFactory.Create_EventTelemetry_Max("Check");
@@ -168,18 +145,18 @@ public sealed class JsonTelemetrySerializerTests
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Name, @"name", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Time, @"time", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Name, "name", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Time, "time", rootElement);
 	}
 
 	[TestMethod]
 	public void Method_Serialize_ExceptionTelemetry()
 	{
-		const String expectedName = @"AppExceptions";
-		const String expectedType = @"ExceptionData";
+		const String expectedName = "AppExceptions";
+		const String expectedType = "ExceptionData";
 
 		// arrange
 		var telemetry = telemetryFactory.Create_ExceptionTelemetry_Max();
@@ -190,19 +167,19 @@ public sealed class JsonTelemetrySerializerTests
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(telemetry, t => t.ProblemId, @"problemId", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(telemetry, t => t.SeverityLevel, @"severityLevel", dataElement, serializerOptionsWithEnumConverter);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Time, @"time", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+		DeserializeAndAssert(telemetry, t => t.ProblemId, "problemId", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+		DeserializeAndAssert(telemetry, t => t.SeverityLevel, "severityLevel", dataElement, serializerOptionsWithEnumConverter);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Time, "time", rootElement);
 	}
 
 	[TestMethod]
 	public void Method_Serialize_MetricTelemetry()
 	{
-		const String expectedName = @"AppMetrics";
-		const String expectedType = @"MetricData";
+		const String expectedName = "AppMetrics";
+		const String expectedType = "MetricData";
 
 		// arrange
 		var aggregation = new MetricValueAggregation()
@@ -219,24 +196,24 @@ public sealed class JsonTelemetrySerializerTests
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		var metricElement = dataElement.GetProperty(@"metrics")[0];
+		var metricElement = dataElement.GetProperty("metrics")[0];
 
-		DeserializeAndAssert(aggregation, t => t.Count, @"count", metricElement);
-		DeserializeAndAssert(aggregation, t => t.Max, @"max", metricElement);
-		DeserializeAndAssert(aggregation, t => t.Min, @"min", metricElement);
-		DeserializeAndAssert(telemetry, t => t.Name, @"name", metricElement);
-		DeserializeAndAssert(telemetry, t => t.Namespace, @"ns", metricElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Time, @"time", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Value, @"value", metricElement);
+		DeserializeAndAssert(aggregation, t => t.Count, "count", metricElement);
+		DeserializeAndAssert(aggregation, t => t.Max, "max", metricElement);
+		DeserializeAndAssert(aggregation, t => t.Min, "min", metricElement);
+		DeserializeAndAssert(telemetry, t => t.Name, "name", metricElement);
+		DeserializeAndAssert(telemetry, t => t.Namespace, "ns", metricElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Time, "time", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Value, "value", metricElement);
 	}
 
 	[TestMethod]
 	public void Method_Serialize_PageViewTelemetry()
 	{
-		const String expectedName = @"AppPageViews";
-		const String expectedType = @"PageViewData";
+		const String expectedName = "AppPageViews";
+		const String expectedType = "PageViewData";
 
 		// arrange
 		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max("Main", new Uri("https://page.sample.url"));
@@ -247,21 +224,21 @@ public sealed class JsonTelemetrySerializerTests
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(telemetry, t => t.Duration, @"duration", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Id, @"id", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Name, @"name", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Time, @"time", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Url, @"url", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Duration, "duration", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Id, "id", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Name, "name", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Time, "time", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Url, "url", dataElement);
 	}
 
 	[TestMethod]
-	public void Method_Serialize_RequestTelemetry_Min()
+	public void Method_Serialize_RequestTelemetry()
 	{
-		const String expectedName = @"AppRequests";
-		const String expectedType = @"RequestData";
+		const String expectedName = "AppRequests";
+		const String expectedType = "RequestData";
 
 		// arrange
 		var telemetryMax = telemetryFactory.Create_RequestTelemetry_Max("GetMain", new Uri("exe:test"));
@@ -282,16 +259,16 @@ public sealed class JsonTelemetrySerializerTests
 			// assert
 			DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-			DeserializeAndAssert(telemetry, t => t.Duration, @"duration", dataElement);
-			DeserializeAndAssert(telemetry, t => t.Id, @"id", dataElement);
-			DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-			DeserializeAndAssert(telemetry, t => t.Name, @"name", dataElement);
-			DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-			DeserializeAndAssert(telemetry, t => t.ResponseCode, @"responseCode", dataElement);
-			DeserializeAndAssert(telemetry, t => t.Success, @"success", dataElement);
-			DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-			DeserializeAndAssert(telemetry, t => t.Time, @"time", rootElement);
-			DeserializeAndAssert(telemetry, t => t.Url, @"url", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Duration, "duration", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Id, "id", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Name, "name", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+			DeserializeAndAssert(telemetry, t => t.ResponseCode, "responseCode", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Success, "success", dataElement);
+			DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+			DeserializeAndAssert(telemetry, t => t.Time, "time", rootElement);
+			DeserializeAndAssert(telemetry, t => t.Url, "url", dataElement);
 		}
 	}
 
@@ -299,8 +276,8 @@ public sealed class JsonTelemetrySerializerTests
 	public void Method_Serialize_TraceTelemetry()
 	{
 		// arrange
-		const String expectedName = @"AppTraces";
-		const String expectedType = @"MessageData";
+		const String expectedName = "AppTraces";
+		const String expectedType = "MessageData";
 
 		var telemetry = telemetryFactory.Create_TraceTelemetry_Max("Test");
 
@@ -310,11 +287,11 @@ public sealed class JsonTelemetrySerializerTests
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(telemetry, t => t.Message, @"message", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(telemetry, t => t.SeverityLevel, @"severityLevel", dataElement, serializerOptionsWithEnumConverter);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Time, @"time", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Message, "message", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+		DeserializeAndAssert(telemetry, t => t.SeverityLevel, "severityLevel", dataElement, serializerOptionsWithEnumConverter);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Time, "time", rootElement);
 	}
 
 	[TestMethod]
@@ -346,8 +323,8 @@ public sealed class JsonTelemetrySerializerTests
 	[TestMethod]
 	public void Method_Serialize_Telemetry_With_CollectionProperties_Are_Null()
 	{
-		const String expectedName = @"AppEvents";
-		const String expectedType = @"EventData";
+		const String expectedName = "AppEvents";
+		const String expectedType = "EventData";
 
 		// arrange
 		var telemetry = new EventTelemetry
@@ -362,9 +339,9 @@ public sealed class JsonTelemetrySerializerTests
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(telemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(telemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(telemetry, t => t.Tags, @"tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
 	}
 
 	/// <summary>
@@ -373,8 +350,8 @@ public sealed class JsonTelemetrySerializerTests
 	[TestMethod]
 	public void Method_Serialize_Telemetry_With_CollectionProperties_Are_Empty()
 	{
-		const String expectedName = @"AppEvents";
-		const String expectedType = @"EventData";
+		const String expectedName = "AppEvents";
+		const String expectedType = "EventData";
 
 		// arrange
 		var telemetry = new EventTelemetry
@@ -386,74 +363,15 @@ public sealed class JsonTelemetrySerializerTests
 			Time = DateTime.UtcNow
 		};
 
-		var expectedTelemetry = new EventTelemetry
-		{
-			Name = "Test",
-			Time = DateTime.UtcNow
-		};
-
 		// act
 		var asString = Serialize(instrumentationKey, telemetry);
 
 		// assert
 		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
 
-		DeserializeAndAssert(expectedTelemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(expectedTelemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(expectedTelemetry, t => t.Tags, @"tags", rootElement);
-	}
-
-	/// <summary>
-	/// Extra test for scenario when Telemetry has empty properties.
-	/// </summary>
-	[TestMethod]
-	public void Method_Serialize_Telemetry_With_CollectionProperties_ContainsEmptyOrNullValues()
-	{
-		const String expectedName = @"AppEvents";
-		const String expectedType = @"EventData";
-
-		// arrange
-		var measurement = new KeyValuePair<String, Double>("power", 1.0);
-		var name = "Test";
-		var property = new KeyValuePair<String, String>("isGood", "false");
-		var tag = new KeyValuePair<String, String>(TelemetryTagKeys.CloudRole, "Tester");
-		var time = DateTime.UtcNow;
-
-		var telemetry = new EventTelemetry
-		{
-			Measurements = [ new (null!, 1.0), new ("", 2.0), new("   ", 3.0) ],
-			Name = name,
-			Properties =
-			[
-				new (null!, "test"), new ("", "test"), new("   ", "test"),
-				new ( "test", null!), new ( "test",""), new("test","   ")
-			],
-			Tags =
-			[
-				new (null!, "test"), new ("", "test"), new("   ", "test"),
-				new ( "test", null!), new ( "test",""), new("test","   ")
-			],
-			Time = time
-		};
-
-		var expectedTelemetry = new EventTelemetry
-		{
-			Measurements = [],
-			Name = name,
-			Properties = [],
-			Tags = [],
-			Time = time
-		};
-
-		// act
-		var asString = Serialize(instrumentationKey, telemetry);
-
-		// assert
-		DeserializeAndAssert(asString, instrumentationKey, expectedName, expectedType, out var rootElement, out var dataElement);
-
-		DeserializeAndAssert(expectedTelemetry, t => t.Measurements, @"measurements", dataElement);
-		DeserializeAndAssert(expectedTelemetry, t => t.Properties, @"properties", rootElement);
-		DeserializeAndAssert(expectedTelemetry, t => t.Tags, @"tags", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Measurements, "measurements", dataElement);
+		DeserializeAndAssert(telemetry, t => t.Properties, "properties", rootElement);
+		DeserializeAndAssert(telemetry, t => t.Tags, "tags", rootElement);
 	}
 
 	#endregion
@@ -504,15 +422,15 @@ public sealed class JsonTelemetrySerializerTests
 
 		rootElement = document.RootElement;
 
-		DeserializeAndAssert(expectedInstrumentationKey, @"iKey", rootElement);
+		DeserializeAndAssert(expectedInstrumentationKey, "iKey", rootElement);
 
-		DeserializeAndAssert(expectedName, @"name", rootElement);
+		DeserializeAndAssert(expectedName, "name", rootElement);
 
-		var childElement = rootElement.GetProperty(@"data");
+		var childElement = rootElement.GetProperty("data");
 
-		DeserializeAndAssert(expectedType, @"baseType", childElement);
+		DeserializeAndAssert(expectedType, "baseType", childElement);
 
-		dataElement = childElement.GetProperty(@"baseData");
+		dataElement = childElement.GetProperty("baseData");
 	}
 
 	/// <summary>

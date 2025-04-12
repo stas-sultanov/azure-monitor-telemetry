@@ -17,7 +17,7 @@ public sealed partial class HttpTelemetryPublisherTests
 {
 	#region Constants
 
-	private const String mockValidIngestEndpoint = @"https://dc.in.applicationinsights.azure.com/";
+	private const String mockValidIngestEndpoint = "https://dc.in.applicationinsights.azure.com/";
 
 	#endregion
 

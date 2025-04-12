@@ -31,7 +31,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		testContext,
 		new PublisherConfiguration()
 		{
-			ConfigPrefix = @"Azure.Monitor.AuthOff.",
+			ConfigPrefix = "Azure.Monitor.AuthOff.",
 			UseAuthentication = false
 		}
 	)

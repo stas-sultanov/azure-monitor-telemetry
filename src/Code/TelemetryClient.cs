@@ -118,7 +118,7 @@ public sealed class TelemetryClient
 
 		items = new();
 
-		this.publishers = [..publishers];
+		this.publishers = [.. publishers];
 	}
 
 	#endregion

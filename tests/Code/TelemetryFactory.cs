@@ -69,7 +69,7 @@ internal sealed class TelemetryFactory
 	public static AvailabilityTelemetry Create_AvailabilityTelemetry_Min
 	(
 		String name,
-		String message = @"Passed"
+		String message = "Passed"
 	)
 	{
 		var id = GetActivityId();
@@ -223,7 +223,7 @@ internal sealed class TelemetryFactory
 	public AvailabilityTelemetry Create_AvailabilityTelemetry_Max
 	(
 		String name,
-		String message = @"Passed"
+		String message = "Passed"
 	)
 	{
 		var id = GetActivityId();

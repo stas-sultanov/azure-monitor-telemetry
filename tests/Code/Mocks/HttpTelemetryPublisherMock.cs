@@ -15,7 +15,7 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 {
 	#region Fields
 
-	public const String MockValidIngestEndpoint = @"https://dc.in.applicationinsights.azure.com/";
+	public const String MockValidIngestEndpoint = "https://dc.in.applicationinsights.azure.com/";
 
 	public static readonly Uri MockValidIngestEndpointUri = new(MockValidIngestEndpoint);
 

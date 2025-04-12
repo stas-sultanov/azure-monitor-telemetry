@@ -18,22 +18,22 @@ public static class JsonTelemetrySerializer
 {
 	#region Constants
 
-	private const String Name_Availability = @"AppAvailabilityResults";
-	private const String Name_Dependency = @"AppDependencies";
-	private const String Name_Event = @"AppEvents";
-	private const String Name_Exception = @"AppExceptions";
-	private const String Name_Metric = @"AppMetrics";
-	private const String Name_PageView = @"AppPageViews";
-	private const String Name_Request = @"AppRequests";
-	private const String Name_Trace = @"AppTraces";
+	private const String Name_Availability = "AppAvailabilityResults";
+	private const String Name_Dependency = "AppDependencies";
+	private const String Name_Event = "AppEvents";
+	private const String Name_Exception = "AppExceptions";
+	private const String Name_Metric = "AppMetrics";
+	private const String Name_PageView = "AppPageViews";
+	private const String Name_Request = "AppRequests";
+	private const String Name_Trace = "AppTraces";
 	private const String Type_Availability = "AvailabilityData";
-	private const String Type_Dependency = @"RemoteDependencyData";
-	private const String Type_Event = @"EventData";
-	private const String Type_Exception = @"ExceptionData";
-	private const String Type_Metric = @"MetricData";
-	private const String Type_PageView = @"PageViewData";
-	private const String Type_Request = @"RequestData";
-	private const String Type_Trace = @"MessageData";
+	private const String Type_Dependency = "RemoteDependencyData";
+	private const String Type_Event = "EventData";
+	private const String Type_Exception = "ExceptionData";
+	private const String Type_Metric = "MetricData";
+	private const String Type_PageView = "PageViewData";
+	private const String Type_Request = "RequestData";
+	private const String Type_Trace = "MessageData";
 
 	#endregion
 
@@ -42,7 +42,7 @@ public static class JsonTelemetrySerializer
 	/// <summary>
 	/// <see cref="SeverityLevel"/> to <see cref="String"/> mapping.
 	/// </summary>
-	private static readonly String[] severityLevelToString = [@"Verbose", @"Information", @"Warning", @"Error", @"Critical"];
+	private static readonly String[] severityLevelToString = ["Verbose", "Information", "Warning", "Error", "Critical"];
 
 	#endregion
 
@@ -129,125 +129,134 @@ public static class JsonTelemetrySerializer
 
 		writeData(streamWriter, telemetry);
 
-		if (!propertiesOnTop)
+		if (!propertiesOnTop && telemetry.Properties != null)
 		{
-			WriteOptional(streamWriter, ",\"properties\":{", "}", telemetry.Properties);
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "properties", telemetry.Properties);
 		}
 
-		streamWriter.Write("},\"baseType\":\"");
+		streamWriter.Write("}");
 
-		streamWriter.Write(baseType);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "baseType", baseType);
 
-		streamWriter.Write("\"},\"iKey\":\"");
+		streamWriter.Write("}");
 
-		streamWriter.Write(instrumentationKey);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "iKey", instrumentationKey);
 
-		streamWriter.Write("\",\"name\":\"");
-
-		streamWriter.Write(name);
-
-		streamWriter.Write("\"");
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "name", name);
 
 		// serialize properties
-		if (propertiesOnTop)
+		if (propertiesOnTop && telemetry.Properties != null)
 		{
-			WriteOptional(streamWriter, ",\"properties\":{", "}", telemetry.Properties);
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "properties", telemetry.Properties);
 		}
 
-		WriteOptional(streamWriter, ",\"tags\":{", "}", telemetry.Tags);
+		if (telemetry.Tags != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "tags", telemetry.Tags);
+		}
 
-		streamWriter.Write(",\"time\":\"");
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "time", telemetry.Time);
 
-		streamWriter.Write(telemetry.Time.ToString("O"));
-
-		streamWriter.Write("\"}");
+		streamWriter.Write("}");
 	}
-
-	#endregion
-
-	#region Methods: Write Telemetry Data
 
 	private static void WriteDataAvailability(StreamWriter streamWriter, Telemetry telemetry)
 	{
 		var availabilityTelemetry = (AvailabilityTelemetry) telemetry;
 
-		var success = availabilityTelemetry.Success ? "true" : "false";
+		WriteProperty(streamWriter, "duration", availabilityTelemetry.Duration);
 
-		streamWriter.Write("\"duration\":\"");
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "id", availabilityTelemetry.Id);
 
-		streamWriter.Write(availabilityTelemetry.Duration);
+		if (availabilityTelemetry.Measurements != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "measurements", availabilityTelemetry.Measurements);
+		}
 
-		streamWriter.Write("\",\"id\":\"");
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "message", availabilityTelemetry.Message);
 
-		streamWriter.Write(availabilityTelemetry.Id);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "name", availabilityTelemetry.Name);
 
-		streamWriter.Write("\"");
+		if (availabilityTelemetry.RunLocation != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "runLocation", availabilityTelemetry.RunLocation);
+		}
 
-		WriteOptional(streamWriter, ",\"measurements\":{", "}", availabilityTelemetry.Measurements);
-
-		streamWriter.Write(",\"message\":\"");
-
-		streamWriter.Write(availabilityTelemetry.Message);
-
-		streamWriter.Write("\",\"name\":\"");
-
-		streamWriter.Write(availabilityTelemetry.Name);
-
-		streamWriter.Write("\"");
-
-		WriteOptional(streamWriter, ",\"runLocation\":\"", "\"", availabilityTelemetry.RunLocation);
-
-		streamWriter.Write(",\"success\":");
-
-		streamWriter.Write(success);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "success", availabilityTelemetry.Success);
 	}
 
 	private static void WriteDataDependency(StreamWriter streamWriter, Telemetry telemetry)
 	{
 		var dependencyTelemetry = (DependencyTelemetry) telemetry;
 
-		var success = dependencyTelemetry.Success ? "true" : "false";
+		if (dependencyTelemetry.Data != null)
+		{
+			WriteProperty(streamWriter, "data", dependencyTelemetry.Data!);
 
-		WriteOptional(streamWriter, "\"data\":\"", "\",", dependencyTelemetry.Data);
+			WriteComa(streamWriter);
+		}
 
-		streamWriter.Write("\"duration\":\"");
+		WriteProperty(streamWriter, "duration", dependencyTelemetry.Duration);
 
-		streamWriter.Write(dependencyTelemetry.Duration);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "id", dependencyTelemetry.Id);
 
-		streamWriter.Write("\",\"id\":\"");
+		if (dependencyTelemetry.Measurements != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "measurements", dependencyTelemetry.Measurements);
+		}
 
-		streamWriter.Write(dependencyTelemetry.Id);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "name", dependencyTelemetry.Name);
 
-		streamWriter.Write("\"");
+		if (dependencyTelemetry.ResultCode != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "resultCode", dependencyTelemetry.ResultCode);
+		}
 
-		WriteOptional(streamWriter, ",\"measurements\":{", "}", dependencyTelemetry.Measurements);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "success", dependencyTelemetry.Success);
 
-		streamWriter.Write(",\"name\":\"");
+		if (dependencyTelemetry.Target != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "target", dependencyTelemetry.Target);
+		}
 
-		streamWriter.Write(dependencyTelemetry.Name);
-
-		streamWriter.Write("\",\"success\":");
-
-		streamWriter.Write(success);
-
-		WriteOptional(streamWriter, ",\"resultCode\":\"", "\"", dependencyTelemetry.ResultCode);
-
-		WriteOptional(streamWriter, ",\"target\":\"", "\"", dependencyTelemetry.Target);
-
-		WriteOptional(streamWriter, ",\"type\":\"", "\"", dependencyTelemetry.Type);
+		if (dependencyTelemetry.Type != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "type", dependencyTelemetry.Type);
+		}
 	}
 
 	private static void WriteDataEvent(StreamWriter streamWriter, Telemetry telemetry)
 	{
 		var eventTelemetry = (EventTelemetry) telemetry;
 
-		WriteOptional(streamWriter, "\"measurements\":{", "},", eventTelemetry.Measurements);
+		if (eventTelemetry.Measurements != null)
+		{
+			WriteProperty(streamWriter, "measurements", eventTelemetry.Measurements);
 
-		streamWriter.Write("\"name\":\"");
+			WriteComa(streamWriter);
+		}
 
-		streamWriter.Write(eventTelemetry.Name);
-
-		streamWriter.Write("\"");
+		WriteProperty(streamWriter, "name", eventTelemetry.Name);
 	}
 
 	private static void WriteDataException(StreamWriter streamWriter, Telemetry telemetry)
@@ -261,26 +270,23 @@ public static class JsonTelemetrySerializer
 			// get exception info
 			var exceptionInfo = exceptionTelemetry.Exceptions[exceptionInfoIndex];
 
-			if (exceptionInfoIndex > 0)
+			if (exceptionInfoIndex != 0)
 			{
-				streamWriter.Write(",");
+				WriteComa(streamWriter);
 			}
 
-			streamWriter.Write("{\"hasFullStack\":");
+			streamWriter.Write("{");
 
-			streamWriter.Write(exceptionInfo.HasFullStack ? "true" : "false");
+			WriteProperty(streamWriter, "hasFullStack", exceptionInfo.HasFullStack);
 
-			streamWriter.Write(",\"id\":");
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "id", exceptionInfo.Id);
 
-			streamWriter.Write(exceptionInfo.Id);
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "message", exceptionInfo.Message);
 
-			streamWriter.Write(",\"message\":\"");
-
-			streamWriter.Write(exceptionInfo.Message);
-
-			streamWriter.Write("\",\"outerId\":");
-
-			streamWriter.Write(exceptionInfo.OuterId);
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "outerId", exceptionInfo.OuterId);
 
 			if (exceptionInfo.ParsedStack != null)
 			{
@@ -288,55 +294,67 @@ public static class JsonTelemetrySerializer
 
 				for (var frameIndex = 0; frameIndex < exceptionInfo.ParsedStack.Count; frameIndex++)
 				{
+					var frame = exceptionInfo.ParsedStack[frameIndex];
+
 					if (frameIndex != 0)
 					{
 						streamWriter.Write(",");
 					}
 
-					var frame = exceptionInfo.ParsedStack[frameIndex];
+					streamWriter.Write("{");
 
-					streamWriter.Write("{\"assembly\":\"");
+					WriteProperty(streamWriter, "assembly", frame.Assembly);
 
-					streamWriter.Write(frame.Assembly);
+					if (frame.FileName != null)
+					{
+						WriteComa(streamWriter);
+						WriteProperty(streamWriter, "fileName", frame.FileName);
+					}
 
-					WriteOptional(streamWriter, "\",\"fileName\":\"", "", frame.FileName);
+					WriteComa(streamWriter);
+					WriteProperty(streamWriter, "level", frame.Level);
 
-					streamWriter.Write("\",\"level\":");
+					WriteComa(streamWriter);
+					WriteProperty(streamWriter, "line", frame.Line);
 
-					streamWriter.Write(frame.Level);
+					if (frame.Method != null)
+					{
+						WriteComa(streamWriter);
+						WriteProperty(streamWriter, "method", frame.Method);
+					}
 
-					streamWriter.Write(",\"line\":");
-
-					streamWriter.Write(frame.Line);
-
-					streamWriter.Write(",\"method\":\"");
-
-					streamWriter.Write(frame.Method);
-
-					streamWriter.Write("\"}");
+					streamWriter.Write("}");
 				}
 
 				streamWriter.Write("]");
 			}
 
-			streamWriter.Write(",\"typeName\":\"");
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "typeName", exceptionInfo.TypeName);
 
-			streamWriter.Write(exceptionInfo.TypeName);
-
-			streamWriter.Write("\"}");
+			streamWriter.Write("}");
 		}
 
 		streamWriter.Write("]");
 
-		WriteOptional(streamWriter, ",\"measurements\":{", "}", exceptionTelemetry.Measurements);
+		if (exceptionTelemetry.Measurements != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "measurements", exceptionTelemetry.Measurements);
+		}
 
-		WriteOptional(streamWriter, ",\"problemId\":\"", "\"", exceptionTelemetry.ProblemId);
+		if (exceptionTelemetry.ProblemId != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "problemId", exceptionTelemetry.ProblemId);
+		}
 
 		if (exceptionTelemetry.SeverityLevel.HasValue)
 		{
-			var severityLevelAsString = severityLevelToString[(Int32)exceptionTelemetry.SeverityLevel];
+			var severityLevelAsString = severityLevelToString[(Int32)exceptionTelemetry.SeverityLevel.Value];
 
-			Write(streamWriter, ",\"severityLevel\":\"", "\"", severityLevelAsString);
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "severityLevel", severityLevelAsString);
 		}
 	}
 
@@ -348,32 +366,24 @@ public static class JsonTelemetrySerializer
 
 		if (metricTelemetry.ValueAggregation != null)
 		{
-			streamWriter.Write("\"count\":");
+			WriteProperty(streamWriter, "count", metricTelemetry.ValueAggregation.Count);
 
-			streamWriter.Write(metricTelemetry.ValueAggregation.Count);
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "max", metricTelemetry.ValueAggregation.Max);
 
-			streamWriter.Write(",\"max\":");
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "min", metricTelemetry.ValueAggregation.Min);
 
-			streamWriter.Write(metricTelemetry.ValueAggregation.Max);
-
-			streamWriter.Write(",\"min\":");
-
-			streamWriter.Write(metricTelemetry.ValueAggregation.Min);
-
-			streamWriter.Write(",");
+			WriteComa(streamWriter);
 		}
 
-		streamWriter.Write("\"name\":\"");
+		WriteProperty(streamWriter, "name", metricTelemetry.Name);
 
-		streamWriter.Write(metricTelemetry.Name);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "ns", metricTelemetry.Namespace);
 
-		streamWriter.Write("\",\"ns\":\"");
-
-		streamWriter.Write(metricTelemetry.Namespace);
-
-		streamWriter.Write("\",\"value\":");
-
-		streamWriter.Write(metricTelemetry.Value);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "value", metricTelemetry.Value);
 
 		streamWriter.Write("}]");
 	}
@@ -382,27 +392,26 @@ public static class JsonTelemetrySerializer
 	{
 		var pageViewTelemetry = (PageViewTelemetry) telemetry;
 
-		streamWriter.Write("\"duration\":\"");
+		WriteProperty(streamWriter, "duration", pageViewTelemetry.Duration);
 
-		streamWriter.Write(pageViewTelemetry.Duration);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "id", pageViewTelemetry.Id);
 
-		streamWriter.Write("\",\"id\":\"");
+		if (pageViewTelemetry.Measurements != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "measurements", pageViewTelemetry.Measurements);
+		}
 
-		streamWriter.Write(pageViewTelemetry.Id);
-
-		streamWriter.Write("\"");
-
-		WriteOptional(streamWriter, ",\"measurements\":{", "}", pageViewTelemetry.Measurements);
-
-		streamWriter.Write(",\"name\":\"");
-
-		streamWriter.Write(pageViewTelemetry.Name);
-
-		streamWriter.Write("\"");
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "name", pageViewTelemetry.Name);
 
 		if (pageViewTelemetry.Url != null)
 		{
-			Write(streamWriter, ",\"url\":\"", "\"", pageViewTelemetry.Url.ToString());
+			var urlAsString = pageViewTelemetry.Url.ToString();
+
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "url", urlAsString!);
 		}
 	}
 
@@ -410,23 +419,39 @@ public static class JsonTelemetrySerializer
 	{
 		var requestTelemetry = (RequestTelemetry) telemetry;
 
-		Write(streamWriter, "\"duration\":\"", "\"", requestTelemetry.Duration);
+		var urlAsString = requestTelemetry.Url.ToString();
 
-		Write(streamWriter, ",\"id\":\"", "\"", requestTelemetry.Id);
+		WriteProperty(streamWriter, "id", requestTelemetry.Id);
 
-		WriteOptional(streamWriter, ",\"measurements\":{", "}", requestTelemetry.Measurements);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "duration", requestTelemetry.Duration);
 
-		WriteOptional(streamWriter, ",\"name\":\"", "\"", requestTelemetry.Name);
+		if (requestTelemetry.Measurements != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "measurements", requestTelemetry.Measurements);
+		}
 
-		Write(streamWriter, ",\"responseCode\":\"", "\"", requestTelemetry.ResponseCode);
+		if (requestTelemetry.Name != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "name", requestTelemetry.Name!);
+		}
 
-		WriteOptional(streamWriter, ",\"source\":\"", "\"", requestTelemetry.Source);
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "responseCode", requestTelemetry.ResponseCode);
 
-		streamWriter.Write(",\"success\":");
+		if (requestTelemetry.Name != null)
+		{
+			WriteComa(streamWriter);
+			WriteProperty(streamWriter, "source", requestTelemetry.Source!);
+		}
 
-		streamWriter.Write(requestTelemetry.Success ? "true" : "false");
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "success", requestTelemetry.Success);
 
-		Write(streamWriter, ",\"url\":\"", "\"", requestTelemetry.Url.ToString());
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "url", urlAsString);
 	}
 
 	private static void WriteDataTrace(StreamWriter streamWriter, Telemetry telemetry)
@@ -435,184 +460,36 @@ public static class JsonTelemetrySerializer
 
 		var severityLevelAsString = severityLevelToString[(Int32)traceTelemetry.SeverityLevel];
 
-		streamWriter.Write("\"message\":\"");
+		WriteProperty(streamWriter, "message", traceTelemetry.Message);
 
-		streamWriter.Write(traceTelemetry.Message);
-
-		streamWriter.Write("\",\"severityLevel\":\"");
-
-		streamWriter.Write(severityLevelAsString);
-
-		streamWriter.Write("\"");
+		WriteComa(streamWriter);
+		WriteProperty(streamWriter, "severityLevel", severityLevelAsString);
 	}
 
 	#endregion
 
-	#region Methods: Write Helpers
+	#region Methods: Write
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void Write
+	private static void WriteComa
 	(
-		StreamWriter streamWriter,
-		String pre,
-		String post,
-		Boolean value
+		StreamWriter streamWriter
 	)
 	{
-		var valueAsString = value ? "true" : "false";
-
-		streamWriter.Write(pre);
-
-		streamWriter.Write(valueAsString);
-
-		streamWriter.Write(post);
+		streamWriter.Write(",");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void Write
+	private static void WriteProperty
 	(
 		StreamWriter streamWriter,
-		String pre,
-		String post,
-		TimeSpan value
-	)
-	{
-		streamWriter.Write(pre);
-
-		streamWriter.Write(value);
-
-		streamWriter.Write(post);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void Write
-	(
-		StreamWriter streamWriter,
-		String pre,
-		String post,
+		String name,
 		String value
 	)
 	{
-		streamWriter.Write(pre);
-
-		streamWriter.Write(value);
-
-		streamWriter.Write(post);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WriteOptional
-	(
-		StreamWriter streamWriter,
-		String pre,
-		String post,
-		String? value
-	)
-	{
-		if (value == null)
-		{
-			return;
-		}
-
-		Write(streamWriter, pre, post, value);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WriteOptional
-	(
-		StreamWriter streamWriter,
-		String pre,
-		String post,
-		IReadOnlyList<KeyValuePair<String, Double>>? list
-	)
-	{
-		if (list == null || list.Count == 0)
-		{
-			return;
-		}
-
-		streamWriter.Write(pre);
-
-		var scopeHasItems = false;
-
-		for (var index = 0; index < list.Count; index++)
-		{
-			var pair = list[index];
-
-			if (String.IsNullOrWhiteSpace(pair.Key))
-			{
-				continue;
-			}
-
-			WritePair(streamWriter, pair.Key, pair.Value, scopeHasItems);
-
-			scopeHasItems = true;
-		}
-
-		streamWriter.Write(post);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WriteOptional
-	(
-		StreamWriter streamWriter,
-		String pre,
-		String post,
-		IReadOnlyList<KeyValuePair<String, String>>? list
-	)
-	{
-		if (list == null || list.Count == 0)
-		{
-			return;
-		}
-
-		streamWriter.Write(pre);
-
-		var scopeHasItems = false;
-
-		for (var index = 0; index < list.Count; index++)
-		{
-			var pair = list[index];
-
-			if (String.IsNullOrWhiteSpace(pair.Key) || String.IsNullOrWhiteSpace(pair.Value))
-			{
-				continue;
-			}
-
-			WritePair(streamWriter, pair.Key, pair.Value, scopeHasItems);
-
-			scopeHasItems = true;
-		}
-
-		streamWriter.Write(post);
-	}
-
-	#endregion
-
-	#region Methods: Write Pair
-
-	/// <summary>Writes a key-value into the <paramref name="streamWriter"/>.</summary>
-	/// <param name="streamWriter">The writer.</param>
-	/// <param name="key">The key.</param>
-	/// <param name="value">The value.</param>
-	/// <param name="scopeHasItems">A flag that indicates if there are items already within the scope.</param>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WritePair
-	(
-		StreamWriter streamWriter,
-		String key,
-		String value,
-		Boolean scopeHasItems
-	)
-	{
-		if (scopeHasItems)
-		{
-			streamWriter.Write(",");
-		}
-
 		streamWriter.Write("\"");
 
-		streamWriter.Write(key);
+		streamWriter.Write(name);
 
 		streamWriter.Write("\":\"");
 
@@ -621,32 +498,151 @@ public static class JsonTelemetrySerializer
 		streamWriter.Write("\"");
 	}
 
-	/// <summary>Writes a key-value into the <paramref name="streamWriter"/>.</summary>
-	/// <param name="streamWriter">The writer.</param>
-	/// <param name="key">The key.</param>
-	/// <param name="value">The value.</param>
-	/// <param name="scopeHasItems">A flag that indicates if there are items already within the scope.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WritePair
+	private static void WriteProperty
 	(
 		StreamWriter streamWriter,
-		String key,
-		Double value,
-		Boolean scopeHasItems
+		String name,
+		Boolean value
 	)
 	{
-		if (scopeHasItems)
-		{
-			streamWriter.Write(',');
-		}
-
 		streamWriter.Write("\"");
 
-		streamWriter.Write(key);
+		var valueAsString = value ? "true" : "false";
+
+		streamWriter.Write(name);
+
+		streamWriter.Write("\":");
+
+		streamWriter.Write(valueAsString);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteProperty
+	(
+		StreamWriter streamWriter,
+		String name,
+		Double value
+	)
+	{
+		streamWriter.Write("\"");
+
+		streamWriter.Write(name);
 
 		streamWriter.Write("\":");
 
 		streamWriter.Write(value);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteProperty
+	(
+		StreamWriter streamWriter,
+		String name,
+		Int32 value
+	)
+	{
+		streamWriter.Write("\"");
+
+		streamWriter.Write(name);
+
+		streamWriter.Write("\":");
+
+		streamWriter.Write(value);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteProperty
+	(
+		StreamWriter streamWriter,
+		String name,
+		DateTime value
+	)
+	{
+		var valueAsString = value.ToString("O");
+
+		WriteProperty(streamWriter, name, valueAsString);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteProperty
+	(
+		StreamWriter streamWriter,
+		String name,
+		TimeSpan value
+	)
+	{
+		var valueAsString = value.ToString(null, streamWriter.FormatProvider);
+
+		WriteProperty(streamWriter, name, valueAsString);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteProperty
+	(
+		StreamWriter streamWriter,
+		String name,
+		IReadOnlyList<KeyValuePair<String, Double>> value
+	)
+	{
+		streamWriter.Write("\"");
+
+		streamWriter.Write(name);
+
+		streamWriter.Write("\":{");
+
+		for (var index = 0; index < value.Count; index++)
+		{
+			var pair = value[index];
+
+			if (String.IsNullOrWhiteSpace(pair.Key))
+			{
+				continue;
+			}
+
+			if (index != 0)
+			{
+				WriteComa(streamWriter);
+			}
+
+			WriteProperty(streamWriter, pair.Key, pair.Value);
+		}
+
+		streamWriter.Write("}");
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteProperty
+	(
+		StreamWriter streamWriter,
+		String name,
+		IReadOnlyList<KeyValuePair<String, String>> value
+	)
+	{
+		streamWriter.Write("\"");
+
+		streamWriter.Write(name);
+
+		streamWriter.Write("\":{");
+
+		for (var index = 0; index < value.Count; index++)
+		{
+			var pair = value[index];
+
+			if (String.IsNullOrWhiteSpace(pair.Key))
+			{
+				continue;
+			}
+
+			if (index != 0)
+			{
+				WriteComa(streamWriter);
+			}
+
+			WriteProperty(streamWriter, pair.Key, pair.Value);
+		}
+
+		streamWriter.Write("}");
 	}
 
 	#endregion
