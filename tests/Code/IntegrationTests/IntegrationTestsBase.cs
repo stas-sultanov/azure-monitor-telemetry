@@ -83,6 +83,55 @@ public abstract class IntegrationTestsBase : IDisposable
 		TelemetryPublishers = [.. configList.Select(config => InitializePublisherFromConfig(token, config))];
 	}
 
+	#endregion
+
+	#region Methods: Implementation of IDisposable
+
+	/// <inheritdoc/>
+	public virtual void Dispose()
+	{
+		telemetryPublishHttpClient.Dispose();
+
+		GC.SuppressFinalize(this);
+	}
+
+	#endregion
+
+	#region Methods: Helpers
+
+	protected static void AssertStandardSuccess(TelemetryPublishResult[] telemetryPublishResults)
+	{
+		foreach (var telemetryPublishResult in telemetryPublishResults)
+		{
+			var result = telemetryPublishResult as HttpTelemetryPublishResult;
+
+			Assert.IsNotNull(result, $"Result is not of {nameof(HttpTelemetryPublishResult)} type.");
+
+			// check success
+			Assert.IsTrue(result.Success, result.Response);
+
+			// check status code
+			Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+
+			// deserialize response
+			var response = JsonSerializer.Deserialize<HttpTelemetryPublishResponse>(result.Response, jsonSerializerOptions);
+
+			// check not null
+			if (response == null)
+			{
+				Assert.Fail("Track response can not be deserialized.");
+
+				return;
+			}
+
+			Assert.AreEqual(result.Count, response.ItemsAccepted, nameof(HttpTelemetryPublishResponse.ItemsAccepted));
+
+			Assert.AreEqual(result.Count, response.ItemsReceived, nameof(HttpTelemetryPublishResponse.ItemsReceived));
+
+			Assert.AreEqual(0, response.Errors.Count, nameof(HttpTelemetryPublishResponse.Errors));
+		}
+	}
+
 	private TelemetryPublisher InitializePublisherFromConfig(AccessToken token, PublisherConfiguration config)
 	{
 		var ingestionEndpointParamName = config.ConfigPrefix + "IngestionEndpoint";
@@ -116,55 +165,6 @@ public abstract class IntegrationTestsBase : IDisposable
 		}
 
 		return publisher;
-	}
-
-	#endregion
-
-	#region Methods: Implementation of IDisposable
-
-	/// <inheritdoc/>
-	public virtual void Dispose()
-	{
-		telemetryPublishHttpClient.Dispose();
-
-		GC.SuppressFinalize(this);
-	}
-
-	#endregion
-
-	#region Methods
-
-	protected static void AssertStandardSuccess(TelemetryPublishResult[] telemetryPublishResults)
-	{
-		foreach (var telemetryPublishResult in telemetryPublishResults)
-		{
-			var result = telemetryPublishResult as HttpTelemetryPublishResult;
-
-			Assert.IsNotNull(result, $"Result is not of {nameof(HttpTelemetryPublishResult)} type.");
-
-			// check success
-			Assert.IsTrue(result.Success, result.Response);
-
-			// check status code
-			Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
-
-			// deserialize response
-			var response = JsonSerializer.Deserialize<HttpTelemetryPublishResponse>(result.Response, jsonSerializerOptions);
-
-			// check not null
-			if (response == null)
-			{
-				Assert.Fail("Track response can not be deserialized.");
-
-				return;
-			}
-
-			Assert.AreEqual(result.Count, response.ItemsAccepted, nameof(HttpTelemetryPublishResponse.ItemsAccepted));
-
-			Assert.AreEqual(result.Count, response.ItemsReceived, nameof(HttpTelemetryPublishResponse.ItemsReceived));
-
-			Assert.AreEqual(0, response.Errors.Count, nameof(HttpTelemetryPublishResponse.Errors));
-		}
 	}
 
 	#endregion

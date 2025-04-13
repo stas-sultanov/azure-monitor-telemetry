@@ -5,14 +5,14 @@
 - [Initialization](#initialization)
 	- [Initialization Scenarios](#initialization-scenarios)
 - [Supported Telemetry Types](#supported-telemetry-types)
-- [Adding Telemetry](#adding-telemetry)
-- [Publishing](#publishing)
-- [Distributed Operation Tracking](#distributed-operation-tracking)
-	- [How It Works](#how-it-works)
-	- [Using Activity Scope](#using-activity-scope)
+- [Collecting Telemetry](#collecting-telemetry)
+- [Telemetry Publishing](#telemetry-publishing)
+- [Using Telemetry Tags](#using-telemetry-tags)
 - [Tracking Telemetry](#tracking-telemetry)
 	- [Dependency Telemetry](#dependency-telemetry)
-- [Using Telemetry Tags](#using-telemetry-tags)
+- [Distributed Tracing](#distributed-tracing)
+	- [How It Works](#how-it-works)
+	- [Using Activity Scope](#using-activity-scope)
 - [Thread Safety](#thread-safety)
 - [Examples](#examples)
 	- [Initialize](#initialize)
@@ -26,7 +26,7 @@
 The following core concepts define the architecture and behavior of this library:
 
 - **Telemetry Tracking** – The process of capturing telemetry data such as events, exceptions, metrics, traces, and activities.
-- **Telemetry Publishing** – The process of transmitting collected telemetry data to one or more instances of a telemetry management service.
+- **Telemetry Publishing** – The process of sending collected telemetry data to one or more instances of a telemetry management service.
 - **Distributed Tracing** – A technique for associating telemetry with a logical operation that spans multiple services, processes, or asynchronous flows, enabling end-to-end correlation within a distributed IT solution.
 
 ## Getting Started
@@ -35,9 +35,9 @@ The library works with Azure [Application Insights][app_insights_info], a featur
 
 ### Prerequisites
 
-To use the library, an [Azure subscription][azure_subscription] and an Application Insights resource are required.
+To use the library, an [Azure subscription][azure_subscription] and an instance of Application Insights resource are required.
 
-The Application Insights resource can be created via 
+The Application Insights resource can be created using 
 [Bicep][app_insights_create_bicep],
 [CLI][app_insights_create_cli],
 [Portal][app_insights_create_portal],
@@ -47,16 +47,16 @@ The Application Insights resource can be created via
 
 Application Insights supports secure access via [Entra authentication][app_insights_entra_auth].
 
-- The identity executing the code must be assigned the [Monitoring Metrics Publisher][azure_rbac_monitoring_metrics_publisher] role.
+- The Entra identity that executes the code must be assigned the [Monitoring Metrics Publisher][azure_rbac_monitoring_metrics_publisher] role.
 - The access token must be requested with the audience: https://monitor.azure.com//.default
 
 ## Initialization
 
 The `TelemetryClient` class is the core component for tracking and publishing telemetry.
 
-To enable telemetry publishing to Application Insights, provide the `TelemetryClient` constructor with one or more implementations of the `TelemetryPublisher` interface.
+To enable publishing of telemetry to Application Insights, provide the `TelemetryClient` constructor with one or more instance of types that implement the `TelemetryPublisher` interface.
 
-The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPublisher` that communicates via HTTPS.
+The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPublisher` that uses HTTPS protocol for communication.
 
 ### Initialization Scenarios
 
@@ -85,19 +85,24 @@ The library provides support for all telemetry types supported by Application In
 	- [PageViewTelemetry](/src/Code/Models/PageViewTelemetry.cs)
 	- [RequestTelemetry](/src/Code/Models/RequestTelemetry.cs)
 
-## Adding Telemetry
+## Collecting Telemetry
 
 The `TelemetryClient` class provides a method `TelemetryClient.Add` that adds an instance of a class that implements the `Telemetry` interface into the processing queue.
 
 ```csharp
 // create telemetry item
-var telemetry = new EventTelemetry(DateTime.UtcNow, "start");
+var telemetry = new TraceTelemetry
+{
+	Message = "TEST",
+	SeverityLevel = SeverityLevel.Verbose,
+	Time = DateTime.UtcNow
+};
 
-// add to the telemetryClient
+// add to the telemetry client
 telemetryClient.Add(telemetry);
 ```
 
-## Publishing
+## Telemetry Publishing
 
 The library delegates telemetry publishing to the developer.</br>
 No automated telemetry publishing is provided out of the box.
@@ -109,37 +114,26 @@ To publish collected telemetry, use the `TelemetryClient.PublishAsync` method to
 await telemetryClient.PublishAsync(cancellationToken);
 ```
 
-The collected telemetry data will be published in parallel using all configured instances of the `TelemetryPublisher` interface.
+## Using Telemetry Tags
 
-## Distributed Operation Tracking
+Telemetry tags enrich telemetry data.
 
-The library is intentionally designed to support distributed operations, where a single logical flow spans services, components, or asynchronous boundaries.
+Tags are key-value pairs of string type.
 
-### How It Works
+The list of well-known standard keys of tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
-- The [TelemetryOperation](/src/Code/TelemetryOperation.cs) class represents an operation context.
-- The `Telemetry` interface provides a `Telemetry.Operation` property that represents the associated operation context.
-- The `TelemetryClient` class provides a `TelemetryClient.Operation` property that holds a reference to the current distributed operation context.
-- The `TelemetryClient.Operation` utilizes [AsyncLocal\<T\>][dot_net_async_local_info] to store data, this makes the referenced `TelemetryOperation` available across asynchronous contexts.
+The library provides special helper class [TelemetryTags](/src/Code/TelemetryTags.cs) to simplify work with collections and dictionaries of telemetry tags.
 
-### Using Activity Scope
-
-The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with `TelemetryClient.Operation`.
-
-The `TelemetryClient.ActivityScopeBegin` begins the scope and `TelemetryClient.ActivityScopeEnd` ends the scope accordingly.
-
-Any telemetry captured within the scope will have activity id as it's parent, unless there will be nested activity scope.
-
-The sample below demonstrates use of methods for tracking dependency of in-proc type.<br/>
-Refer to the [example](#dependency-tracking) below.
+Tags can be applied in the following ways:
+- Via `Telemetry.Tags` property – Set during creation.
+- Via `TelemetryClient` constructor – Pass instance of `TelemetryTags` to initialize `TelemetryClient.Context`.
+- Via `TelemetryClient.Context` Property – Set whenever needed.
 
 ## Tracking Telemetry
 
 The `TelemetryClient` class provides a set of `TelemetryClient.Track*` methods.
 
-When telemetry is tracked with `TelemetryClient.Track*` method, the `Telemetry.Operation` properties is set to `TelemetryClient.Operation` property value. 
-
-In most cases, Track methods will call `DateTime.UtcNow` to get the current timestamp for the telemetry item.
+When telemetry is tracked with `TelemetryClient.Track*` method, the `TelemetryClient.Tags` property is set to the value of `TelemetryClient.Context` property. 
 
 ```csharp
 // track event and associate with current distributed operation
@@ -151,32 +145,42 @@ telemetryClient.TrackEvent("start");
 The library delegates dependency tracking to the developer.<br/>
 No automated dependency tracking is provided out of the box.
 
-To track dependencies either use corresponding `TelemetryClient.TrackDependency*` method or create instance of [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs) class and use `TelemetryClient.Add` method.<br/>
+To track dependencies, either use corresponding `TelemetryClient.TrackDependency*` method or create instance of [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs) class and use `TelemetryClient.Add` method.<br/>
 Refer to the [example](#dependency-tracking) below.
 
 For a well-known dependency types refer to the [DependencyTypes](/src/Code/Models/DependencyTypes.cs).
 
-The library provides [TelemetryTrackedHttpClientHandler](/src/Code/Dependency/TelemetryTrackedHttpClientHandler.cs) class that helps tracking of HTTP requests.<br/>
+The library provides [TelemetryTrackedHttpClientHandler](/src/Code/Dependency/TelemetryTrackedHttpClientHandler.cs) class that helps track HTTP requests.<br/>
 Refer to the [example](#dependency-tracking-via-http-client-handler).
 
-## Using Telemetry Tags
+## Distributed Tracing
 
-Telemetry tags enrich telemetry data with metadata.
+The library is intentionally designed to support scenarios where a single logical flow crosses service, process, or async boundaries.
 
-These are simple key-value pairs of string type.
+### How It Works
+- The Application Insights supports following telemetry tags
+  - OperationId - the unique identifier of the operation that spans across services or components.
+  - OperationParentId - the unique identifier of the operation which is parent to the specific telemetry item.
+- The telemetry types which represents an activity have an `ActivityTelemetry.Id` property - the unique identifier.<br/>The Id property is used as OperationParentId tag for all subsequent telemetries within the activity scope.
+- The `TelemetryClient` class provides a `TelemetryClient.Context` property that holds a reference to the set of telemetry tags including OperationId and OperationName.
+- The `TelemetryClient.Context` utilizes [AsyncLocal\<T\>][dot_net_async_local_info], this makes the referenced `TelemetryOperation` available across asynchronous contexts.
 
-The list of standard tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
+### Using Activity Scope
 
-Ways to apply tags:
-- Per Item – Set `Telemetry.Tags` property.
-- Per Client - Pass tags to the `TelemetryClient` constructor.<br/>
-  These tags are automatically included in all telemetry items published by the client.
-- Per Publisher - Pass tags to the `HttpTelemetryPublisher` constructor.<br/>
-  These tags are automatically included in all telemetry items published by specified publisher only.
+The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with OperationParentId property of `TelemetryClient.Context`.
+
+The `TelemetryClient.ActivityScopeBegin` begins the scope and `TelemetryClient.ActivityScopeEnd` ends the scope accordingly.
+
+Any telemetry captured within the scope will have scope's activity id as parent operation id.
+
+Nested activity scopes are supported.
+
+The sample below demonstrates use of methods for tracking dependency of in-proc type.<br/>
+Refer to the [example](#dependency-tracking) below.
 
 ## Thread Safety
 
-All public types and members of this library are **thread-safe** and can be used concurrently from multiple threads.
+All public types and members of this library are **thread-safe** and are safe for concurrent use across multiple threads.
 
 - The `TelemetryClient` class is designed to handle telemetry operations from multiple threads in parallel.
 - Internal telemetry storage is implemented using [ConcurrentQueue\<T\>][dot_net_concurrent_queue_info] to ensure safe concurrent access.
@@ -200,10 +204,10 @@ Code
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
-// Create an HTTP client for the telemetry publisher
+// create an HTTP client for the telemetry publisher
 using var httpClient = new HttpClient();
 
-// Create a telemetry publisher with the specified ingestion endpoint and instrumentation key
+// create a telemetry publisher with the specified ingestion endpoint and instrumentation key
 var telemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -211,11 +215,21 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	new Guid("INSERT INSTRUMENTATION KEY HERE")
 );
 
-// Create a collection of tags for telemetry data
-KeyValuePair<String, String>[] tags = [new(TelemetryTagKeys.CloudRole, "local")];
+// initialize the tags for the telemetry client context
+var tags = new TelemetryTags()
+{
+	CloudRole = "local",
+	CloudRoleInstance = Environment.MachineName,
+};
 
-// Create a telemetry client using the telemetry publisher and tags
+// create a telemetry client using the telemetry publisher and tags
 var telemetryClient = new TelemetryClient(telemetryPublisher, tags);
+
+// track a sample event
+telemetryClient.TrackEvent("SampleEvent");
+
+// publish the collected telemetry data
+_ = await telemetryClient.PublishAsync();
 ```
 
 ### Initialize with Authentication
@@ -235,13 +249,13 @@ using Azure.Identity;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
-// Create an HTTP client for the telemetry publisher
+// create an HTTP client for the telemetry publisher
 using var httpClient = new HttpClient();
 
-// Create a token credential source for authorization
+// create a token credential source for authorization
 var tokenCredential = new DefaultAzureCredential();
 
-// Create a telemetry publisher with Entra authentication
+// create a telemetry publisher with Entra authentication
 var telemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -259,8 +273,14 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// Create a telemetry client using the telemetry publisher
+// create a telemetry client using the telemetry publisher
 var telemetryClient = new TelemetryClient(telemetryPublisher);
+
+// track a sample event
+telemetryClient.TrackEvent("SampleEvent");
+
+// publish the collected telemetry data
+_ = await telemetryClient.PublishAsync();
 ```
 
 ### Initialize with Multiple Destinations
@@ -315,11 +335,17 @@ var secondTelemetryPublisher = new HttpTelemetryPublisher
 
 // Create a telemetry client using both telemetry publishers
 var telemetryClient = new TelemetryClient([firstTelemetryPublisher, secondTelemetryPublisher]);
+
+// track a sample event
+telemetryClient.TrackEvent("SampleEvent");
+
+// publish the collected telemetry data
+_ = await telemetryClient.PublishAsync();
 ```
 
 ### Dependency Tracking
 
-The following example demonstrates tracking of any operations as in-proc activity.
+The following example demonstrates tracking of any operations as in-proc dependency.
 
 Prerequisite
 ```bash
@@ -334,13 +360,13 @@ using Azure.Identity;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
-// Create an HTTP client for the telemetry publisher
+// create an HTTP client for the telemetry publisher
 using var httpClient = new HttpClient();
 
-// Create a token credential source for authorization
+// create a token credential source for authorization
 var tokenCredential = new DefaultAzureCredential();
 
-// Create a telemetry publisher with Entra authentication
+// create a telemetry publisher with Entra authentication
 var telemetryPublisher = new HttpTelemetryPublisher
 (
 	httpClient,
@@ -358,35 +384,35 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// Create a telemetry client using the telemetry publisher
+// create a telemetry client using the telemetry publisher
 var telemetryClient = new TelemetryClient(telemetryPublisher);
 
-// Sample function that generates a new activity ID
+// sample function that generates a new activity ID
 var getActivityId = () => Guid.NewGuid().ToString();
 
-// Begin a dependency activity scope
+// begin a dependency activity scope
 telemetryClient.ActivityScopeBegin(getActivityId, out var time, out var timestamp, out var activityId, out var actualOperation);
 
-// Operations that should be tracked
+// operations that should be tracked
 // ....................................
 
-// A variable that indicates if the operation was successful
+// a variable that indicates if the operation was successful
 var success = true;
 
-// End the activity scope
+// end the activity scope
 telemetryClient.ActivityScopeEnd(actualOperation, timestamp, out var duration);
 
-// Track the dependency as an in-process operation
+// track the dependency as an in-process operation
 telemetryClient.TrackDependencyInProc(time, duration, activityId, "Envelope", success, "Custom");
 
-// Publish the collected telemetry
+// publish the collected telemetry data
 _ = await telemetryClient.PublishAsync();
 
 ```
 
 ### Dependency Tracking via HTTP Client Handler
 
-The following example demonstrates tracking of HTTP request of `HttpClient` class with `TelemetryTrackedHttpClientHandler` class.
+The following example demonstrates tracking of HTTP requests of `HttpClient` class with `TelemetryTrackedHttpClientHandler` class.
 
 Prerequisite
 ```bash
@@ -402,13 +428,13 @@ using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Dependency;
 using Azure.Monitor.Telemetry.Publish;
 
-// Create an HTTP client for the telemetry publisher
+// create an HTTP client for the telemetry publisher
 using var telemetryHttpClient = new HttpClient();
 
-// Create a token credential source for authorization
+// create a token credential source for authorization
 var tokenCredential = new DefaultAzureCredential();
 
-// Create a telemetry publisher with Entra authentication
+// create a telemetry publisher with Entra authentication
 var telemetryPublisher = new HttpTelemetryPublisher
 (
 	telemetryHttpClient,
@@ -426,22 +452,22 @@ var telemetryPublisher = new HttpTelemetryPublisher
 	}
 );
 
-// Create a telemetry client using the telemetry publisher
+// create a telemetry client using the telemetry publisher
 var telemetryClient = new TelemetryClient(telemetryPublisher);
 
-// Sample function that generates a new activity ID
+// sample function that generates a new activity ID
 var getActivityId = () => Guid.NewGuid().ToString();
 
-// Create an HTTP client handler that tracks dependencies
+// create an HTTP client handler that tracks dependencies
 var handler = new TelemetryTrackedHttpClientHandler(telemetryClient, getActivityId);
 
-// Create an HTTP client using the telemetry-tracked handler
+// create an HTTP client using the telemetry-tracked handler
 using var httpClient = new HttpClient(handler);
 
-// Execute an HTTP GET request and track request telemetry
+// execute an HTTP GET request and track request telemetry
 _ = await httpClient.GetAsync("INSERT HTTP URI HERE");
 
-// Publish the collected telemetry
+// publish the collected telemetry data
 _ = await telemetryClient.PublishAsync();
 ```
 

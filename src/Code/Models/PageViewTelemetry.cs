@@ -6,9 +6,6 @@ namespace Azure.Monitor.Telemetry.Models;
 /// <summary>
 /// Represents telemetry of a page view.
 /// </summary>
-/// <remarks>
-/// The page is a logical unit that is defined by the developer to be an application tab or a screen.
-/// </remarks>
 public sealed class PageViewTelemetry : ActivityTelemetry
 {
 	#region Properties

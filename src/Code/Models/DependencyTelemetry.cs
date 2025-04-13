@@ -6,13 +6,6 @@ namespace Azure.Monitor.Telemetry.Models;
 /// <summary>
 /// Represents telemetry of a dependency call in an application.
 /// </summary>
-/// <remarks>
-/// Examples of dependencies include:
-/// - SQL queries
-/// - HTTP calls to external services
-/// - Azure storage operations
-/// - Custom dependencies
-/// </remarks>
 public sealed class DependencyTelemetry : ActivityTelemetry
 {
 	#region Properties

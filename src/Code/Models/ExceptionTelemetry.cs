@@ -8,10 +8,6 @@ using Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of an exception that occurred in an application.
 /// </summary>
-/// <remarks>
-/// This class is used to track and report exceptions in the application, including their stack traces
-/// and other relevant details. The maximum length of the stack trace is limited to 32768 characters.
-/// </remarks>
 public sealed class ExceptionTelemetry : Telemetry
 {
 	#region Properties

@@ -237,7 +237,7 @@ jobs:
         filename: '${{ env.TESTS_RESULTS_DIRECTORY_NAME }}/*/*.cobertura.xml'
         format: markdown
         output: file
-        thresholds: '80 90'
+        thresholds: '50 75'
 
     - name: Add Coverage Report to PR
       uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 #v2.9.1

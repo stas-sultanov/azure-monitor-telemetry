@@ -8,9 +8,9 @@
 
 A lightweight library for tracking application telemetry with Azure Monitor.
 
-Created and maintained by [Stas Sultanov][linked_in_profile], this library is designed for use in applications of all types.
+Created and maintained by [Stas Sultanov][linked_in_profile].
 
-Consider [supporting the author](#support-the-author), if this library benefits your business.
+Consider to [support the author](#support-the-author), if this library benefits your business.
 
 ## Start Using the Library
 
@@ -30,8 +30,7 @@ The library is guided by the following key design principles:
 
 ## Quality Assurance
 
-The library is designed to meet strict quality requirements for regulated and performance-critical environments.<br/>
-This commitment is reflected in the following safeguards:
+Strict quality standards are applied throughout the development of this library, reflected in the following safeguards:
 
 1. The repository is configured with branch protection [rules][github_docs_rule_sets] targeting the *main* branch, including the following:
     - Require [signed commits][github_docs_verified_commit].
@@ -40,7 +39,7 @@ This commitment is reflected in the following safeguards:
 2. The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
     - Checks that the code builds with no errors.
     - Executes unit tests with a coverage threshold of 95%.
-    - Executes integration tests with at least 90% coverage, using a temporary Azure environment that is automatically provisioned and disposed.
+    - Executes integration tests with a coverage threshold of 75%, using a temporary Azure environment that is automatically provisioned and disposed.
 3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
 4. The project build is configured to:
     - Treat all warnings as errors.
@@ -48,8 +47,6 @@ This commitment is reflected in the following safeguards:
     - Enforce code style in the build via [editorconfig](/.editorconfig).
     - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
     - Ensure that all public members are documented.
-
-These safeguards help ensure reliability, efficiency, and confidence for businesses of any size.
 
 ## Why This Library?
 
@@ -71,7 +68,7 @@ A comparison of sizes and file counts of libraries when used with Entra-based au
 
 | **Package(s)**                                                      | **NET462**                  | **NET8**                   | **NET9**                   |
 | :------------------------------------------------------------------ | :-------------------------- | :------------------------- | :------------------------- |
-| Stas.Azure.Monitor.Telemetry 1.0.1<br/>                             | Files: 1<br/>Size: 52KB     | Files: 1<br/>Size: 51KB    | Files: 1<br/>Size: 51KB    |
+| Stas.Azure.Monitor.Telemetry 1.0.1<br/>                             | Files: 1<br/>Size: 61KB     | Files: 1<br/>Size: 60KB    | Files: 1<br/>Size: 60KB    |
 | Microsoft.ApplicationInsights 2.23.0<br/>Azure.Core 1.45.0          | Files: 109<br/>Size: 4644KB | Files: 5<br/>Size: 945KB   | Files: 5<br/>Size: 945KB   |
 | OpenTelemetry 1.11.2<br/>Azure.Monitor.OpenTelemetry.Exporter 1.3.0 | Files: 126<br/>Size: 5250KB | Files: 23<br/>Size: 1887KB | Files: 22<br/>Size: 1728KB |
 

@@ -7,8 +7,6 @@ using System;
 using System.Globalization;
 using System.Net.Http;
 
-using Azure.Monitor.Telemetry.Dependency;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -78,7 +76,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 			LocationIp = service_A_IP
 		};
 
-		service_B_ContextTags = new ()
+		service_B_ContextTags = new()
 		{
 			CloudRole = "Service B",
 			CloudRoleInstance = Random.Shared.Next(200, 300).ToString(CultureInfo.InvariantCulture),
@@ -213,7 +211,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 			"Main",
 			new Uri("https://www.gostas.dev"),
 			// client makes dependenc calls within the page view
-			async(parentActivityId, cancellationToken) =>
+			async (parentActivityId, cancellationToken) =>
 			{
 				// call external dependency
 				await TelemetrySimulator.SimulateHttpDependencyCallAsync

@@ -12,11 +12,11 @@ using System.Text;
 /// Provides telemetry publishing via HTTP protocol.
 /// </summary>
 /// <remarks>
-/// Handles publishing of telemetry data to Azure Monitor's ingestion endpoints.
-/// Supports both unauthenticated and authenticated (via Bearer token) scenarios.
-/// For unauthenticated scenarios, uses the v2 of the track endpoint.
-/// For authenticated scenarios, uses v2.1 of the track endpoint.
-/// For authenticated scenario, the identity, on behalf of which the operation occurs, requires <a href="https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher">Monitoring Metrics Publisher</a> role.
+/// Handles publishing of telemetry data to Azure Monitor's ingestion endpoints.<br/>
+/// Supports both unauthenticated and authenticated (via Bearer token) scenarios.<br/>
+/// For unauthenticated scenarios, uses the v2 of the track endpoint.<br/>
+/// For authenticated scenarios, uses v2.1 of the track endpoint.<br/>
+/// For authenticated scenario, the identity executing the code must be assigned the <a href="https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher">Monitoring Metrics Publisher</a> role.
 /// </remarks>
 public sealed class HttpTelemetryPublisher : TelemetryPublisher
 {

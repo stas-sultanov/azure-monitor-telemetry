@@ -6,12 +6,6 @@ namespace Azure.Monitor.Telemetry.Models;
 /// <summary>
 /// Represents telemetry of an event that occurred in an application.
 /// </summary>
-/// <remarks>
-/// Typically, it is a user interaction such as a button click or an order checkout.
-/// It can also be an application lifecycle event like initialization or a configuration update.
-/// Semantically, events might or might not be correlated to requests.
-/// If used properly, event telemetry is more important than requests or traces.
-/// </remarks>
 public sealed class EventTelemetry : Telemetry
 {
 	#region Properties
