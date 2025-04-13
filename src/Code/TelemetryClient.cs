@@ -23,7 +23,7 @@ public sealed class TelemetryClient
 {
 	#region Types
 
-	private readonly struct TelemetryTagCollectionCouple(TelemetryTags collection)
+	private readonly struct ContextTuple(TelemetryTags collection)
 	{
 		public IReadOnlyList<KeyValuePair<String, String>>? AsList { get; } = collection.IsEmpty() ? null : collection.ToArray();
 
@@ -40,7 +40,7 @@ public sealed class TelemetryClient
 
 	#region Fields
 
-	private readonly AsyncLocal<TelemetryTagCollectionCouple> context;
+	private readonly AsyncLocal<ContextTuple> localContext;
 	private readonly ConcurrentQueue<Telemetry> items;
 	private readonly TelemetryPublisher[] publishers;
 
@@ -52,12 +52,12 @@ public sealed class TelemetryClient
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publisher">A telemetry publisher to publish the telemetry data.</param>
-	/// <param name="tags">Tags to initialize the context.</param>
+	/// <param name="tags">The tags to initalize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publisher"/> is null.</exception>
 	public TelemetryClient
 	(
 		TelemetryPublisher publisher,
-		IReadOnlyDictionary<String, String>? tags = null
+		TelemetryTags? tags = null
 	)
 	{
 		if (publisher == null)
@@ -65,11 +65,11 @@ public sealed class TelemetryClient
 			throw new ArgumentNullException(nameof(publisher));
 		}
 
-		var contextTags = tags == null ? TelemetryTags.Empty : new TelemetryTags(tags);
+		tags ??= TelemetryTags.Empty;
 
-		context = new()
+		localContext = new()
 		{
-			Value = new(contextTags)
+			Value = new(tags)
 		};
 
 		items = new();
@@ -81,14 +81,14 @@ public sealed class TelemetryClient
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publishers">A read only list of telemetry publishers to publish the telemetry data.</param>
-	/// <param name="tags">Tags to initialize the context.</param>
+	/// <param name="tags">The tags to initalize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publishers"/> is null.</exception>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="publishers"/> count is 0.</exception>
 	/// <exception cref="ArgumentException">Thrown if any publisher in <paramref name="publishers"/> is null.</exception>
 	public TelemetryClient
 	(
 		IReadOnlyList<TelemetryPublisher> publishers,
-		IReadOnlyDictionary<String, String>? tags = null
+		TelemetryTags? tags = null
 	)
 	{
 		if (publishers == null)
@@ -109,11 +109,11 @@ public sealed class TelemetryClient
 			}
 		}
 
-		var contextTags = tags == null ? TelemetryTags.Empty : new TelemetryTags(tags);
+		tags ??= TelemetryTags.Empty;
 
-		context = new()
+		localContext = new()
 		{
-			Value = new(contextTags)
+			Value = new(tags)
 		};
 
 		items = new();
@@ -130,9 +130,9 @@ public sealed class TelemetryClient
 	/// </summary>
 	public TelemetryTags Context
 	{
-		get => context.Value.Collection;
+		get => localContext.Value.Collection;
 
-		set => context.Value = new TelemetryTagCollectionCouple(value);
+		set => localContext.Value = new ContextTuple(value);
 	}
 
 	#endregion
@@ -353,7 +353,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -409,7 +409,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -610,7 +610,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -677,7 +677,7 @@ public sealed class TelemetryClient
 	{
 		var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
 
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -746,7 +746,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -825,7 +825,7 @@ public sealed class TelemetryClient
 			Min = min
 		};
 
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -902,7 +902,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -934,6 +934,7 @@ public sealed class TelemetryClient
 	/// <param name="responseCode">The response code of the request.</param>
 	/// <param name="success">Indicates whether the request was successful.</param>
 	/// <param name="name">Optional. The name of the request.</param>
+	/// <param name="source">The source of the request.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
 	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
 	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
@@ -947,12 +948,13 @@ public sealed class TelemetryClient
 		String responseCode,
 		Boolean success,
 		String? name = null,
+		String? source = null,
 		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
 		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -964,6 +966,7 @@ public sealed class TelemetryClient
 			Name = name,
 			Properties = properties,
 			ResponseCode = responseCode,
+			Source = source,
 			Success = success,
 			Tags = telemetryTags,
 			Time = time,
@@ -994,7 +997,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = context.Value.AsList;
+		var contextTags = localContext.Value.AsList;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 

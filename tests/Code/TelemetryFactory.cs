@@ -191,6 +191,29 @@ internal sealed class TelemetryFactory
 	}
 
 	/// <summary>
+	/// Creates instance of <see cref="RequestTelemetry"/> with minimum load.
+	/// </summary>
+	public static RequestTelemetry Create_RequestTelemetry_Min
+	(
+		String responseCode,
+		Uri url
+	)
+	{
+		var id = GetActivityId();
+
+		var result = new RequestTelemetry
+		{
+			Duration = TimeSpan.FromSeconds(1),
+			Id = id,
+			ResponseCode = responseCode,
+			Time = DateTime.UtcNow,
+			Url = url
+		};
+
+		return result;
+	}
+
+	/// <summary>
 	/// Creates instance of <see cref="TraceTelemetry"/> with minimum load.
 	/// </summary>
 	public static TraceTelemetry Create_TraceTelemetry_Min(String message)
@@ -306,8 +329,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public ExceptionTelemetry Create_ExceptionTelemetry_Max
 	(
-		String? problemId = null,
-		SeverityLevel? severityLevel = null
+		String problemId,
+		SeverityLevel severityLevel
 	)
 	{
 		try
@@ -407,6 +430,7 @@ internal sealed class TelemetryFactory
 			Name = name,
 			Properties = Properties,
 			ResponseCode = "200",
+			Source = "Factory",
 			Success = true,
 			Tags = Tags,
 			Time = DateTime.UtcNow,

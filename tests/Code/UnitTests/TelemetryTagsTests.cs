@@ -13,8 +13,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// </summary>
 [TestCategory("UnitTests")]
 [TestClass]
-public class TelemetryTagsTests
+public sealed class TelemetryTagsTests
 {
+	#region Methods: Tests
+
+	[TestMethod]
+	public void Constructor_ThrowsException()
+	{
+		_ = Assert.ThrowsExactly<ArgumentNullException>
+		(
+			() => _ = new TelemetryTags(null!)
+		);
+	}
+
 	[TestMethod]
 	public void Constructor_WithDictionary_ShouldInitialize()
 	{
@@ -119,7 +130,7 @@ public class TelemetryTagsTests
 		// act
 		var tags = new TelemetryTags
 		{
-			ApplicationVersion = applicationVersion,
+			ApplicationVer = applicationVersion,
 			CloudRole = cloudRole,
 			CloudRoleInstance = cloudRoleInstance,
 			DeviceId = deviceId,
@@ -148,7 +159,7 @@ public class TelemetryTagsTests
 		};
 
 		// assert
-		AssertHelper.PropertyEqualsTo(tags, o => o.ApplicationVersion, applicationVersion);
+		AssertHelper.PropertyEqualsTo(tags, o => o.ApplicationVer, applicationVersion);
 		AssertHelper.PropertyEqualsTo(tags, o => o.CloudRole, cloudRole);
 		AssertHelper.PropertyEqualsTo(tags, o => o.CloudRoleInstance, cloudRoleInstance);
 		AssertHelper.PropertyEqualsTo(tags, o => o.DeviceId, deviceId);
@@ -175,4 +186,6 @@ public class TelemetryTagsTests
 		AssertHelper.PropertyEqualsTo(tags, o => o.UserAuthUserId, userAuthUserId);
 		AssertHelper.PropertyEqualsTo(tags, o => o.UserId, userId);
 	}
+
+	#endregion
 }

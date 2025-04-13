@@ -5,7 +5,6 @@ namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 using System.Globalization;
-using System.Net;
 using System.Net.Http;
 
 using Azure.Monitor.Telemetry.Dependency;
@@ -14,27 +13,31 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
 /// The goals of this test:
-/// - publish telemetry data into two instances of AppInsights; one with auth, one without auth.
-/// - test dependency tracking with <see cref="TelemetryTrackedHttpClientHandler"/>.
+/// - test distributed dependency tracking with AvailabiltyTest, PageView, Request and Dependency telemetry.
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
-public sealed class DistributedTests : IntegrationTestsBase
+public sealed class DistributedTelemetryTests : IntegrationTestsBase
 {
-	#region Data
+	#region Constants
 
-	private const String clientIP = "78.26.233.104"; // Ukraine / Odessa
-	private static readonly String service0IP = $"4.210.128.{Random.Shared.Next(1, 8)}";   // Azure DC
-	private static readonly String service1IP = $"4.210.128.{Random.Shared.Next(16, 32)}"; // Azure DC
-
-	private readonly TelemetryTrackedHttpClientHandler clientTelemetryTrackedHttpClientHandler;
-	private readonly TelemetryTrackedHttpClientHandler service1TelemetryTrackedHttpClientHandler;
+	private static readonly String client_IP = $"78.26.233.{Random.Shared.Next(100, 200)}"; // Ukraine / Odessa
+	private static readonly String probe_IP = $"4.210.128.{Random.Shared.Next(1, 8)}"; // Azure DC
+	private static readonly String service_A_IP = $"4.210.128.{Random.Shared.Next(16, 32)}"; // Azure DC
+	private static readonly String service_B_IP = $"4.210.128.{Random.Shared.Next(64, 128)}"; // Azure DC
+	private static readonly String service_A_Domain = "a.services.gostas.dev";
+	private static readonly String service_B_Domain = "b.services.gostas.dev";
 
 	#endregion
 
-	private TelemetryClient ClientTelemetryClient { get; }
-	private TelemetryClient Service0TelemetryClient { get; }
-	private TelemetryClient Service1TelemetryClient { get; }
+	#region Fields
+
+	private readonly TelemetryTags client_ContextTags;
+	private readonly TelemetryTags probe_ContextTags;
+	private readonly TelemetryTags service_A_ContextTags;
+	private readonly TelemetryTags service_B_ContextTags;
+
+	#endregion
 
 	#region Constructors
 
@@ -42,221 +45,380 @@ public sealed class DistributedTests : IntegrationTestsBase
 	/// Initializes a new instance of the <see cref="DependencyTrackingTests"/> class.
 	/// </summary>
 	/// <param name="testContext">The test context.</param>
-	public DistributedTests(TestContext testContext)
+	public DistributedTelemetryTests(TestContext testContext)
 		: base
 		(
 			testContext,
 			new PublisherConfiguration()
 			{
 				ConfigPrefix = "Azure.Monitor.AuthOn.",
-				UseAuthentication = true
+				Authenticate = true
 			}
 		)
 	{
-		ClientTelemetryClient = new TelemetryClient(TelemetryPublisher)
+		client_ContextTags = new()
 		{
-			Context = new()
-			{
-				CloudRole = "Frontend",
-				CloudRoleInstance = Random.Shared.Next(0, 100).ToString(CultureInfo.InvariantCulture),
-				DeviceType = "Browser",
-				LocationIp = clientIP
-			}
+			CloudRole = "WebApp",
+			CloudRoleInstance = Random.Shared.Next(0, 100).ToString(CultureInfo.InvariantCulture),
+			DeviceType = "Browser",
+			LocationIp = client_IP
 		};
 
-		clientTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ClientTelemetryClient, TelemetryFactory.GetActivityId);
-
-		Service0TelemetryClient = new TelemetryClient(TelemetryPublisher)
+		probe_ContextTags = new()
 		{
-			Context = new()
-			{
-				CloudRole = "Watchman",
-				CloudRoleInstance = Random.Shared.Next(100, 200).ToString(CultureInfo.InvariantCulture),
-				LocationIp = service0IP
-			}
+			CloudRole = "Probe",
+			CloudRoleInstance = Random.Shared.Next(0, 100).ToString(CultureInfo.InvariantCulture),
+			LocationIp = probe_IP
 		};
 
-		Service1TelemetryClient = new TelemetryClient(TelemetryPublisher)
+		service_A_ContextTags = new()
 		{
-			Context = new()
-			{
-				CloudRole = "Backend",
-				CloudRoleInstance = Random.Shared.Next(200, 300).ToString(CultureInfo.InvariantCulture),
-				LocationIp = service1IP
-			}
+			CloudRole = "Service A",
+			CloudRoleInstance = Random.Shared.Next(100, 200).ToString(CultureInfo.InvariantCulture),
+			LocationIp = service_A_IP
 		};
 
-		service1TelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(Service1TelemetryClient, TelemetryFactory.GetActivityId);
+		service_B_ContextTags = new ()
+		{
+			CloudRole = "Service B",
+			CloudRoleInstance = Random.Shared.Next(200, 300).ToString(CultureInfo.InvariantCulture),
+			LocationIp = service_B_IP
+		};
 	}
 
 	#endregion
 
+	#region Methods: Overrides of the Base Class
+
+	/// <inheritdoc/>
 	public override void Dispose()
 	{
 		base.Dispose();
-
-		clientTelemetryTrackedHttpClientHandler.Dispose();
-
-		service1TelemetryTrackedHttpClientHandler.Dispose();
 	}
+
+	#endregion
 
 	#region Methods: Tests
 
+	/// <summary>
+	/// The scenario:
+	/// [PROBE] ── AvailabilityTest ──> [SERVICE A]
+	/// [PROBE] ── AvailabilityTest ──> [SERVICE B]
+	/// </summary>
 	[TestMethod]
-	public async Task FromPageViewToRequestToDependency()
+	public async Task Probe_AvailabilityTest_To_ServiceA_And_ServiceB()
 	{
 		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
-		// page view
+		var operationId = TelemetryFactory.GetOperationId();
+		var operationName = "HealthCheck";
+
+		// create telemery client for probe
+		var probeTelemetryClient = new TelemetryClient(TelemetryPublishers)
 		{
-			// set context
-			ClientTelemetryClient.Context = ClientTelemetryClient.Context with
+			Context = probe_ContextTags with
 			{
-				OperationId = TelemetryFactory.GetOperationId(),
-				OperationName = "ShowMainPage"
-			};
+				OperationId = operationId,
+				OperationName = operationName
+			}
+		};
 
-			// simulate top level operation - page view
-			await TelemetrySimulator.SimulatePageViewAsync
+		// probe makes call to service A
+		await TelemetrySimulator.SimulateAvailabilityTestCallAsync
+		(
+			probeTelemetryClient,
+			"Service A",
+			"West Europe",
+			// service A accepts the call with request processing
+			(parentActivityId, cancellationToken) => Service_PorecessRequest
 			(
-				ClientTelemetryClient,
-				"Main",
-				new Uri("https://gostas.dev"),
-				async (cancellationToken) =>
+				service_A_ContextTags with
 				{
-					// make dependency call
-					_ = await MakeDependencyCallAsync(clientTelemetryTrackedHttpClientHandler, new Uri("https://google.com"), cancellationToken);
-
-					// simulate internal work
-					await Task.Delay(Random.Shared.Next(50, 100), cancellationToken);
-
-					// simulate dependency call to server
-					var requestUrl = new Uri("https://gostas.dev/int.js");
-
-					await TelemetrySimulator.SimulateDependencyAsync
-					(
-						ClientTelemetryClient,
-						HttpMethod.Get,
-						requestUrl,
-						HttpStatusCode.OK,
-						(cancellationToken) => Service1ServeRequestAsync
-						(
-							ClientTelemetryClient.Context,
-							requestUrl,
-							"OK",
-							true,
-							Service1ServePageViewRequestInternalAsync,
-							cancellationToken
-						),
-						cancellationToken
-					);
+					OperationId = operationId,
+					OperationName = "HealthCheck",
+					OperationParentId = parentActivityId
+				},
+				new Uri($"https://{service_A_Domain}/health"),
+				// service A processes the request
+				async (_, cancellationToken) =>
+				{
+					await Task.Delay(100, cancellationToken);
+					return true;
 				},
 				cancellationToken
-			);
-		}
+			),
+			cancellationToken
+		);
 
-		// availability test
-		{
-			// set context
-			// TODO: PAY ATTENTION TO CONTEXT
-			ClientTelemetryClient.Context = ClientTelemetryClient.Context with
-			{
-				OperationId = TelemetryFactory.GetOperationId(),
-				OperationName = "Availability"
-			};
-
-			// simulate top level operation - availability test
-			await TelemetrySimulator.SimulateAvailabilityAsync
+		// probe makes call to service B
+		await TelemetrySimulator.SimulateAvailabilityTestCallAsync
+		(
+			probeTelemetryClient,
+			"Service B",
+			"West Europe",
+			// service A accepts the call with request processing
+			(parentActivityId, cancellationToken) => Service_PorecessRequest
 			(
-				Service0TelemetryClient,
-				"Check Health",
-				"Passed",
-				true,
-				"West Europe",
-				(cancellationToken) => Service1ServeRequestAsync
-				(
-					Service0TelemetryClient.Context,
-					new Uri("https://gostas.dev/health"),
-					"OK",
-					true,
-					Service1ServeAvailabilityRequestInternalAsync,
-					cancellationToken
-				),
+				service_B_ContextTags with
+				{
+					OperationId = operationId,
+					OperationName = "HealthCheck",
+					OperationParentId = parentActivityId
+				},
+				new Uri($"https://{service_B_Domain}/health"),
+				// service A processes the request
+				async (_, cancellationToken) =>
+				{
+					await Task.Delay(100, cancellationToken);
+					return true;
+				},
 				cancellationToken
-			);
-		}
+			),
+			cancellationToken
+		);
 
-		// publish client telemetry
-		var clientPublishResult = await ClientTelemetryClient.PublishAsync(cancellationToken);
+		var publishResults = await probeTelemetryClient.PublishAsync(cancellationToken);
 
-		// publish server telemetry
-		var service0PublishResult = await Service0TelemetryClient.PublishAsync(cancellationToken);
+		AssertStandardSuccess(publishResults);
+	}
 
-		// publish server telemetry
-		var service1PublishResult = await Service1TelemetryClient.PublishAsync(cancellationToken);
+	/// <summary>
+	/// The scenario:
+	/// [Client] ──> {Main PageView} ── HTTP Request ──> [External]
+	///                              └─ HTTP Request ──> [SERVICE A]
+	/// </summary>
+	[TestMethod]
+	public async Task Client_PageView_To_External_And_Service_A()
+	{
+		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
-		AssertStandardSuccess(clientPublishResult);
+		var operationId = TelemetryFactory.GetOperationId();
+		var operationName = "ShowMain";
+		var service_A_RequestUrl = new Uri($"https://{service_A_Domain}/data");
 
-		AssertStandardSuccess(service0PublishResult);
+		// create telemery client for client
+		var clientTelemetryClient = new TelemetryClient(TelemetryPublishers)
+		{
+			Context = client_ContextTags with
+			{
+				OperationId = operationId,
+				OperationName = operationName
+			}
+		};
 
-		AssertStandardSuccess(service1PublishResult);
+		// client makes page view
+		await TelemetrySimulator.SimulatePageViewAsync
+		(
+			clientTelemetryClient,
+			"Main",
+			new Uri("https://www.gostas.dev"),
+			// client makes dependenc calls within the page view
+			async(parentActivityId, cancellationToken) =>
+			{
+				// call external dependency
+				await TelemetrySimulator.SimulateHttpDependencyCallAsync
+				(
+					clientTelemetryClient,
+					HttpMethod.Get,
+					new Uri("https://unpkg.com/vue@3/dist/vue.global.js"),
+					async (_, cancellationToken) =>
+					{
+						await Task.Delay(20, cancellationToken);
+						return true;
+					},
+					cancellationToken
+				);
+
+				// call service A
+				await TelemetrySimulator.SimulateHttpDependencyCallAsync
+				(
+					clientTelemetryClient,
+					HttpMethod.Get,
+					service_A_RequestUrl,
+					// service A accepts the call with request processing
+					async (parentActivityId, cancellationToken) => await Service_PorecessRequest
+					(
+						service_A_ContextTags with
+						{
+							OperationId = operationId,
+							OperationName = "GET DATA",
+							OperationParentId = parentActivityId
+						},
+						service_A_RequestUrl,
+						async (telemetryClient, cancellationToken) => await Service_Simulate_Dependency_SQL(telemetryClient, "SELECT * from [dbo].[Data]", cancellationToken),
+						cancellationToken
+					),
+					cancellationToken
+				);
+			},
+			cancellationToken
+		);
+
+		var publishResults = await clientTelemetryClient.PublishAsync(cancellationToken);
+
+		AssertStandardSuccess(publishResults);
+	}
+
+	/// <summary>
+	/// The scenario:
+	/// [Client] ──> {Info PageView} ── HTTP Request ──> [SERVICE A] ── HTTP Request ──> [SERVICE B]
+	/// </summary>
+	[TestMethod]
+	public async Task Client_PageView_To_Service_A_To_Service_B()
+	{
+		var cancellationToken = TestContext.CancellationTokenSource.Token;
+
+		var operationId = TelemetryFactory.GetOperationId();
+		var operationName = "ShowInfo";
+		var service_A_RequestUrl = new Uri($"https://{service_A_Domain}/info");
+		var service_B_RequestUrl = new Uri($"https://{service_B_Domain}/exrainfo");
+
+		// create telemery client for client
+		var clientTelemetryClient = new TelemetryClient(TelemetryPublishers)
+		{
+			Context = client_ContextTags with
+			{
+				OperationId = operationId,
+				OperationName = operationName
+			}
+		};
+
+		// client makes page view
+		await TelemetrySimulator.SimulatePageViewAsync
+		(
+			clientTelemetryClient,
+			"Info",
+			new Uri("https://www.gostas.dev/info"),
+			// client makes dependenc calls within the page view
+			async (parentActivityId, cancellationToken) =>
+			{
+				// call service A
+				await TelemetrySimulator.SimulateHttpDependencyCallAsync
+				(
+					clientTelemetryClient,
+					HttpMethod.Get,
+					service_A_RequestUrl,
+					// service A accepts the call with request processing
+					async (parentActivityId, cancellationToken) => await Service_PorecessRequest
+					(
+						service_A_ContextTags with
+						{
+							OperationId = operationId,
+							OperationName = "GET INFO",
+							OperationParentId = parentActivityId
+						},
+						service_A_RequestUrl,
+						// service A makes dependenc calls to service B
+						async (serviceATelemetryClient, cancellationToken) =>
+						{
+							// call service A
+							await TelemetrySimulator.SimulateHttpDependencyCallAsync
+							(
+								serviceATelemetryClient,
+								HttpMethod.Get,
+								service_B_RequestUrl,
+								// service A accepts the call with request processing
+								async (parentActivityId, cancellationToken) => await Service_PorecessRequest
+								(
+									service_B_ContextTags with
+									{
+										OperationId = operationId,
+										OperationName = "GET INFO",
+										OperationParentId = parentActivityId
+									},
+									service_B_RequestUrl,
+									async (telemetryClient, cancellationToken) => await Service_Simulate_Dependency_SQL(telemetryClient, "SELECT * from [dbo].[Info]", cancellationToken),
+									cancellationToken
+								),
+								cancellationToken
+							);
+
+							return true;
+						},
+						cancellationToken
+					),
+					cancellationToken
+				);
+			},
+			cancellationToken
+		);
+
+		var publishResults = await clientTelemetryClient.PublishAsync(cancellationToken);
+
+		AssertStandardSuccess(publishResults);
 	}
 
 	#endregion
 
 	#region Methods: Helpers
 
-	private async Task Service1ServePageViewRequestInternalAsync(CancellationToken cancellationToken)
-	{
-		// make dependency call
-		_ = await MakeDependencyCallAsync(service1TelemetryTrackedHttpClientHandler, new Uri("https://bing.com"), cancellationToken);
-
-		// simulate execution delay
-		await Task.Delay(Random.Shared.Next(100), cancellationToken);
-
-		// add Trace
-		Service1TelemetryClient.TrackTrace("Request from Main Page", SeverityLevel.Information);
-	}
-
-	private async Task Service1ServeAvailabilityRequestInternalAsync(CancellationToken cancellationToken)
-	{
-		// simulate execution delay
-		await Task.Delay(Random.Shared.Next(100), cancellationToken);
-
-		// add Trace
-		Service1TelemetryClient.TrackTrace("Health Request", SeverityLevel.Information);
-	}
-
-	private async Task Service1ServeRequestAsync
+	/// <summary>
+	/// Simulate request processing.
+	/// </summary>
+	private async Task<Boolean> Service_PorecessRequest
 	(
-		TelemetryTags context,
+		TelemetryTags initialContext,
 		Uri url,
-		String responseCode,
-		Boolean success,
-		Func<CancellationToken, Task> subsequent,
+		Func<TelemetryClient, CancellationToken, Task<Boolean>> subsequent,
 		CancellationToken cancellationToken
 	)
 	{
-		// set context
-		Service1TelemetryClient.Context = context;
+		var telemetryClient = new TelemetryClient(TelemetryPublishers)
+		{
+			Context = initialContext
+		};
 
-		await TelemetrySimulator.SimulateRequestAsync(Service1TelemetryClient, url, responseCode, success, subsequent, cancellationToken);
+		// begin activity scope
+		telemetryClient.ActivityScopeBegin(TelemetryFactory.GetActivityId, out var time, out var timestamp, out var activityId, out var context);
+
+		// execute subsequent
+		var success = await subsequent(telemetryClient, cancellationToken);
+
+		// end activity scope
+		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
+
+		// track telemetry
+		var responseCode = success ? "Success" : "Fail";
+
+		telemetryClient.TrackRequest(time, duration, activityId, url, responseCode, success);
+
+		// publish tracked telemetry
+		var publishResults = await telemetryClient.PublishAsync(cancellationToken);
+
+		AssertStandardSuccess(publishResults);
+
+		// return result
+		return success;
 	}
 
-	public static async Task<String> MakeDependencyCallAsync
-(
-	HttpMessageHandler messageHandler,
-	Uri uri,
-	CancellationToken cancellationToken
-)
+	/// <summary>
+	/// Simulate SQL dependency call.
+	/// </summary>
+	private static async Task<Boolean> Service_Simulate_Dependency_SQL
+	(
+		TelemetryClient telemetryClient,
+		String command,
+		CancellationToken cancellationToken
+	)
 	{
-		using var httpClient = new HttpClient(messageHandler, false);
+		var duration = TimeSpan.FromMilliseconds( Random.Shared.Next(200) );
 
-		using var httpResponse = await httpClient.GetAsync(uri, cancellationToken);
+		// simulate execution delay
+		await Task.Delay(duration + TimeSpan.FromMilliseconds(Random.Shared.Next(50)), cancellationToken);
 
-		var result = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+		// add Trace
+		telemetryClient.TrackDependencySql
+		(
+			DateTime.UtcNow,
+			duration,
+			TelemetrySimulator.GetActivityId(),
+			"test.database.windows.net",
+			"db1",
+			command,
+			0
+		);
 
-		return result;
+		return true;
 	}
 
 	#endregion

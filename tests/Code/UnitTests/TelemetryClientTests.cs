@@ -103,7 +103,20 @@ public sealed class TelemetryClientTests
 	}
 
 	[TestMethod]
-	public void Constructor_Overload_ThrowsArgumentNullException_IfPublishersContainsNull()
+	public void Constructor_Overload_ThrowsArgumentException_IfPublishersCountIsZero()
+	{
+		// arrange
+		TelemetryPublisher[] publishers = [];
+
+		// act
+		var argumentNullException = Assert.ThrowsExactly<ArgumentException>
+		(
+			() => _ = new TelemetryClient(publishers)
+		);
+	}
+
+	[TestMethod]
+	public void Constructor_Overload_ThrowsArgumentException_IfPublishersContainsNull()
 	{
 		// arrange
 		TelemetryPublisher? nullPublisher = null;
@@ -115,6 +128,49 @@ public sealed class TelemetryClientTests
 		(
 			() => _ = new TelemetryClient(publishers)
 		);
+	}
+
+	[TestMethod]
+	public void Constructor_Initialize_Context()
+	{
+		// arrange
+		var applicationVerValue = "1.1";
+		var tags = new TelemetryTags()
+		{
+			ApplicationVer = applicationVerValue
+		};
+
+		{
+			// act
+			var telemetryClient = new TelemetryClient(mockPublisher);
+
+			// arrange
+			Assert.IsTrue(telemetryClient.Context.IsEmpty());
+		}
+
+		{
+			// act
+			var telemetryClient = new TelemetryClient(mockPublisher, tags);
+
+			// arrange
+			AssertHelper.PropertyEqualsTo(telemetryClient.Context, o => o.ApplicationVer, applicationVerValue);
+		}
+
+		{
+			// act
+			var telemetryClient = new TelemetryClient([mockPublisher, mockPublisher]);
+
+			// arrange
+			Assert.IsTrue(telemetryClient.Context.IsEmpty());
+		}
+
+		{
+			// act
+			var telemetryClient = new TelemetryClient([mockPublisher, mockPublisher], tags);
+
+			// arrange
+			AssertHelper.PropertyEqualsTo(telemetryClient.Context, o => o.ApplicationVer, applicationVerValue);
+		}
 	}
 
 	#endregion
@@ -677,6 +733,7 @@ public sealed class TelemetryClientTests
 		var inId = TelemetryFactory.GetActivityId();
 		var inName = "inName";
 		var inResponseCode = "1";
+		var inSource = "test framework";
 		var inSuccess = true;
 		var inTime = DateTime.UtcNow;
 		var inUrl = new Uri("tst:exe");
@@ -693,6 +750,7 @@ public sealed class TelemetryClientTests
 			inResponseCode,
 			inSuccess,
 			inName,
+			inSource,
 			factory.Measurements,
 			factory.Properties,
 			factory.Tags

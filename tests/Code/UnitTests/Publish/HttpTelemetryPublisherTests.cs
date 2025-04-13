@@ -87,6 +87,8 @@ public sealed partial class HttpTelemetryPublisherTests
 
 		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Duration, value => value > TimeSpan.Zero);
 
+		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Response, value => !String.IsNullOrWhiteSpace(value));
+
 		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Success, value => value);
 
 		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Time, value => value > time);

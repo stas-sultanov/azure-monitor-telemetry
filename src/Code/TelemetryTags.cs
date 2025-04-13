@@ -79,7 +79,7 @@ public sealed record TelemetryTags
 	/// The version of the application.
 	/// </summary>
 	/// <remarks>Maximum key length: 1024 characters.</remarks>
-	public String? ApplicationVersion
+	public String? ApplicationVer
 	{
 		get => collection.TryGetValue(TelemetryTagKeys.ApplicationVer, out var value) ? value : null;
 

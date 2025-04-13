@@ -19,9 +19,9 @@ public abstract class IntegrationTestsBase : IDisposable
 
 	public sealed class PublisherConfiguration
 	{
-		public required String ConfigPrefix { get; init; }
+		public required Boolean Authenticate { get; init; }
 
-		public required Boolean UseAuthentication { get; init; }
+		public required String ConfigPrefix { get; init; }
 	}
 
 	#endregion
@@ -43,11 +43,6 @@ public abstract class IntegrationTestsBase : IDisposable
 	/// Test context.
 	/// </summary>
 	protected TestContext TestContext { get; }
-
-	/// <summary>
-	/// Collection of telemetry publishers initialized from the configuration.
-	/// </summary>
-	protected TelemetryPublisher TelemetryPublisher { get; }
 
 	/// <summary>
 	/// Collection of telemetry publishers initialized from the configuration.
@@ -85,18 +80,7 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		telemetryPublishHttpClient = new HttpClient();
 
-		TelemetryPublisher = InitializePublisherFromConfig(token, configList[0]);
-
-		var telemetryPublishers = new List<TelemetryPublisher>();
-
-		for (var index = 1; index < configList.Count; index++)
-		{
-			var publisher = InitializePublisherFromConfig(token, configList[index]);
-
-			telemetryPublishers.Add(publisher);
-		}
-
-		TelemetryPublishers = telemetryPublishers.AsReadOnly();
+		TelemetryPublishers = [.. configList.Select(config => InitializePublisherFromConfig(token, config))];
 	}
 
 	private TelemetryPublisher InitializePublisherFromConfig(AccessToken token, PublisherConfiguration config)
@@ -111,11 +95,7 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		TelemetryPublisher publisher;
 
-		if (!config.UseAuthentication)
-		{
-			publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey);
-		}
-		else
+		if (config.Authenticate)
 		{
 			Task<BearerToken> getAccessToken(CancellationToken cancellationToken)
 			{
@@ -129,6 +109,10 @@ public abstract class IntegrationTestsBase : IDisposable
 			}
 
 			publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, getAccessToken);
+		}
+		else
+		{
+			publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey);
 		}
 
 		return publisher;

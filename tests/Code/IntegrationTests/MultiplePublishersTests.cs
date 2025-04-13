@@ -32,12 +32,12 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 			new PublisherConfiguration()
 			{
 				ConfigPrefix = "Azure.Monitor.AuthOn.",
-				UseAuthentication = true
+				Authenticate = true
 			},
 			new PublisherConfiguration()
 			{
 				ConfigPrefix = "Azure.Monitor.AuthOff.",
-				UseAuthentication = false
+				Authenticate = false
 			}
 		)
 	{

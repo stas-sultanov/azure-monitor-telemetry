@@ -12,8 +12,7 @@ using Azure.Storage.Queues;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
-/// The goals of this test:
-/// - publish telemetry data into two instances of AppInsights; one with auth, one without auth.
+/// The goals of this test suite:
 /// - test dependency tracking with <see cref="TelemetryTrackedHttpClientHandler"/>.
 /// </summary>
 [TestCategory("IntegrationTests")]
@@ -22,13 +21,11 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 {
 	private const String QueueName = "commands";
 
-	#region Data
-
-	private readonly HttpClientTransport queueClientHttpClientTransport;
+	#region Fields
 
 	private readonly QueueClient queueClient;
-
-	private TelemetryClient TelemetryClient { get; }
+	private readonly HttpClientTransport queueClientHttpClientTransport;
+	private readonly TelemetryClient telemetryClient;
 
 	#endregion
 
@@ -45,11 +42,11 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 			new PublisherConfiguration()
 			{
 				ConfigPrefix = "Azure.Monitor.AuthOn.",
-				UseAuthentication = true
+				Authenticate = true
 			}
 		)
 	{
-		TelemetryClient = new TelemetryClient(TelemetryPublishers)
+		telemetryClient = new TelemetryClient(TelemetryPublishers)
 		{
 			Context = new TelemetryTags
 			{
@@ -58,7 +55,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 			}
 		};
 
-		var handler = new TelemetryTrackedHttpClientHandler(TelemetryClient, () => ActivitySpanId.CreateRandom().ToString());
+		var handler = new TelemetryTrackedHttpClientHandler(telemetryClient, () => ActivitySpanId.CreateRandom().ToString());
 
 		queueClientHttpClientTransport = new HttpClientTransport(handler);
 
@@ -85,13 +82,13 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 	public async Task AzureQueue()
 	{
 		// set operation
-		TelemetryClient.Context = TelemetryClient.Context with
+		telemetryClient.Context = telemetryClient.Context with
 		{
 			OperationId = TelemetryFactory.GetOperationId(),
 			OperationName = $"{nameof(DependencyTrackingTests)}.{nameof(AzureQueue)}"
 		};
 
-		TelemetryClient.ActivityScopeBegin(TelemetryFactory.GetOperationId, out var time, out var timestamp, out var id, out var context);
+		telemetryClient.ActivityScopeBegin(TelemetryFactory.GetOperationId, out var time, out var timestamp, out var id, out var context);
 
 		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
@@ -106,9 +103,9 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		await SendMessageTrackedAsync("end", cancellationToken);
 
-		TelemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
-		TelemetryClient.TrackRequest
+		telemetryClient.TrackRequest
 		(
 			time,
 			duration,
@@ -119,21 +116,10 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 			nameof(AzureQueue)
 		);
 
-		var result = await TelemetryClient.PublishAsync(cancellationToken);
+		var result = await telemetryClient.PublishAsync(cancellationToken);
 
 		// assert
 		AssertStandardSuccess(result);
-	}
-
-	private async Task SendMessageTrackedAsync(String message, CancellationToken cancellationToken)
-	{
-		TelemetryClient.ActivityScopeBegin(TelemetryFactory.GetActivityId, out var time, out var timestamp, out var id, out var context);
-
-		_ = await queueClient.SendMessageAsync(message, cancellationToken);
-
-		TelemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
-
-		TelemetryClient.TrackDependencyInProc(time, duration, id, "Storage", true);
 	}
 
 	#endregion
@@ -146,6 +132,21 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 		queueClientHttpClientTransport.Dispose();
 
 		base.Dispose();
+	}
+
+	#endregion
+
+	#region Methods: Helpers
+
+	private async Task SendMessageTrackedAsync(String message, CancellationToken cancellationToken)
+	{
+		telemetryClient.ActivityScopeBegin(TelemetryFactory.GetActivityId, out var time, out var timestamp, out var id, out var context);
+
+		_ = await queueClient.SendMessageAsync(message, cancellationToken);
+
+		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
+
+		telemetryClient.TrackDependencyInProc(time, duration, id, "Storage", true);
 	}
 
 	#endregion

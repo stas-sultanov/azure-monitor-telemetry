@@ -595,11 +595,6 @@ public static class JsonTelemetrySerializer
 		{
 			var pair = value[index];
 
-			if (String.IsNullOrWhiteSpace(pair.Key))
-			{
-				continue;
-			}
-
 			if (index != 0)
 			{
 				WriteComa(streamWriter);
@@ -628,11 +623,6 @@ public static class JsonTelemetrySerializer
 		for (var index = 0; index < value.Count; index++)
 		{
 			var pair = value[index];
-
-			if (String.IsNullOrWhiteSpace(pair.Key))
-			{
-				continue;
-			}
 
 			if (index != 0)
 			{

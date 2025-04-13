@@ -22,51 +22,52 @@ internal static class TelemetrySimulator
 		return ActivitySpanId.CreateRandom().ToString();
 	}
 
-	public static async Task SimulateAvailabilityAsync
+	public static async Task SimulateAvailabilityTestCallAsync
 	(
 		TelemetryClient telemetryClient,
 		String name,
-		String message,
-		Boolean success,
 		String? runLocation,
-		Func<CancellationToken, Task> subsequent,
+		Func<String, CancellationToken, Task<Boolean>> subsequent,
 		CancellationToken cancellationToken
 	)
 	{
 		// begin activity scope
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var activityId, out var context);
 
 		// execute subsequent
-		await subsequent(cancellationToken);
+		var success = await subsequent(activityId, cancellationToken);
 
 		// end activity scope
 		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
-		telemetryClient.TrackAvailability(time, duration, id, name, message, success, runLocation);
+		var message = success ? "Passed" : "Failed";
+
+		telemetryClient.TrackAvailability(time, duration, activityId, name, message, success, runLocation);
 	}
 
-	public static async Task SimulateDependencyAsync
+	public static async Task SimulateHttpDependencyCallAsync
 	(
 		TelemetryClient telemetryClient,
 		HttpMethod httpMethod,
 		Uri url,
-		HttpStatusCode statusCode,
-		Func<CancellationToken, Task> subsequent,
+		Func<String, CancellationToken, Task<Boolean>> subsequent,
 		CancellationToken cancellationToken
 	)
 	{
 		// begin activity scope
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var activityId, out var context);
 
 		// execute subsequent
-		await subsequent(cancellationToken);
+		var success = await subsequent(activityId, cancellationToken);
 
 		// end activity scope
 		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
-		telemetryClient.TrackDependencyHttp(time, duration, id, httpMethod, url, statusCode, (Int32) statusCode < 399);
+		var statusCode = success ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
+
+		telemetryClient.TrackDependencyHttp(time, duration, activityId, httpMethod, url, statusCode, (Int32) statusCode < 399);
 	}
 
 	public static async Task SimulatePageViewAsync
@@ -74,44 +75,44 @@ internal static class TelemetrySimulator
 		TelemetryClient telemetryClient,
 		String pageName,
 		Uri pageUrl,
-		Func<CancellationToken, Task> subsequent,
+		Func<String, CancellationToken, Task> subsequent,
 		CancellationToken cancellationToken
 	)
 	{
 		// begin activity scope
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var activityId, out var context);
 
 		// execute subsequent
-		await subsequent(cancellationToken);
+		await subsequent(activityId, cancellationToken);
 
 		// end activity scope
 		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
-		telemetryClient.TrackPageView(time, duration, id, pageName, pageUrl);
+		telemetryClient.TrackPageView(time, duration, activityId, pageName, pageUrl);
 	}
 
-	public static async Task SimulateRequestAsync
+	public static async Task SimulateRequestProcessingAsync
 	(
 		TelemetryClient telemetryClient,
 		Uri url,
 		String responseCode,
 		Boolean success,
-		Func<CancellationToken, Task> subsequent,
+		Func<String, CancellationToken, Task> subsequent,
 		CancellationToken cancellationToken
 	)
 	{
 		// begin activity scope
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var activityId, out var context);
 
 		// execute subsequent
-		await subsequent(cancellationToken);
+		await subsequent(activityId, cancellationToken);
 
 		// end activity scope
 		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
-		telemetryClient.TrackRequest(time, duration, id, url, responseCode, success);
+		telemetryClient.TrackRequest(time, duration, activityId, url, responseCode, success);
 	}
 
 	#endregion

@@ -32,7 +32,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		new PublisherConfiguration()
 		{
 			ConfigPrefix = "Azure.Monitor.AuthOff.",
-			UseAuthentication = false
+			Authenticate = false
 		}
 	)
 	{
@@ -184,7 +184,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_ExceptionTelemetry_Max()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_ExceptionTelemetry_Max();
+		var telemetry = telemetryFactory.Create_ExceptionTelemetry_Max(Guid.NewGuid().ToString(), SeverityLevel.Critical);
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -328,7 +328,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_RequestTelemetry_Min()
 	{
 		// arrange
-		var telemetry = TelemetryFactory.Create_PageViewTelemetry_Min("GetMain");
+		var telemetry = TelemetryFactory.Create_RequestTelemetry_Min("OK", defaultUri);
 
 		// act
 		TelemetryClient.Add(telemetry);
