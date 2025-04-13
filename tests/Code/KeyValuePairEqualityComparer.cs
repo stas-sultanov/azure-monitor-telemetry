@@ -16,7 +16,8 @@ using System.Collections.Generic;
 /// </remarks>
 /// <param name="keyComparer">An <see cref="IEqualityComparer{TKey}" /> to use to compare keys.</param>
 /// <param name="valueComparer">An <see cref="IEqualityComparer{TValue}" /> to use to compare values.</param>
-internal sealed class KeyValuePairEqualityComparer<TKey, TValue>(IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer) : IEqualityComparer<KeyValuePair<TKey, TValue>>
+internal sealed class KeyValuePairEqualityComparer<TKey, TValue>(IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer)
+	: IEqualityComparer<KeyValuePair<TKey, TValue>>
 {
 	#region Fields
 

@@ -4,10 +4,10 @@
 namespace Azure.Monitor.Telemetry.Publish;
 
 using System;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 
 using Azure.Monitor.Telemetry;
-using Azure.Monitor.Telemetry.Models;
 
 /// <summary>
 /// Provides extension methods for the <see cref="TelemetryClient"/> class.
@@ -40,26 +40,19 @@ public static class TelemetryClientExtensions
 
 		KeyValuePair<String, Double>[] measurementsWithCount = measurements == null ? [countMeasurement] : [..measurements, countMeasurement];
 
-		var name = String.Concat("POST ", publishResult.Url.AbsolutePath);
-
-		var telemetry = new DependencyTelemetry
-		{
-			Data = publishResult.Url.ToString(),
-			Duration = publishResult.Duration,
-			Id = id,
-			Measurements = measurementsWithCount,
-			Name = name,
-			Operation = telemetryClient.Operation,
-			Properties = properties,
-			ResultCode = publishResult.StatusCode.ToString(),
-			Success = publishResult.Success,
-			Target = publishResult.Url.Host,
-			Tags = tags,
-			Type = DependencyTypes.AzureMonitor,
-			Time = publishResult.Time
-		};
-
-		telemetryClient.Add(telemetry);
+		telemetryClient.TrackDependencyHttp
+		(
+			publishResult.Time,
+			publishResult.Duration,
+			id,
+			HttpMethod.Post,
+			publishResult.Url,
+			publishResult.StatusCode,
+			publishResult.Success,
+			measurementsWithCount,
+			properties,
+			tags
+		);
 	}
 
 	#endregion

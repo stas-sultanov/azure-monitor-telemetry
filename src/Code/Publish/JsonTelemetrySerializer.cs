@@ -54,13 +54,11 @@ public static class JsonTelemetrySerializer
 	/// <param name="streamWriter">The StreamWriter to which the serialized JSON will be written.</param>
 	/// <param name="instrumentationKey">The instrumentation key associated with the telemetry data.</param>
 	/// <param name="telemetry">The telemetry data to be serialized.</param>
-	/// <param name="clientTags">A read-only list of tags to attach to each telemetry item. From <see cref="TelemetryClient"/>.</param>
 	public static void Serialize
 	(
 		StreamWriter streamWriter,
 		String instrumentationKey,
-		Telemetry telemetry,
-		IReadOnlyList<KeyValuePair<String, String>>? clientTags
+		Telemetry telemetry
 	)
 	{
 		String name;
@@ -133,7 +131,7 @@ public static class JsonTelemetrySerializer
 
 		if (!propertiesOnTop)
 		{
-			WriteIfValid(streamWriter, telemetry.Properties, ",\"properties\":{", "}");
+			WriteOptional(streamWriter, ",\"properties\":{", "}", telemetry.Properties);
 		}
 
 		streamWriter.Write("},\"baseType\":\"");
@@ -153,47 +151,12 @@ public static class JsonTelemetrySerializer
 		// serialize properties
 		if (propertiesOnTop)
 		{
-			WriteIfValid(streamWriter, telemetry.Properties, ",\"properties\":{", "}");
+			WriteOptional(streamWriter, ",\"properties\":{", "}", telemetry.Properties);
 		}
 
-		streamWriter.Write(",\"tags\":{");
+		WriteOptional(streamWriter, ",\"tags\":{", "}", telemetry.Tags);
 
-		{
-			var scopeHasItems = false;
-
-			if (telemetry.Operation != null)
-			{
-				// serialize operation-specific tags
-				if (telemetry.Operation.Id != null)
-				{
-					WritePair(streamWriter, TelemetryTagKeys.OperationId, telemetry.Operation.Id, scopeHasItems);
-
-					scopeHasItems = true;
-				}
-
-				if (telemetry.Operation.Name != null)
-				{
-					WritePair(streamWriter, TelemetryTagKeys.OperationName, telemetry.Operation.Name, scopeHasItems);
-
-					scopeHasItems = true;
-				}
-
-				if (telemetry.Operation.ParentId != null)
-				{
-					WritePair(streamWriter, TelemetryTagKeys.OperationParentId, telemetry.Operation.ParentId, scopeHasItems);
-
-					scopeHasItems = true;
-				}
-			}
-
-			// serialize telemetry item tags
-			scopeHasItems |= WriteListItemsIfListValid(streamWriter, telemetry.Tags, scopeHasItems);
-
-			// serialize client tags
-			_ = WriteListItemsIfListValid(streamWriter, clientTags, scopeHasItems);
-		}
-
-		streamWriter.Write("},\"time\":\"");
+		streamWriter.Write(",\"time\":\"");
 
 		streamWriter.Write(telemetry.Time.ToString("O"));
 
@@ -220,7 +183,7 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("\"");
 
-		WriteIfValid(streamWriter, availabilityTelemetry.Measurements, ",\"measurements\":{", "}");
+		WriteOptional(streamWriter, ",\"measurements\":{", "}", availabilityTelemetry.Measurements);
 
 		streamWriter.Write(",\"message\":\"");
 
@@ -232,7 +195,7 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("\"");
 
-		WriteIfValid(streamWriter, availabilityTelemetry.RunLocation, ",\"runLocation\":\"", "\"");
+		WriteOptional(streamWriter, ",\"runLocation\":\"", "\"", availabilityTelemetry.RunLocation);
 
 		streamWriter.Write(",\"success\":");
 
@@ -245,7 +208,7 @@ public static class JsonTelemetrySerializer
 
 		var success = dependencyTelemetry.Success ? "true" : "false";
 
-		WriteIfValid(streamWriter, dependencyTelemetry.Data, "\"data\":\"", "\",");
+		WriteOptional(streamWriter, "\"data\":\"", "\",", dependencyTelemetry.Data);
 
 		streamWriter.Write("\"duration\":\"");
 
@@ -257,7 +220,7 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("\"");
 
-		WriteIfValid(streamWriter, dependencyTelemetry.Measurements, ",\"measurements\":{", "}");
+		WriteOptional(streamWriter, ",\"measurements\":{", "}", dependencyTelemetry.Measurements);
 
 		streamWriter.Write(",\"name\":\"");
 
@@ -267,18 +230,18 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write(success);
 
-		WriteIfValid(streamWriter, dependencyTelemetry.ResultCode, ",\"resultCode\":\"", "\"");
+		WriteOptional(streamWriter, ",\"resultCode\":\"", "\"", dependencyTelemetry.ResultCode);
 
-		WriteIfValid(streamWriter, dependencyTelemetry.Target, ",\"target\":\"", "\"");
+		WriteOptional(streamWriter, ",\"target\":\"", "\"", dependencyTelemetry.Target);
 
-		WriteIfValid(streamWriter, dependencyTelemetry.Type, ",\"type\":\"", "\"");
+		WriteOptional(streamWriter, ",\"type\":\"", "\"", dependencyTelemetry.Type);
 	}
 
 	private static void WriteDataEvent(StreamWriter streamWriter, Telemetry telemetry)
 	{
 		var eventTelemetry = (EventTelemetry) telemetry;
 
-		WriteIfValid(streamWriter, eventTelemetry.Measurements, "\"measurements\":{", "},");
+		WriteOptional(streamWriter, "\"measurements\":{", "},", eventTelemetry.Measurements);
 
 		streamWriter.Write("\"name\":\"");
 
@@ -336,7 +299,7 @@ public static class JsonTelemetrySerializer
 
 					streamWriter.Write(frame.Assembly);
 
-					WriteIfValid(streamWriter, frame.FileName, "\",\"fileName\":\"", "");
+					WriteOptional(streamWriter, "\",\"fileName\":\"", "", frame.FileName);
 
 					streamWriter.Write("\",\"level\":");
 
@@ -365,15 +328,15 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("]");
 
-		WriteIfValid(streamWriter, exceptionTelemetry.Measurements, ",\"measurements\":{", "}");
+		WriteOptional(streamWriter, ",\"measurements\":{", "}", exceptionTelemetry.Measurements);
 
-		WriteIfValid(streamWriter, exceptionTelemetry.ProblemId, ",\"problemId\":\"", "\"");
+		WriteOptional(streamWriter, ",\"problemId\":\"", "\"", exceptionTelemetry.ProblemId);
 
 		if (exceptionTelemetry.SeverityLevel.HasValue)
 		{
 			var severityLevelAsString = severityLevelToString[(Int32)exceptionTelemetry.SeverityLevel];
 
-			Write(streamWriter, severityLevelAsString, ",\"severityLevel\":\"", "\"");
+			Write(streamWriter, ",\"severityLevel\":\"", "\"", severityLevelAsString);
 		}
 	}
 
@@ -429,7 +392,7 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("\"");
 
-		WriteIfValid(streamWriter, pageViewTelemetry.Measurements, ",\"measurements\":{", "}");
+		WriteOptional(streamWriter, ",\"measurements\":{", "}", pageViewTelemetry.Measurements);
 
 		streamWriter.Write(",\"name\":\"");
 
@@ -439,7 +402,7 @@ public static class JsonTelemetrySerializer
 
 		if (pageViewTelemetry.Url != null)
 		{
-			Write(streamWriter, pageViewTelemetry.Url.ToString(), ",\"url\":\"", "\"");
+			Write(streamWriter, ",\"url\":\"", "\"", pageViewTelemetry.Url.ToString());
 		}
 	}
 
@@ -447,31 +410,23 @@ public static class JsonTelemetrySerializer
 	{
 		var requestTelemetry = (RequestTelemetry) telemetry;
 
-		streamWriter.Write("\"duration\":\"");
+		Write(streamWriter, "\"duration\":\"", "\"", requestTelemetry.Duration);
 
-		streamWriter.Write(requestTelemetry.Duration);
+		Write(streamWriter, ",\"id\":\"", "\"", requestTelemetry.Id);
 
-		streamWriter.Write("\",\"id\":\"");
+		WriteOptional(streamWriter, ",\"measurements\":{", "}", requestTelemetry.Measurements);
 
-		streamWriter.Write(requestTelemetry.Id);
+		WriteOptional(streamWriter, ",\"name\":\"", "\"", requestTelemetry.Name);
 
-		streamWriter.Write("\"");
+		Write(streamWriter, ",\"responseCode\":\"", "\"", requestTelemetry.ResponseCode);
 
-		WriteIfValid(streamWriter, requestTelemetry.Measurements, ",\"measurements\":{", "}");
+		WriteOptional(streamWriter, ",\"source\":\"", "\"", requestTelemetry.Source);
 
-		streamWriter.Write(",\"name\":\"");
-
-		streamWriter.Write(requestTelemetry.Name);
-
-		streamWriter.Write("\",\"responseCode\":\"");
-
-		streamWriter.Write(requestTelemetry.ResponseCode);
-
-		streamWriter.Write("\",\"success\":");
+		streamWriter.Write(",\"success\":");
 
 		streamWriter.Write(requestTelemetry.Success ? "true" : "false");
 
-		Write(streamWriter, requestTelemetry.Url.ToString(), ",\"url\":\"", "\"");
+		Write(streamWriter, ",\"url\":\"", "\"", requestTelemetry.Url.ToString());
 	}
 
 	private static void WriteDataTrace(StreamWriter streamWriter, Telemetry telemetry)
@@ -499,9 +454,27 @@ public static class JsonTelemetrySerializer
 	private static void Write
 	(
 		StreamWriter streamWriter,
-		String value,
 		String pre,
-		String post
+		String post,
+		Boolean value
+	)
+	{
+		var valueAsString = value ? "true" : "false";
+
+		streamWriter.Write(pre);
+
+		streamWriter.Write(valueAsString);
+
+		streamWriter.Write(post);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void Write
+	(
+		StreamWriter streamWriter,
+		String pre,
+		String post,
+		TimeSpan value
 	)
 	{
 		streamWriter.Write(pre);
@@ -512,12 +485,28 @@ public static class JsonTelemetrySerializer
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WriteIfValid
+	private static void Write
 	(
 		StreamWriter streamWriter,
-		String? value,
 		String pre,
-		String post
+		String post,
+		String value
+	)
+	{
+		streamWriter.Write(pre);
+
+		streamWriter.Write(value);
+
+		streamWriter.Write(post);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteOptional
+	(
+		StreamWriter streamWriter,
+		String pre,
+		String post,
+		String? value
 	)
 	{
 		if (value == null)
@@ -525,19 +514,18 @@ public static class JsonTelemetrySerializer
 			return;
 		}
 
-		Write(streamWriter, value, pre, post);
+		Write(streamWriter, pre, post, value);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WriteIfValid
+	private static void WriteOptional
 	(
 		StreamWriter streamWriter,
-		IReadOnlyList<KeyValuePair<String, String>>? list,
 		String pre,
-		String post
+		String post,
+		IReadOnlyList<KeyValuePair<String, Double>>? list
 	)
 	{
-		// serialize measurements
 		if (list == null || list.Count == 0)
 		{
 			return;
@@ -545,83 +533,69 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write(pre);
 
-		for (var index = 0; index < list.Count; index++)
-		{
-			var pair = list[index];
-
-			var scopeHasItems = index != 0;
-
-			WritePair(streamWriter, pair.Key, pair.Value, scopeHasItems);
-		}
-
-		streamWriter.Write(post);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WriteIfValid
-	(
-		StreamWriter streamWriter,
-		IReadOnlyList<KeyValuePair<String, Double>>? list,
-		String pre,
-		String post
-	)
-	{
-		// serialize measurements
-		if (list == null || list.Count == 0)
-		{
-			return;
-		}
-
-		streamWriter.Write(pre);
+		var scopeHasItems = false;
 
 		for (var index = 0; index < list.Count; index++)
 		{
 			var pair = list[index];
 
-			var scopeHasItems = index != 0;
-
-			WritePair(streamWriter, pair.Key, pair.Value, scopeHasItems);
-		}
-
-		streamWriter.Write(post);
-	}
-
-	/// <summary>Serializes a list of key-value pairs into a JSON format and writes it to the <paramref name="streamWriter"/>.</summary>
-	/// <param name="streamWriter">The StreamWriter to write the serialized JSON to.</param>
-	/// <param name="list">The list of key-value pairs to serialize.</param>
-	/// <param name="scopeHasItems">Indicates whether there are items already within the scope.</param>
-	/// <returns>Returns <c>true</c> if at least one pair has been serialized within the scope, <c>false</c> otherwise.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static Boolean WriteListItemsIfListValid
-	(
-		StreamWriter streamWriter,
-		IReadOnlyList<KeyValuePair<String, String>>? list,
-		Boolean scopeHasItems
-	)
-	{
-		if (list == null || list.Count == 0)
-		{
-			return false;
-		}
-
-		for (var index = 0; index < list.Count; index++)
-		{
-			var pair = list[index];
+			if (String.IsNullOrWhiteSpace(pair.Key))
+			{
+				continue;
+			}
 
 			WritePair(streamWriter, pair.Key, pair.Value, scopeHasItems);
 
 			scopeHasItems = true;
 		}
 
-		return scopeHasItems;
+		streamWriter.Write(post);
 	}
 
-	/// <summary>Serializes a key-value pair into a JSON format and writes it to the <paramref name="streamWriter"/>.</summary>
-	/// <param name="streamWriter">The StreamWriter to write the serialized JSON to.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void WriteOptional
+	(
+		StreamWriter streamWriter,
+		String pre,
+		String post,
+		IReadOnlyList<KeyValuePair<String, String>>? list
+	)
+	{
+		if (list == null || list.Count == 0)
+		{
+			return;
+		}
+
+		streamWriter.Write(pre);
+
+		var scopeHasItems = false;
+
+		for (var index = 0; index < list.Count; index++)
+		{
+			var pair = list[index];
+
+			if (String.IsNullOrWhiteSpace(pair.Key) || String.IsNullOrWhiteSpace(pair.Value))
+			{
+				continue;
+			}
+
+			WritePair(streamWriter, pair.Key, pair.Value, scopeHasItems);
+
+			scopeHasItems = true;
+		}
+
+		streamWriter.Write(post);
+	}
+
+	#endregion
+
+	#region Methods: Write Pair
+
+	/// <summary>Writes a key-value into the <paramref name="streamWriter"/>.</summary>
+	/// <param name="streamWriter">The writer.</param>
 	/// <param name="key">The key.</param>
 	/// <param name="value">The value.</param>
-	/// <param name="scopeHasItems">Indicates whether there are items already within the scope.</param>
-	/// <returns>Returns <c>true</c> if at least one pair has been serialized within the scope, <c>false</c> otherwise.</returns>	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	/// <param name="scopeHasItems">A flag that indicates if there are items already within the scope.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WritePair
 	(
@@ -647,11 +621,11 @@ public static class JsonTelemetrySerializer
 		streamWriter.Write("\"");
 	}
 
-	/// <summary>Serializes a key-value pair into a JSON format and writes it to the <paramref name="streamWriter"/>.</summary>
-	/// <param name="streamWriter">The StreamWriter to write the serialized JSON to.</param>
+	/// <summary>Writes a key-value into the <paramref name="streamWriter"/>.</summary>
+	/// <param name="streamWriter">The writer.</param>
 	/// <param name="key">The key.</param>
 	/// <param name="value">The value.</param>
-	/// <param name="scopeHasItems">Indicates whether there are items already within the scope.</param>
+	/// <param name="scopeHasItems">A flag that indicates if there are items already within the scope.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WritePair
 	(

@@ -1,11 +1,11 @@
 // Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.UnitTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
+using System;
 using System.Net;
 
-using Azure.Monitor.Telemetry.Mocks;
 using Azure.Monitor.Telemetry.Models;
 using Azure.Monitor.Telemetry.Publish;
 
@@ -16,18 +16,23 @@ using Azure.Monitor.Telemetry.Publish;
 [TestClass]
 public sealed class TelemetryClientExtensionsTests
 {
+	#region Static Fields
+
+	private static readonly Uri appInsightsTestUrl = new("https://myaccount.applicationinsights.azure.com");
+
+	#endregion
+
+	#region Methods: Tests
+
 	[TestMethod]
 	public void Method_TrackDependency()
 	{
 		// arrange
-		var operation = new TelemetryOperation { Id = new Guid().ToString("N"), Name = "Test" };
 		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryClient = new TelemetryClient(telemetryPublisher)
-		{
-			Operation = operation
-		};
-		var id = "test-id";
-		var publishResult = new HttpTelemetryPublishResult
+		var telemetryClient = new TelemetryClient(telemetryPublisher);
+
+		var inId = "test-id";
+		var inPublishResult = new HttpTelemetryPublishResult
 		{
 			Count = 10,
 			Duration = TimeSpan.FromSeconds(1),
@@ -35,81 +40,66 @@ public sealed class TelemetryClientExtensionsTests
 			StatusCode = HttpStatusCode.OK,
 			Success = true,
 			Time = DateTime.UtcNow,
-			Url = new Uri("http://example.com")
+			Url = appInsightsTestUrl
 		};
 
+		var expectedName = $"POST {appInsightsTestUrl.AbsolutePath}";
+		var expectedType = TelemetryUtils.DetectDependencyTypeFromHttpUri(appInsightsTestUrl);
+
 		// act
-		telemetryClient.TrackDependency(id, publishResult);
+		telemetryClient.TrackDependency(inId, inPublishResult);
+
 		telemetryClient.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
+
+		var actual = telemetryPublisher.Buffer.First() as DependencyTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		Assert.AreEqual(publishResult.Url.ToString(), actualResult.Data, nameof(DependencyTelemetry.Data));
-
-		Assert.AreEqual(publishResult.Duration, actualResult.Duration, nameof(DependencyTelemetry.Duration));
-
-		Assert.AreEqual(id, actualResult.Id, nameof(DependencyTelemetry.Id));
-
-		Assert.IsNotNull(actualResult.Measurements, nameof(DependencyTelemetry.Measurements));
-
-		Assert.AreEqual(nameof(HttpTelemetryPublishResult.Count), actualResult.Measurements[0].Key, nameof(DependencyTelemetry.Measurements));
-
-		Assert.AreEqual(publishResult.Count, actualResult.Measurements[0].Value, nameof(DependencyTelemetry.Measurements));
-
-		Assert.AreEqual("POST " + publishResult.Url.AbsolutePath, actualResult.Name, nameof(DependencyTelemetry.Name));
-
-		Assert.AreEqual(operation, actualResult.Operation, nameof(DependencyTelemetry.Operation));
-
-		Assert.AreEqual(publishResult.StatusCode.ToString(), actualResult.ResultCode, nameof(DependencyTelemetry.ResultCode));
-
-		Assert.AreEqual(publishResult.Success, actualResult.Success, nameof(DependencyTelemetry.Success));
-
-		Assert.AreEqual(publishResult.Url.Host, actualResult.Target, nameof(DependencyTelemetry.Target));
-
-		Assert.AreEqual(DependencyTypes.AzureMonitor, actualResult.Type, nameof(DependencyTelemetry.Type));
+		AssertHelper.PropertyEqualsTo(actual, o => o.Name, expectedName);
+		AssertHelper.PropertyEqualsTo(actual, o => o.Type, expectedType);
 	}
 
 	[TestMethod]
 	public void Method_TrackDependency_WithMeasurements()
 	{
 		// arrange
-		var id = "test-id";
-		var measurements = new[] { new KeyValuePair<String, Double>("Number", 0) };
-		var operation = new TelemetryOperation{ Id = new Guid().ToString("N"), Name = "Test" };
-		var publishResult = new HttpTelemetryPublishResult
+		var telemetryPublisher = new HttpTelemetryPublisherMock();
+		var telemetryClient = new TelemetryClient(telemetryPublisher);
+
+		var count = 10;
+		var measurement = new KeyValuePair<String, Double>("Number", 0);
+
+		var inId = "test-id";
+		var inPublishResult = new HttpTelemetryPublishResult
 		{
-			Count = 10,
+			Count = count,
 			Duration = TimeSpan.FromSeconds(1),
-			Response = "",
+			Response = "OK",
 			StatusCode = HttpStatusCode.OK,
 			Success = true,
 			Time = DateTime.UtcNow,
-			Url = new Uri("http://example.com")
+			Url = new Uri("https://myaccount.applicationinsights.azure.com")
 		};
-		var telemetryPublisher = new HttpTelemetryPublisherMock();
-		var telemetryClient = new TelemetryClient(telemetryPublisher)
-		{
-			Operation = operation
-		};
+
+		var expectedMeasurements = (IEnumerable<KeyValuePair<String, Double>>)
+		[
+			measurement,
+			new(nameof(HttpTelemetryPublishResult.Count), count)
+		];
 
 		// act
-		telemetryClient.TrackDependency(id, publishResult, measurements);
+		telemetryClient.TrackDependency(inId, inPublishResult, [measurement]);
+
 		telemetryClient.PublishAsync().Wait();
-		var actualResult = telemetryPublisher.Buffer.First() as DependencyTelemetry;
+
+		var actual = telemetryPublisher.Buffer.First() as DependencyTelemetry;
 
 		// assert
-		Assert.IsNotNull(actualResult);
+		Assert.IsNotNull(actual);
 
-		Assert.IsNotNull(actualResult.Measurements, nameof(DependencyTelemetry.Measurements));
-
-		Assert.AreEqual(2, actualResult.Measurements.Count);
-
-		Assert.AreEqual(measurements[0], actualResult.Measurements[0]);
-
-		Assert.AreEqual(measurements[0].Key, actualResult.Measurements[0].Key);
-
-		Assert.AreEqual(measurements[0].Value, actualResult.Measurements[0].Value);
+		AssertHelper.PropertyEqualsTo(actual, o => o.Measurements, expectedMeasurements);
 	}
+
+	#endregion
 }

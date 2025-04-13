@@ -35,7 +35,7 @@ public sealed class HttpTelemetryPublishResult : TelemetryPublishResult
 	public required DateTime Time { get; init; }
 
 	/// <summary>
-	/// The ingestion URL used for the telemetry operation.
+	/// The ingestion URL used for the telemetry publish operation.
 	/// </summary>
 	public required Uri Url { get; init; }
 

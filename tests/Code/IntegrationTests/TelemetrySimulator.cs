@@ -10,8 +10,13 @@ using System.Threading;
 
 using Azure.Monitor.Telemetry;
 
+/// <summary>
+/// Provides methods to simulate telemetry events.
+/// </summary>
 internal static class TelemetrySimulator
 {
+	#region Methods
+
 	public static String GetActivityId()
 	{
 		return ActivitySpanId.CreateRandom().ToString();
@@ -29,13 +34,13 @@ internal static class TelemetrySimulator
 	)
 	{
 		// begin activity scope
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
 		telemetryClient.TrackAvailability(time, duration, id, name, message, success, runLocation);
@@ -52,13 +57,13 @@ internal static class TelemetrySimulator
 	)
 	{
 		// begin activity scope
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
 		telemetryClient.TrackDependencyHttp(time, duration, id, httpMethod, url, statusCode, (Int32) statusCode < 399);
@@ -73,14 +78,14 @@ internal static class TelemetrySimulator
 		CancellationToken cancellationToken
 	)
 	{
-		// begin operation
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		// begin activity scope
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
 		telemetryClient.TrackPageView(time, duration, id, pageName, pageUrl);
@@ -96,16 +101,18 @@ internal static class TelemetrySimulator
 		CancellationToken cancellationToken
 	)
 	{
-		// begin operation
-		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		// begin activity scope
+		telemetryClient.ActivityScopeBegin(GetActivityId, out var time, out var timestamp, out var id, out var context);
 
 		// execute subsequent
 		await subsequent(cancellationToken);
 
 		// end activity scope
-		telemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
+		telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		// track telemetry
 		telemetryClient.TrackRequest(time, duration, id, url, responseCode, success);
 	}
+
+	#endregion
 }

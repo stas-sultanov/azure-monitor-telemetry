@@ -1,13 +1,12 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.IntegrationTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using System.Diagnostics;
 
 using Azure.Core.Pipeline;
 using Azure.Monitor.Telemetry.Dependency;
-using Azure.Monitor.Telemetry.Tests;
 using Azure.Storage.Queues;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -50,14 +49,14 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 			}
 		)
 	{
-		TelemetryClient = new TelemetryClient
-		(
-			TelemetryPublishers,
-			[
-				new (TelemetryTagKeys.CloudRole, "Tester"),
-				new (TelemetryTagKeys.CloudRoleInstance, Environment.MachineName)
-			]
-		);
+		TelemetryClient = new TelemetryClient(TelemetryPublishers)
+		{
+			Context = new TelemetryTags
+			{
+				CloudRole = "Tester",
+				CloudRoleInstance = Environment.MachineName,
+			}
+		};
 
 		var handler = new TelemetryTrackedHttpClientHandler(TelemetryClient, () => ActivitySpanId.CreateRandom().ToString());
 
@@ -86,13 +85,13 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 	public async Task AzureQueue()
 	{
 		// set operation
-		TelemetryClient.Operation = new()
+		TelemetryClient.Context = TelemetryClient.Context with
 		{
-			Id = TelemetryFactory.GetOperationId(),
-			Name = $"{nameof(DependencyTrackingTests)}.{nameof(AzureQueue)}"
+			OperationId = TelemetryFactory.GetOperationId(),
+			OperationName = $"{nameof(DependencyTrackingTests)}.{nameof(AzureQueue)}"
 		};
 
-		TelemetryClient.ActivityScopeBegin(TelemetryFactory.GetOperationId, out var time, out var timestamp, out var id, out var operation);
+		TelemetryClient.ActivityScopeBegin(TelemetryFactory.GetOperationId, out var time, out var timestamp, out var id, out var context);
 
 		var cancellationToken = TestContext.CancellationTokenSource.Token;
 
@@ -107,7 +106,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		await SendMessageTrackedAsync("end", cancellationToken);
 
-		TelemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
+		TelemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		TelemetryClient.TrackRequest
 		(
@@ -128,11 +127,11 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 	private async Task SendMessageTrackedAsync(String message, CancellationToken cancellationToken)
 	{
-		TelemetryClient.ActivityScopeBegin(TelemetryFactory.GetActivityId, out var time, out var timestamp, out var id, out var operation);
+		TelemetryClient.ActivityScopeBegin(TelemetryFactory.GetActivityId, out var time, out var timestamp, out var id, out var context);
 
 		_ = await queueClient.SendMessageAsync(message, cancellationToken);
 
-		TelemetryClient.ActivityScopeEnd(operation, timestamp, out var duration);
+		TelemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 		TelemetryClient.TrackDependencyInProc(time, duration, id, "Storage", true);
 	}

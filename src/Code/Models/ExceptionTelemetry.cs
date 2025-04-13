@@ -24,18 +24,13 @@ public sealed class ExceptionTelemetry : Telemetry
 	/// <summary>
 	/// A read-only list of measurements.
 	/// </summary>
-	/// <remarks>
-	/// Maximum key length: 150 characters.
-	/// Is null by default.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <summary>
 	/// The problem identifier.
 	/// </summary>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? ProblemId { get; init; }
 
 	/// <inheritdoc/>

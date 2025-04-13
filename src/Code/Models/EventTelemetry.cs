@@ -19,10 +19,7 @@ public sealed class EventTelemetry : Telemetry
 	/// <summary>
 	/// A read-only list of measurements.
 	/// </summary>
-	/// <remarks>
-	/// Maximum key length: 150 characters.
-	/// Is null by default.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
@@ -30,9 +27,6 @@ public sealed class EventTelemetry : Telemetry
 	/// </summary>
 	/// <remarks>Maximum length: 512 characters.</remarks>
 	public required String Name { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }

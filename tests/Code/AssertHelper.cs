@@ -6,7 +6,6 @@ namespace Azure.Monitor.Telemetry.Tests;
 using System;
 using System.Linq.Expressions;
 
-using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Models;
 
 /// <summary>
@@ -17,31 +16,6 @@ internal static class AssertHelper
 	#region Methods: public
 
 	/// <summary>
-	/// Tests whether the specified values are equal and throws an exception if the two values are not equal.
-	/// </summary>
-	/// <param name="expected">The first value to compare. This is the value the tests expects.</param>
-	/// <param name="actual">The second value to compare. This is the value produced by the code under test.</param>
-	/// <exception cref="AssertFailedException">Thrown if <paramref name="expected"/> is not equal to <paramref name="actual"/>.</exception>
-	public static void AreEqual
-	(
-		TelemetryOperation expected,
-		TelemetryOperation actual
-	)
-	{
-		// check if both params are referencing to the same object
-		if (ReferenceEquals(expected, actual))
-		{
-			return;
-		}
-
-		Assert.AreEqual(expected.Id, actual.Id, "{0}.{1}", nameof(TelemetryOperation), nameof(TelemetryOperation.Id));
-
-		Assert.AreEqual(expected.Name, actual.Name, "{0}.{1}", nameof(TelemetryOperation), nameof(TelemetryOperation.Name));
-
-		Assert.AreEqual(expected.ParentId, actual.ParentId, "{0}.{1}", nameof(TelemetryOperation), nameof(TelemetryOperation.ParentId));
-	}
-
-	/// <summary>
 	/// Tests if the value of the property of the <paramref name="actualObject"/> object equals to <paramref name="expectedValue"/>.
 	/// </summary>
 	/// <typeparam name="ObjectType">The type of the object.</typeparam>
@@ -50,16 +24,69 @@ internal static class AssertHelper
 	/// <param name="propertySelector">An expression to get property from the <paramref name="actualObject"/>.</param>
 	/// <param name="expectedValue">The expected value.</param>
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
-	public static void AreEqual<ObjectType, ValueType>
+	public static void PropertyEqualsTo<ObjectType, ValueType>
 	(
 		ObjectType actualObject,
 		Expression<Func<ObjectType, ValueType>> propertySelector,
 		ValueType expectedValue
 	)
 	{
-		GetPropertyMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
+		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
 
-		Assert.AreEqual(expectedValue, actualValue, "{0}.{1}", typeName, propertyName);
+		if (EqualityComparer<ValueType>.Default.Equals(expectedValue, actualValue))
+		{
+			return;
+		}
+
+		throw new AssertFailedException($"{typeName}.{propertyName} expected: {expectedValue} actual: {actualValue}");
+	}
+
+	/// <summary>
+	/// Tests if the value of the property of the <paramref name="actualObject"/> object equals to <paramref name="expectedValue"/>.
+	/// </summary>
+	/// <typeparam name="ObjectType">The type of the object.</typeparam>
+	/// <typeparam name="ItemType">The type of the key within the enumeration.</typeparam>
+	/// <param name="actualObject">The object.</param>
+	/// <param name="propertySelector">An expression to get property from the <paramref name="actualObject"/>.</param>
+	/// <param name="expectedValue">The expected value.</param>
+	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
+	public static void PropertyEqualsTo<ObjectType, ItemType>
+	(
+		ObjectType actualObject,
+		Expression<Func<ObjectType, IEnumerable<ItemType>?>> propertySelector,
+		IEnumerable<ItemType>? expectedValue,
+		IEqualityComparer<ItemType>? itemComparer
+	)
+	{
+		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
+
+		if (ReferenceEquals(expectedValue, actualValue))
+		{
+			return;
+		}
+
+		if (expectedValue == null || actualValue == null)
+		{
+			throw new AssertFailedException($"{typeName}.{propertyName} expected:{expectedValue} actual:{actualValue}");
+		}
+
+		var expectedConut = expectedValue.Count();
+		var actualCount = actualValue.Count();
+
+		if (expectedConut != actualCount)
+		{
+			throw new AssertFailedException($"{typeName}.{propertyName}.Count expected:{expectedConut} actual:{actualCount}");
+		}
+
+		var comparer = itemComparer ?? EqualityComparer<ItemType>.Default;
+
+		foreach (var item in expectedValue)
+		{
+			if (!actualValue.Contains(item, comparer))
+			{
+				throw new AssertFailedException($"{typeName}.{propertyName} does not contain item: {item}");
+			}
+		}
 	}
 
 	/// <summary>
@@ -72,22 +99,20 @@ internal static class AssertHelper
 	/// <param name="propertySelector">An expression to get property from the <paramref name="actualObject"/>.</param>
 	/// <param name="expectedValue">The expected value.</param>
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
-	public static void AreEqual<ObjectType, KeyType, ValueType>
+	public static void PropertyEqualsTo<ObjectType, KeyType, ValueType>
 	(
 		ObjectType actualObject,
-		Expression<Func<ObjectType, IEnumerable<KeyValuePair<KeyType, ValueType>>>> propertySelector,
-		IEnumerable<KeyValuePair<KeyType, ValueType>> expectedValue
+		Expression<Func<ObjectType, IEnumerable<KeyValuePair<KeyType, ValueType>>?>> propertySelector,
+		IEnumerable<KeyValuePair<KeyType, ValueType>>? expectedValue
 	)
 	{
-		GetPropertyMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
-
 		var comparer = new KeyValuePairEqualityComparer<KeyType, ValueType>
 		(
 			EqualityComparer<KeyType>.Default,
 			EqualityComparer<ValueType>.Default
 		);
 
-		CollectionAssert.AreEquivalent(expectedValue, actualValue, comparer, "{0}.{1}", typeName, propertyName);
+		PropertyEqualsTo(actualObject, propertySelector, expectedValue, comparer);
 	}
 
 	/// <summary>
@@ -98,43 +123,14 @@ internal static class AssertHelper
 	/// <param name="propertySelector">An expression to get property from the <paramref name="actualObject"/>.</param>
 	/// <param name="expectedValue">The expected value.</param>
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
-	public static void AreEqual<ObjectType>
-	(
-		ObjectType actualObject,
-		Expression<Func<ObjectType, TelemetryOperation>> propertySelector,
-		TelemetryOperation expectedValue
-	)
-	{
-		GetPropertyMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
-
-		if (ReferenceEquals(expectedValue, actualValue))
-		{
-			return;
-		}
-
-		Assert.AreEqual(expectedValue.Id, actualValue.Id, "{0}.{1}.{2}", typeName, propertyName, nameof(TelemetryOperation.Id));
-
-		Assert.AreEqual(expectedValue.Name, actualValue.Name, "{0}.{1}.{2}", typeName, propertyName, nameof(TelemetryOperation.Name));
-
-		Assert.AreEqual(expectedValue.ParentId, actualValue.ParentId, "{0}.{1}.{2}", typeName, propertyName, nameof(TelemetryOperation.ParentId));
-	}
-
-	/// <summary>
-	/// Tests if the value of the property of the <paramref name="actualObject"/> object equals to <paramref name="expectedValue"/>.
-	/// </summary>
-	/// <typeparam name="ObjectType">The type of the object.</typeparam>
-	/// <param name="actualObject">The object.</param>
-	/// <param name="propertySelector">An expression to get property from the <paramref name="actualObject"/>.</param>
-	/// <param name="expectedValue">The expected value.</param>
-	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
-	public static void AreEqual<ObjectType>
+	public static void PropertyEqualsTo<ObjectType>
 	(
 		ObjectType actualObject,
 		Expression<Func<ObjectType, MetricValueAggregation?>> propertySelector,
 		MetricValueAggregation expectedValue
 	)
 	{
-		GetPropertyMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
+		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
 
 		if (ReferenceEquals(expectedValue, actualValue))
 		{
@@ -143,44 +139,55 @@ internal static class AssertHelper
 
 		if (actualValue == null)
 		{
-			Assert.Fail("{0}.{1}", typeName, propertyName);
+			throw new AssertFailedException
+			(
+				$"{typeName}.{propertyName}"
+			);
 		}
 
-		Assert.AreEqual(expectedValue.Count, actualValue.Count, "{0}.{1}.{2}", typeName, propertyName, nameof(MetricValueAggregation.Count));
+		PropertyEqualsTo(actualValue, o => o.Count, expectedValue.Count);
 
-		Assert.AreEqual(expectedValue.Max, actualValue.Max, "{0}.{1}.{2}", typeName, propertyName, nameof(MetricValueAggregation.Max));
+		PropertyEqualsTo(actualValue, o => o.Max, expectedValue.Max);
 
-		Assert.AreEqual(expectedValue.Min, actualValue.Min, "{0}.{1}.{2}", typeName, propertyName, nameof(MetricValueAggregation.Min));
+		PropertyEqualsTo(actualValue, o => o.Min, expectedValue.Min);
 	}
 
 	/// <summary>
-	/// Tests if the <paramref name="testCondition"/> returns <c>true</c> and throws an exception if <c>false</c> is returned.
+	/// Tests if the <paramref name="evaluate"/> returns <c>true</c> and throws an exception if <c>false</c> is returned.
 	/// </summary>
 	/// <typeparam name="ObjectType">The type of the object.</typeparam>
 	/// <typeparam name="ValueType">The type of the value.</typeparam>
 	/// <param name="actualObject">The object.</param>
 	/// <param name="propertySelector">An expression to get property from the <paramref name="actualObject"/>.</param>
-	/// <param name="testCondition">The test condition.</param>
-	/// <exception cref="AssertFailedException">Thrown if <paramref name="testCondition"/> returns <c>false</c>.</exception>
-	public static void IsTrue<ObjectType, PropertyType>
+	/// <param name="evaluate">The evaluation code.</param>
+	/// <exception cref="AssertFailedException">Thrown if <paramref name="evaluate"/> returns <c>false</c>.</exception>
+	public static void PropertyEvaluatesToTrue<ObjectType, ValueType>
 	(
 		ObjectType actualObject,
-		Expression<Func<ObjectType, PropertyType>> propertySelector,
-		Func<PropertyType, Boolean> testCondition
+		Expression<Func<ObjectType, ValueType>> propertySelector,
+		Func<ValueType, Boolean> evaluate
 	)
 	{
-		GetPropertyMetadata(actualObject, propertySelector, out var actual, out var typeName, out var propertyName);
+		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actual, out var typeName, out var propertyName);
 
-		var testResult = testCondition(actual);
+		var testResult = evaluate(actual);
 
-		Assert.IsTrue(testResult, "{0}.{1}", typeName, propertyName);
+		if (testResult)
+		{
+			return;
+		}
+
+		throw new AssertFailedException
+		(
+			$"{typeName}.{propertyName}"
+		);
 	}
 
 	#endregion
 
 	#region Methods: private
 
-	public static void GetPropertyMetadata<ObjectType, PropertyType>
+	public static void GetPropertyValueAndMetadata<ObjectType, PropertyType>
 	(
 		ObjectType actualObject,
 		Expression<Func<ObjectType, PropertyType>> propertySelector,

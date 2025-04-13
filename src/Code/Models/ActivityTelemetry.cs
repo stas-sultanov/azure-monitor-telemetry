@@ -18,6 +18,7 @@ public interface ActivityTelemetry : Telemetry
 	/// <summary>
 	/// The unique identifier of the activity.
 	/// </summary>
+	/// <remarks>Maximum length: 512 characters.</remarks>
 	public String Id { get; }
 
 	#endregion

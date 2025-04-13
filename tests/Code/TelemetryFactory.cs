@@ -5,7 +5,6 @@ namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 
 using Azure.Monitor.Telemetry.Models;
 
@@ -14,36 +13,7 @@ using Azure.Monitor.Telemetry.Models;
 /// </summary>
 internal sealed class TelemetryFactory
 {
-	#region Properties
-
-	public KeyValuePair<String, Double>[] Measurements { get; init; }
-	public TelemetryOperation Operation { get; }
-	public KeyValuePair<String, String>[] Properties { get; init; }
-	public KeyValuePair<String, String>[] Tags { get; init; } = [];
-
-	#endregion
-
-	#region Constructors
-
-	internal TelemetryFactory
-	(
-		String operationName
-	)
-	{
-		Measurements = [new("m", 0), new("n", 1.5)];
-
-		Operation = new TelemetryOperation
-		{
-			Id = GetOperationId(),
-			Name = operationName
-		};
-
-		Properties = [new("key", "value")];
-	}
-
-	#endregion
-
-	#region Methods: Helpers
+	#region Static Methods: Helpers
 
 	internal static String GetOperationId()
 	{
@@ -91,6 +61,160 @@ internal sealed class TelemetryFactory
 
 	#endregion
 
+	#region Static Methods: Create
+
+	/// <summary>
+	/// Creates instance of <see cref="AvailabilityTelemetry"/> with minimum load.
+	/// </summary>
+	public static AvailabilityTelemetry Create_AvailabilityTelemetry_Min
+	(
+		String name,
+		String message = @"Passed"
+	)
+	{
+		var id = GetActivityId();
+
+		var result = new AvailabilityTelemetry
+		{
+			Duration = TimeSpan.Zero,
+			Id = id,
+			Message = message,
+			Name = name,
+			Success = true,
+			Time = DateTime.UtcNow
+		};
+
+		return result;
+	}
+
+	/// <summary>
+	/// Creates instance of <see cref="DependencyTelemetry"/> with minimum load.
+	/// </summary>
+	public static DependencyTelemetry Create_DependencyTelemetry_Min
+	(
+		String name
+	)
+	{
+		var id = GetActivityId();
+
+		var result = new DependencyTelemetry
+		{
+			Time = DateTime.UtcNow,
+			Id = id,
+			Name = name
+		};
+
+		return result;
+	}
+
+	/// <summary>
+	/// Creates instance of <see cref="EventTelemetry"/> with minimum load.
+	/// </summary>
+	public static EventTelemetry Create_EventTelemetry_Min
+	(
+		String name
+	)
+	{
+		var result = new EventTelemetry
+		{
+			Name = name,
+			Time = DateTime.UtcNow,
+		};
+
+		return result;
+	}
+
+	/// <summary>
+	/// Creates instance of <see cref="ExceptionTelemetry"/> with minimum load.
+	/// </summary>
+	public static ExceptionTelemetry Create_ExceptionTelemetry_Min()
+	{
+		try
+		{
+			Simulate_ExceptionThrow(null);
+
+			throw new Exception();
+		}
+		catch (Exception exception)
+		{
+			var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
+
+			var result = new ExceptionTelemetry
+			{
+				Exceptions = exceptions,
+				Time = DateTime.UtcNow
+			};
+
+			return result;
+		}
+	}
+
+	/// <summary>
+	/// Creates instance of <see cref="MetricTelemetry"/> with minimum load.
+	/// </summary>
+	public static MetricTelemetry Create_MetricTelemetry_Min
+	(
+		String @namespace,
+		String name,
+		Double value
+	)
+	{
+		var result = new MetricTelemetry
+		{
+			Name = name,
+			Namespace = @namespace,
+			Time = DateTime.UtcNow,
+			Value = value
+		};
+
+		return result;
+	}
+
+	/// <summary>
+	/// Creates instance of <see cref="PageViewTelemetry"/> with minimum load.
+	/// </summary>
+	public static PageViewTelemetry Create_PageViewTelemetry_Min
+	(
+		String name
+	)
+	{
+		var id = GetActivityId();
+
+		var result = new PageViewTelemetry
+		{
+			Id = id,
+			Name = name,
+			Time = DateTime.UtcNow
+		};
+
+		return result;
+	}
+
+	/// <summary>
+	/// Creates instance of <see cref="TraceTelemetry"/> with minimum load.
+	/// </summary>
+	public static TraceTelemetry Create_TraceTelemetry_Min(String message)
+	{
+		var result = new TraceTelemetry
+		{
+			Message = message,
+			SeverityLevel = SeverityLevel.Verbose,
+			Time = DateTime.UtcNow
+		};
+
+		return result;
+	}
+
+	#endregion
+
+	#region Properties
+
+	public KeyValuePair<String, Double>[] Measurements { get; init; } = [];
+	public KeyValuePair<String, String>[] Properties { get; init; } = [];
+	public KeyValuePair<String, String>[] Tags { get; init; } = [];
+
+	#endregion
+
 	#region Methods: Create
 
 	/// <summary>
@@ -113,36 +237,10 @@ internal sealed class TelemetryFactory
 			Measurements = Measurements,
 			Message = message,
 			Name = name,
-			Operation = Operation,
 			Properties = Properties,
 			RunLocation = "Earth",
 			Success = true,
 			Tags = Tags,
-			Time = DateTime.UtcNow
-		};
-
-		return result;
-	}
-
-	/// <summary>
-	/// Creates instance of <see cref="AvailabilityTelemetry"/> with minimum load.
-	/// </summary>
-	public AvailabilityTelemetry Create_AvailabilityTelemetry_Min
-	(
-		String name,
-		String message = @"Passed"
-	)
-	{
-		var id = GetActivityId();
-
-		var result = new AvailabilityTelemetry
-		{
-			Duration = TimeSpan.Zero,
-			Id = id,
-			Message = message,
-			Name = name,
-			Operation = Operation,
-			Success = true,
 			Time = DateTime.UtcNow
 		};
 
@@ -171,7 +269,6 @@ internal sealed class TelemetryFactory
 			Id = id,
 			Measurements = Measurements,
 			Name = name,
-			Operation = Operation,
 			Properties = Properties,
 			ResultCode = "401",
 			Success = false,
@@ -179,27 +276,6 @@ internal sealed class TelemetryFactory
 			Target = "target",
 			Time = DateTime.UtcNow,
 			Type = type
-		};
-
-		return result;
-	}
-
-	/// <summary>
-	/// Creates instance of <see cref="DependencyTelemetry"/> with minimum load.
-	/// </summary>
-	public DependencyTelemetry Create_DependencyTelemetry_Min
-	(
-		String name
-	)
-	{
-		var id = GetActivityId();
-
-		var result = new DependencyTelemetry
-		{
-			Operation = Operation,
-			Time = DateTime.UtcNow,
-			Id = id,
-			Name = name
 		};
 
 		return result;
@@ -217,7 +293,6 @@ internal sealed class TelemetryFactory
 		{
 			Measurements = Measurements,
 			Name = name,
-			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags,
 			Time = DateTime.UtcNow
@@ -227,27 +302,13 @@ internal sealed class TelemetryFactory
 	}
 
 	/// <summary>
-	/// Creates instance of <see cref="EventTelemetry"/> with minimum load.
-	/// </summary>
-	public EventTelemetry Create_EventTelemetry_Min
-	(
-		String name
-	)
-	{
-		var result = new EventTelemetry
-		{
-			Name = name,
-			Operation = Operation,
-			Time = DateTime.UtcNow,
-		};
-
-		return result;
-	}
-
-	/// <summary>
 	/// Creates instance of <see cref="ExceptionTelemetry"/> with full load.
 	/// </summary>
-	public ExceptionTelemetry Create_ExceptionTelemetry_Max()
+	public ExceptionTelemetry Create_ExceptionTelemetry_Max
+	(
+		String? problemId = null,
+		SeverityLevel? severityLevel = null
+	)
 	{
 		try
 		{
@@ -257,43 +318,16 @@ internal sealed class TelemetryFactory
 		}
 		catch (Exception exception)
 		{
-			var exceptions = exception.ConvertExceptionToModel();
+			var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
 
 			var result = new ExceptionTelemetry
 			{
 				Exceptions = exceptions,
 				Measurements = Measurements,
-				Operation = Operation,
 				Properties = Properties,
-				ProblemId = Random.Shared.Next(1000).ToString(CultureInfo.InvariantCulture),
-				SeverityLevel = SeverityLevel.Critical,
+				ProblemId = problemId,
+				SeverityLevel = severityLevel,
 				Tags = Tags,
-				Time = DateTime.UtcNow
-			};
-
-			return result;
-		}
-	}
-
-	/// <summary>
-	/// Creates instance of <see cref="ExceptionTelemetry"/> with minimum load.
-	/// </summary>
-	public ExceptionTelemetry Create_ExceptionTelemetry_Min()
-	{
-		try
-		{
-			Simulate_ExceptionThrow(null);
-
-			throw new Exception();
-		}
-		catch (Exception exception)
-		{
-			var exceptions = exception.ConvertExceptionToModel();
-
-			var result = new ExceptionTelemetry
-			{
-				Exceptions = exceptions,
-				Operation = Operation,
 				Time = DateTime.UtcNow
 			};
 
@@ -314,7 +348,6 @@ internal sealed class TelemetryFactory
 	{
 		var result = new MetricTelemetry
 		{
-			Operation = Operation,
 			Time = DateTime.UtcNow,
 			Namespace = @namespace,
 			Name = name,
@@ -322,28 +355,6 @@ internal sealed class TelemetryFactory
 			ValueAggregation = aggregation,
 			Properties = Properties,
 			Tags = Tags
-		};
-
-		return result;
-	}
-
-	/// <summary>
-	/// Creates instance of <see cref="MetricTelemetry"/> with minimum load.
-	/// </summary>
-	public MetricTelemetry Create_MetricTelemetry_Min
-	(
-		String @namespace,
-		String name,
-		Double value
-	)
-	{
-		var result = new MetricTelemetry
-		{
-			Name = name,
-			Namespace = @namespace,
-			Operation = Operation,
-			Time = DateTime.UtcNow,
-			Value = value
 		};
 
 		return result;
@@ -368,32 +379,10 @@ internal sealed class TelemetryFactory
 			Duration = duration,
 			Id = id,
 			Name = name,
-			Operation = Operation,
 			Properties = Properties,
 			Tags = Tags,
 			Time = DateTime.UtcNow,
 			Url = url
-		};
-
-		return result;
-	}
-
-	/// <summary>
-	/// Creates instance of <see cref="PageViewTelemetry"/> with minimum load.
-	/// </summary>
-	public PageViewTelemetry Create_PageViewTelemetry_Min
-	(
-		String name
-	)
-	{
-		var id = GetActivityId();
-
-		var result = new PageViewTelemetry
-		{
-			Id = id,
-			Name = name,
-			Operation = Operation,
-			Time = DateTime.UtcNow
 		};
 
 		return result;
@@ -416,7 +405,6 @@ internal sealed class TelemetryFactory
 			Id = id,
 			Measurements = Measurements,
 			Name = name,
-			Operation = Operation,
 			Properties = Properties,
 			ResponseCode = "200",
 			Success = true,
@@ -429,52 +417,19 @@ internal sealed class TelemetryFactory
 	}
 
 	/// <summary>
-	/// Creates instance of <see cref="RequestTelemetry"/> with minimum load.
-	/// </summary>
-	public RequestTelemetry Create_RequestTelemetry_Min(Uri url)
-	{
-		var id = GetActivityId();
-
-		var result = new RequestTelemetry
-		{
-			Operation = Operation,
-			Time = DateTime.UtcNow,
-			Id = id,
-			Url = url,
-			ResponseCode = "1"
-		};
-
-		return result;
-	}
-
-	/// <summary>
 	/// Creates instance of <see cref="TraceTelemetry"/> with full load.
 	/// </summary>
-	public TraceTelemetry Create_TraceTelemetry_Max(String message)
+	public TraceTelemetry Create_TraceTelemetry_Max
+	(
+		String message
+	)
 	{
 		var result = new TraceTelemetry
 		{
 			Message = message,
-			Operation = Operation,
 			Properties = Properties,
 			SeverityLevel = SeverityLevel.Information,
 			Tags = Tags,
-			Time = DateTime.UtcNow
-		};
-
-		return result;
-	}
-
-	/// <summary>
-	/// Creates instance of <see cref="TraceTelemetry"/> with minimum load.
-	/// </summary>
-	public TraceTelemetry Create_TraceTelemetry_Min(String message)
-	{
-		var result = new TraceTelemetry
-		{
-			Message = message,
-			Operation = Operation,
-			SeverityLevel = SeverityLevel.Verbose,
 			Time = DateTime.UtcNow
 		};
 

@@ -17,9 +17,6 @@ public sealed class TraceTelemetry : Telemetry
 	public required String Message { get; init; }
 
 	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
-
-	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>

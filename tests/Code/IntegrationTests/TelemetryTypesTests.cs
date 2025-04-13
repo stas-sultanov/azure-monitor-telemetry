@@ -1,10 +1,9 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.IntegrationTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using Azure.Monitor.Telemetry.Models;
-using Azure.Monitor.Telemetry.Tests;
 
 /// <summary>
 /// Set of integration tests for all types of telemetry that implements <see cref="Telemetry"/>.
@@ -18,7 +17,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	private readonly Uri defaultUri = new ("https://gostas.dev");
 
-	private readonly TelemetryFactory telemetryFactory = new(nameof(TelemetryTypesTests));
+	private readonly TelemetryFactory telemetryFactory;
 
 	private TelemetryClient TelemetryClient { get; }
 
@@ -27,7 +26,8 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	#region Constructor
 
 	/// <param name="testContext">The test context.</param>
-	public TelemetryTypesTests(TestContext testContext) : base(
+	public TelemetryTypesTests(TestContext testContext) : base
+	(
 		testContext,
 		new PublisherConfiguration()
 		{
@@ -36,14 +36,23 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 		}
 	)
 	{
-		TelemetryClient = new TelemetryClient
-		(
-			TelemetryPublishers,
+		TelemetryClient = new TelemetryClient(TelemetryPublishers)
+		{
+			Context = new()
+			{
+				CloudRole = "TestMachine",
+				CloudRoleInstance = Environment.MachineName
+			}
+		};
+
+		telemetryFactory = new()
+		{
+			Tags =
 			[
-				new (TelemetryTagKeys.CloudRole, "Tester"),
-				new (TelemetryTagKeys.CloudRoleInstance, Environment.MachineName)
+				new(TelemetryTagKeys.OperationName, nameof(TelemetryTypesTests)),
+				new(TelemetryTagKeys.OperationId, TelemetryFactory.GetOperationId()),
 			]
-		);
+		};
 	}
 
 	#endregion
@@ -75,7 +84,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_AvailabilityTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Min("Check");
+		var telemetry = TelemetryFactory.Create_AvailabilityTelemetry_Min("Check");
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -114,7 +123,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_DependencyTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_DependencyTelemetry_Min("Storage");
+		var telemetry = TelemetryFactory.Create_DependencyTelemetry_Min("Storage");
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -153,7 +162,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_EventTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_EventTelemetry_Min("Check");
+		var telemetry = TelemetryFactory.Create_EventTelemetry_Min("Check");
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -193,7 +202,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_ExceptionTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_ExceptionTelemetry_Min();
+		var telemetry = TelemetryFactory.Create_ExceptionTelemetry_Min();
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -239,7 +248,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_MetricTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_MetricTelemetry_Min("tests", "count", 6);
+		var telemetry = TelemetryFactory.Create_MetricTelemetry_Min("tests", "count", 6);
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -279,7 +288,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_PageViewTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min("Main");
+		var telemetry = TelemetryFactory.Create_PageViewTelemetry_Min("Main");
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -319,7 +328,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_RequestTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_PageViewTelemetry_Min("GetMain");
+		var telemetry = TelemetryFactory.Create_PageViewTelemetry_Min("GetMain");
 
 		// act
 		TelemetryClient.Add(telemetry);
@@ -359,7 +368,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	public async Task Type_TraceTelemetry_Min()
 	{
 		// arrange
-		var telemetry = telemetryFactory.Create_TraceTelemetry_Min("Test");
+		var telemetry = TelemetryFactory.Create_TraceTelemetry_Min("Test");
 
 		// act
 		TelemetryClient.Add(telemetry);

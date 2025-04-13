@@ -6,90 +6,87 @@ namespace Azure.Monitor.Telemetry.Models;
 /// <summary>
 /// Contains well-known dependency types.
 /// </summary>
-/// <remarks>
-/// Constants values should not be changed otherwise there will be no aggregation with data which is published by other implementations of the client.
-/// </remarks>
 public static class DependencyTypes
 {
 	#region Constants
 
 	/// <summary>
-	/// Represents an Application Insights HTTP tracked component.
+	/// The Application Insights HTTP tracked component.
 	/// </summary>
 	public const String AI = "Http (tracked component)";
 
 	/// <summary>
-	/// Represents an Azure Blob storage dependency.
+	/// The Azure Blob service.
 	/// </summary>
 	public const String AzureBlob = "Azure blob";
 
 	/// <summary>
-	/// Represents an Azure Cosmos DB dependency.
+	/// The Azure Cosmos DB service.
 	/// </summary>
 	public const String AzureCosmosDB = "Azure DocumentDB";
 
 	/// <summary>
-	/// Represents an Azure Event Hubs dependency.
+	/// The Azure Event Hubs service.
 	/// </summary>
 	public const String AzureEventHubs = "Azure Event Hubs";
 
 	/// <summary>
-	/// Represents an Azure IoT Hub dependency.
+	/// The Azure IoT Hub service.
 	/// </summary>
 	public const String AzureIotHub = "Azure IoT Hub";
 
 	/// <summary>
-	/// Represents an Azure Monitor dependency.
+	/// The Azure Monitor service.
 	/// </summary>
 	public const String AzureMonitor = "Azure Monitor";
 
 	/// <summary>
-	/// Represents an Azure Queue storage dependency.
+	/// The Azure Queue service.
 	/// </summary>
 	public const String AzureQueue = "Azure queue";
 
 	/// <summary>
-	/// Represents an Azure Search dependency.
+	/// The Azure Search service.
 	/// </summary>
 	public const String AzureSearch = "Azure Search";
 
 	/// <summary>
-	/// Represents an Azure Service Bus dependency.
+	/// The Azure Service Bus service.
 	/// </summary>
 	public const String AzureServiceBus = "Azure Service Bus";
 
 	/// <summary>
-	/// Represents an Azure Table storage dependency.
+	/// The Azure Table service.
 	/// </summary>
 	public const String AzureTable = "Azure table";
 
 	/// <summary>
-	/// Represents an HTTP dependency.
+	/// The generic HTTP service.
 	/// </summary>
 	public const String HTTP = "Http";
 
 	/// <summary>
-	/// Represents an in-process dependency.
+	/// The in-process.
 	/// </summary>
 	public const String InProc = "InProc";
 
 	/// <summary>
-	/// Represents a queue message dependency.
+	/// The queue message.
 	/// </summary>
 	public const String QueueMessage = "Queue Message";
 
 	/// <summary>
-	/// Represents a SQL database dependency.
+	/// The SQL database.
 	/// </summary>
 	public const String SQL = "SQL";
 
 	/// <summary>
-	/// Represents a WCF service dependency.
+	/// The WCF service.
 	/// </summary>
 	public const String WcfService = "WCF Service";
 
 	/// <summary>
-	/// Represents a web service dependency.
+	/// The web service.
 	/// </summary>
 	public const String WebService = "Web Service";
 

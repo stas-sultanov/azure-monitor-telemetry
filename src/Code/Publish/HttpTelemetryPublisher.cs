@@ -109,7 +109,6 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	public async Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryItems,
-		IReadOnlyList<KeyValuePair<String, String>>? tags,
 		CancellationToken cancellationToken
 	)
 	{
@@ -126,7 +125,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			{
 				var telemetryItem = telemetryItems[index];
 
-				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem, tags);
+				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem);
 			}
 		}
 

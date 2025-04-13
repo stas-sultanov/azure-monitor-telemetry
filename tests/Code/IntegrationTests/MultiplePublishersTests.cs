@@ -1,11 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.IntegrationTests;
-
-using System.Diagnostics;
-
-using Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -45,14 +41,14 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 			}
 		)
 	{
-		TelemetryClient = new TelemetryClient
-		(
-			TelemetryPublishers,
-			[
-				new (TelemetryTagKeys.CloudRole, "Tester"),
-				new (TelemetryTagKeys.CloudRoleInstance, Environment.MachineName)
-			]
-		);
+		TelemetryClient = new TelemetryClient(TelemetryPublishers)
+		{
+			Context = new()
+			{
+				CloudRole = "Tester",
+				CloudRoleInstance = Environment.MachineName
+			}
+		};
 	}
 
 	#endregion
@@ -62,10 +58,11 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 	[TestMethod]
 	public async Task PublishSomeTelemetryAsync()
 	{
-		TelemetryClient.Operation = new()
+		// set context
+		TelemetryClient.Context = TelemetryClient.Context with
 		{
-			Id = ActivityTraceId.CreateRandom().ToString(),
-			Name = nameof(MultiplePublishersTests)
+			OperationId = TelemetryFactory.GetOperationId(),
+			OperationName = nameof(MultiplePublishersTests),
 		};
 
 		TelemetryClient.TrackEvent("start");

@@ -1,14 +1,14 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.IntegrationTests;
+namespace Azure.Monitor.Telemetry.Tests;
+
 using System;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
 
 using Azure.Monitor.Telemetry.Dependency;
-using Azure.Monitor.Telemetry.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -53,38 +53,38 @@ public sealed class DistributedTests : IntegrationTestsBase
 			}
 		)
 	{
-		ClientTelemetryClient = new TelemetryClient
-		(
-			TelemetryPublishers,
-			[
-				new(TelemetryTagKeys.CloudRole, "Frontend"),
-				new(TelemetryTagKeys.CloudRoleInstance, Random.Shared.Next(0,100).ToString(CultureInfo.InvariantCulture)),
-				new(TelemetryTagKeys.DeviceType, "Browser"),
-				new(TelemetryTagKeys.LocationIp, clientIP)
-			]
-		);
+		ClientTelemetryClient = new TelemetryClient(TelemetryPublisher)
+		{
+			Context = new()
+			{
+				CloudRole = "Frontend",
+				CloudRoleInstance = Random.Shared.Next(0, 100).ToString(CultureInfo.InvariantCulture),
+				DeviceType = "Browser",
+				LocationIp = clientIP
+			}
+		};
 
 		clientTelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(ClientTelemetryClient, TelemetryFactory.GetActivityId);
 
-		Service0TelemetryClient = new TelemetryClient
-		(
-			TelemetryPublishers,
-			[
-				new(TelemetryTagKeys.CloudRole, "Watchman"),
-				new(TelemetryTagKeys.CloudRoleInstance, Random.Shared.Next(100,200).ToString(CultureInfo.InvariantCulture)),
-				new(TelemetryTagKeys.LocationIp, service0IP)
-			]
-		);
+		Service0TelemetryClient = new TelemetryClient(TelemetryPublisher)
+		{
+			Context = new()
+			{
+				CloudRole = "Watchman",
+				CloudRoleInstance = Random.Shared.Next(100, 200).ToString(CultureInfo.InvariantCulture),
+				LocationIp = service0IP
+			}
+		};
 
-		Service1TelemetryClient = new TelemetryClient
-		(
-			TelemetryPublishers,
-			[
-				new(TelemetryTagKeys.CloudRole, "Backend"),
-				new(TelemetryTagKeys.CloudRoleInstance, Random.Shared.Next(200,300).ToString(CultureInfo.InvariantCulture)),
-				new(TelemetryTagKeys.LocationIp, service1IP)
-			]
-		);
+		Service1TelemetryClient = new TelemetryClient(TelemetryPublisher)
+		{
+			Context = new()
+			{
+				CloudRole = "Backend",
+				CloudRoleInstance = Random.Shared.Next(200, 300).ToString(CultureInfo.InvariantCulture),
+				LocationIp = service1IP
+			}
+		};
 
 		service1TelemetryTrackedHttpClientHandler = new TelemetryTrackedHttpClientHandler(Service1TelemetryClient, TelemetryFactory.GetActivityId);
 	}
@@ -109,11 +109,11 @@ public sealed class DistributedTests : IntegrationTestsBase
 
 		// page view
 		{
-			// set top level operation
-			ClientTelemetryClient.Operation = new TelemetryOperation
+			// set context
+			ClientTelemetryClient.Context = ClientTelemetryClient.Context with
 			{
-				Id = TelemetryFactory.GetOperationId(),
-				Name = "ShowMainPage"
+				OperationId = TelemetryFactory.GetOperationId(),
+				OperationName = "ShowMainPage"
 			};
 
 			// simulate top level operation - page view
@@ -125,7 +125,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 				async (cancellationToken) =>
 				{
 					// make dependency call
-					_ = await MakeDependencyCallAsyc(clientTelemetryTrackedHttpClientHandler, new Uri("https://google.com"), cancellationToken);
+					_ = await MakeDependencyCallAsync(clientTelemetryTrackedHttpClientHandler, new Uri("https://google.com"), cancellationToken);
 
 					// simulate internal work
 					await Task.Delay(Random.Shared.Next(50, 100), cancellationToken);
@@ -141,7 +141,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 						HttpStatusCode.OK,
 						(cancellationToken) => Service1ServeRequestAsync
 						(
-							ClientTelemetryClient.Operation,
+							ClientTelemetryClient.Context,
 							requestUrl,
 							"OK",
 							true,
@@ -157,11 +157,12 @@ public sealed class DistributedTests : IntegrationTestsBase
 
 		// availability test
 		{
-			// set top level operation
-			Service0TelemetryClient.Operation = new TelemetryOperation
+			// set context
+			// TODO: PAY ATTENTION TO CONTEXT
+			ClientTelemetryClient.Context = ClientTelemetryClient.Context with
 			{
-				Id = TelemetryFactory.GetOperationId(),
-				Name = "Availability"
+				OperationId = TelemetryFactory.GetOperationId(),
+				OperationName = "Availability"
 			};
 
 			// simulate top level operation - availability test
@@ -174,7 +175,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 				"West Europe",
 				(cancellationToken) => Service1ServeRequestAsync
 				(
-					Service0TelemetryClient.Operation,
+					Service0TelemetryClient.Context,
 					new Uri("https://gostas.dev/health"),
 					"OK",
 					true,
@@ -208,7 +209,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 	private async Task Service1ServePageViewRequestInternalAsync(CancellationToken cancellationToken)
 	{
 		// make dependency call
-		_ = await MakeDependencyCallAsyc(service1TelemetryTrackedHttpClientHandler, new Uri("https://bing.com"), cancellationToken);
+		_ = await MakeDependencyCallAsync(service1TelemetryTrackedHttpClientHandler, new Uri("https://bing.com"), cancellationToken);
 
 		// simulate execution delay
 		await Task.Delay(Random.Shared.Next(100), cancellationToken);
@@ -228,7 +229,7 @@ public sealed class DistributedTests : IntegrationTestsBase
 
 	private async Task Service1ServeRequestAsync
 	(
-		TelemetryOperation operation,
+		TelemetryTags context,
 		Uri url,
 		String responseCode,
 		Boolean success,
@@ -236,13 +237,13 @@ public sealed class DistributedTests : IntegrationTestsBase
 		CancellationToken cancellationToken
 	)
 	{
-		// set top level operation
-		Service1TelemetryClient.Operation = operation;
+		// set context
+		Service1TelemetryClient.Context = context;
 
 		await TelemetrySimulator.SimulateRequestAsync(Service1TelemetryClient, url, responseCode, success, subsequent, cancellationToken);
 	}
 
-	public static async Task<String> MakeDependencyCallAsyc
+	public static async Task<String> MakeDependencyCallAsync
 (
 	HttpMessageHandler messageHandler,
 	Uri uri,

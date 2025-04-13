@@ -99,7 +99,7 @@ public static class TelemetryUtils
 	/// <returns>A read-only list of items of  <see cref="ExceptionInfo"/> type.</returns>
 	public static IReadOnlyList<ExceptionInfo> ConvertExceptionToModel
 	(
-		this Exception exception,
+		Exception exception,
 		Int32 maxStackLength = ExceptionMaxStackLength
 	)
 	{

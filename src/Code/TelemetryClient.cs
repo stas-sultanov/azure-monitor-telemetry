@@ -21,13 +21,28 @@ using Azure.Monitor.Telemetry.Models;
 /// </remarks>
 public sealed class TelemetryClient
 {
-	#region Fields
+	#region Types
+
+	private readonly struct TelemetryTagCollectionCouple(TelemetryTags collection)
+	{
+		public IReadOnlyList<KeyValuePair<String, String>>? AsList { get; } = collection.IsEmpty() ? null : collection.ToArray();
+
+		public TelemetryTags Collection { get; } = collection;
+	}
+
+	#endregion
+
+	#region Static Fields
 
 	private static readonly TelemetryPublishResult[] emptyPublishResult = [];
+
+	#endregion
+
+	#region Fields
+
+	private readonly AsyncLocal<TelemetryTagCollectionCouple> context;
 	private readonly ConcurrentQueue<Telemetry> items;
-	private readonly AsyncLocal<TelemetryOperation> operation;
 	private readonly TelemetryPublisher[] publishers;
-	private readonly IReadOnlyList<KeyValuePair<String, String>>? tags;
 
 	#endregion
 
@@ -37,12 +52,12 @@ public sealed class TelemetryClient
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publisher">A telemetry publisher to publish the telemetry data.</param>
-	/// <param name="tags">A read-only list of tags to attach to each telemetry item during publish. Is optional.</param>
+	/// <param name="tags">Tags to initialize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publisher"/> is null.</exception>
 	public TelemetryClient
 	(
 		TelemetryPublisher publisher,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		IReadOnlyDictionary<String, String>? tags = null
 	)
 	{
 		if (publisher == null)
@@ -50,31 +65,40 @@ public sealed class TelemetryClient
 			throw new ArgumentNullException(nameof(publisher));
 		}
 
+		var contextTags = tags == null ? TelemetryTags.Empty : new TelemetryTags(tags);
+
+		context = new()
+		{
+			Value = new(contextTags)
+		};
+
 		items = new();
 
-		operation = new();
-
 		publishers = [publisher];
-
-		this.tags = tags == null || tags.Count == 0 ? null : [.. tags];
 	}
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publishers">A read only list of telemetry publishers to publish the telemetry data.</param>
-	/// <param name="tags">A read-only list of tags to attach to each telemetry item during publish. Is optional.</param>
+	/// <param name="tags">Tags to initialize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publishers"/> is null.</exception>
+	/// <exception cref="ArgumentException">Thrown if <paramref name="publishers"/> count is 0.</exception>
 	/// <exception cref="ArgumentException">Thrown if any publisher in <paramref name="publishers"/> is null.</exception>
 	public TelemetryClient
 	(
 		IReadOnlyList<TelemetryPublisher> publishers,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		IReadOnlyDictionary<String, String>? tags = null
 	)
 	{
 		if (publishers == null)
 		{
 			throw new ArgumentNullException(nameof(publishers));
+		}
+
+		if (publishers.Count == 0)
+		{
+			throw new ArgumentException("The list of publishers is empty.", nameof(publishers));
 		}
 
 		for (var index = 0; index < publishers.Count; index++)
@@ -85,13 +109,16 @@ public sealed class TelemetryClient
 			}
 		}
 
+		var contextTags = tags == null ? TelemetryTags.Empty : new TelemetryTags(tags);
+
+		context = new()
+		{
+			Value = new(contextTags)
+		};
+
 		items = new();
 
-		operation = new();
-
-		this.publishers = [.. publishers];
-
-		this.tags = tags == null ? null : [.. tags];
+		this.publishers = [..publishers];
 	}
 
 	#endregion
@@ -99,13 +126,13 @@ public sealed class TelemetryClient
 	#region Properties
 
 	/// <summary>
-	/// The distributed operation stored in asynchronous local storage.
+	/// A read-only list of tags to add to <see cref="Telemetry.Tags"/> property of each telemetry item with Track* method.
 	/// </summary>
-	public TelemetryOperation Operation
+	public TelemetryTags Context
 	{
-		get => operation.Value!;
+		get => context.Value.Collection;
 
-		set => operation.Value = value;
+		set => context.Value = new TelemetryTagCollectionCouple(value);
 	}
 
 	#endregion
@@ -117,7 +144,10 @@ public sealed class TelemetryClient
 	/// </summary>
 	/// <param name="telemetry">The telemetry item to add.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Add(Telemetry telemetry)
+	public void Add
+	(
+		Telemetry telemetry
+	)
 	{
 		items.Enqueue(telemetry);
 	}
@@ -131,8 +161,7 @@ public sealed class TelemetryClient
 	/// </remarks>
 	/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
 	/// <returns>
-	/// A task that represents the asynchronous operation. The task result contains an array of 
-	/// <see cref="TelemetryPublishResult"/> indicating the result of the publish operation for each publisher.
+	/// A task that represents the asynchronous operation. The task result contains an array of <see cref="TelemetryPublishResult"/> indicating the result of the publish operation for each publisher.
 	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public async Task<TelemetryPublishResult[]> PublishAsync
@@ -164,7 +193,7 @@ public sealed class TelemetryClient
 		{
 			var publisher = publishers[publisherIndex];
 
-			resultList[publisherIndex] = publisher.PublishAsync(telemetryItems, tags, cancellationToken);
+			resultList[publisherIndex] = publisher.PublishAsync(telemetryItems, cancellationToken);
 		}
 
 		// wait for all publishers to complete
@@ -181,42 +210,44 @@ public sealed class TelemetryClient
 	/// Begins an activity scope.
 	/// </summary>
 	/// <remarks>
-	/// The method replaces <see cref="Operation"/> with new value where <see cref="TelemetryOperation.ParentId"/> is set to the <paramref name="activityId"/>.
+	/// The method replaces <see cref="Context"/> with new value where <see cref="TelemetryTagKeys.OperationParentId"/> is set to the <paramref name="activityId"/>.
 	/// All telemetry items tracked within the scope will have <paramref name="activityId"/> as parent activity identifier.
 	/// </remarks>
 	/// <param name="activityId">The activity unique identifier to use as parent for telemetry items tracked within the scope.</param>
-	/// <param name="operation">Outputs a value of <see cref="Operation"/> before it is replaced.</param>
+	/// <param name="context">Outputs a value of <see cref="Context"/> before it is replaced.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeBegin
 	(
 		String activityId,
-		out TelemetryOperation operation
+		out TelemetryTags context
 	)
 	{
-		// get current operation
-		operation = Operation;
+		// set current context
+		context = Context;
 
-		// replace operation with new parent activity id
-		Operation = new TelemetryOperation
-		{
-			Id = operation.Id,
-			Name = operation.Name,
-			ParentId = activityId
-		};
+		Context = context == null
+			? new TelemetryTags()
+			{
+				OperationParentId = activityId
+			}
+			: (context with
+			{
+				OperationParentId = activityId
+			});
 	}
 
 	/// <summary>
 	/// Begins an activity scope.
 	/// </summary>
 	/// <remarks>
-	/// The method replaces value of <see cref="Operation"/> with new value where <see cref="TelemetryOperation.ParentId"/> is set to the <paramref name="activityId"/>.
+	/// The method replaces <see cref="Context"/> with new value where <see cref="TelemetryTagKeys.OperationParentId"/> is set to the <paramref name="activityId"/>.
 	/// All telemetry items tracked within the scope will have <paramref name="activityId"/> as parent activity identifier.
 	/// </remarks>
 	/// <param name="getActivityId">A function that returns a unique identifier for the activity.</param>
 	/// <param name="time">Outputs the UTC timestamp when the activity scope begins.</param>
 	/// <param name="timestamp">Outputs the timestamp to calculate the duration when the activity scope ends.</param>
 	/// <param name="activityId">Outputs the generated unique identifier for the activity.</param>
-	/// <param name="operation">Outputs a value of <see cref="Operation"/> before it is replaced.</param>
+	/// <param name="context">Outputs a value of <see cref="Context"/> before it is replaced.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeBegin
 	(
@@ -224,7 +255,7 @@ public sealed class TelemetryClient
 		out DateTime time,
 		out Int64 timestamp,
 		out String activityId,
-		out TelemetryOperation operation
+		out TelemetryTags context
 	)
 	{
 		// get time
@@ -237,45 +268,45 @@ public sealed class TelemetryClient
 		activityId = getActivityId();
 
 		// call overload
-		ActivityScopeBegin(activityId, out operation);
+		ActivityScopeBegin(activityId, out context);
 	}
 
 	/// <summary>
 	/// Ends the current activity scope.
 	/// </summary>
 	/// <remarks>
-	/// The method restores value of <see cref="Operation"/> with <paramref name="operation"/>.
+	/// The method restores value of <see cref="Context"/> with <paramref name="context"/>.
 	/// </remarks>
-	/// <param name="operation">The telemetry operation to be restored.</param>
+	/// <param name="context">The telemetry context to be restored.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeEnd
 	(
-		TelemetryOperation operation
+		TelemetryTags context
 	)
 	{
-		// bring back operation
-		Operation = operation;
+		// bring back context
+		Context = context;
 	}
 
 	/// <summary>
 	/// Ends the current activity scope and calculates duration of the activity.
 	/// </summary>
 	/// <remarks>
-	/// The method restores value of <see cref="Operation"/> with <paramref name="operation"/>.
+	/// The method restores value of <see cref="Context"/> with <paramref name="context"/>.
 	/// </remarks>
-	/// <param name="operation">The telemetry operation that is being tracked.</param>
+	/// <param name="context">The telemetry operation that is being tracked.</param>
 	/// <param name="timestamp">The timestamp when the operation started.</param>
 	/// <param name="duration">The output parameter that will hold the duration of the operation.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeEnd
 	(
-		TelemetryOperation operation,
+		TelemetryTags context,
 		Int64 timestamp,
 		out TimeSpan duration
 	)
 	{
 		// call overload
-		ActivityScopeEnd(operation);
+		ActivityScopeEnd(context);
 
 		// get timestamp to calculate duration
 		var endTimestamp = Stopwatch.GetTimestamp();
@@ -295,7 +326,7 @@ public sealed class TelemetryClient
 	/// Tracks an availability test activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="AvailabilityTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="AvailabilityTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -322,6 +353,10 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
 		var telemetry = new AvailabilityTelemetry
 		{
 			Duration = duration,
@@ -329,11 +364,68 @@ public sealed class TelemetryClient
 			Measurements = measurements,
 			Message = message,
 			Name = name,
-			Operation = Operation,
 			Properties = properties,
 			RunLocation = runLocation,
 			Success = success,
-			Tags = tags,
+			Tags = telemetryTags,
+			Time = time
+		};
+
+		Add(telemetry);
+	}
+
+	/// <summary>
+	/// Tracks a dependency activity.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
+	/// <param name="duration">The time taken to complete the activity.</param>
+	/// <param name="id">The unique identifier of the activity.</param>
+	/// <param name="name">The name of the command initiated the dependency call.</param>
+	/// <param name="success">A value indicating whether the operation was successful or unsuccessful.</param>
+	/// <param name="data">The command initiated by this dependency call.</param>
+	/// <param name="target">This field is the target site of a dependency call.</param>
+	/// <param name="type">The dependency type name.</param>
+	/// <param name="resultCode">The result of executing SQL command.</param>
+	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackDependency
+	(
+		DateTime time,
+		TimeSpan duration,
+		String id,
+		String name,
+		Boolean success,
+		String? resultCode = null,
+		String? data = null,
+		String? target = null,
+		String? type = null,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
+		var telemetry = new DependencyTelemetry
+		{
+			Data = data,
+			Duration = duration,
+			Id = id,
+			Measurements = measurements,
+			Name = name,
+			Properties = properties,
+			ResultCode = resultCode,
+			Success = success,
+			Tags = telemetryTags,
+			Target = target,
+			Type = type,
 			Time = time
 		};
 
@@ -344,7 +436,7 @@ public sealed class TelemetryClient
 	/// Tracks an HTTP dependency call activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -371,35 +463,38 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
+		var data = uri.ToString();
+
 		var name = String.Concat(httpMethod.Method, " ", uri.AbsolutePath);
 
-		var dependencyType = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
+		var resultCode = statusCode.ToString();
 
-		var telemetry = new DependencyTelemetry
-		{
-			Data = uri.ToString(),
-			Duration = duration,
-			Id = id,
-			Measurements = measurements,
-			Name = name,
-			Operation = Operation,
-			Properties = properties,
-			ResultCode = statusCode.ToString(),
-			Success = success,
-			Tags = tags,
-			Target = uri.Host,
-			Type = dependencyType,
-			Time = time
-		};
+		var target = uri.Host;
 
-		Add(telemetry);
+		var type = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
+
+		TrackDependency
+		(
+			time,
+			duration,
+			id,
+			name,
+			success,
+			resultCode,
+			data,
+			target,
+			type,
+			measurements,
+			properties,
+			tags
+		);
 	}
 
 	/// <summary>
 	/// Tracks an in-proc dependency activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -426,28 +521,25 @@ public sealed class TelemetryClient
 	{
 		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyTypes.InProc : DependencyTypes.InProc + " | " + typeName;
 
-		var telemetry = new DependencyTelemetry
-		{
-			Duration = duration,
-			Id = id,
-			Measurements = measurements,
-			Name = name,
-			Operation = Operation,
-			Properties = properties,
-			Success = success,
-			Tags = tags,
-			Type = type,
-			Time = time
-		};
-
-		Add(telemetry);
+		TrackDependency
+		(
+			time,
+			duration,
+			id,
+			name,
+			success,
+			type: type,
+			measurements: measurements,
+			properties: properties,
+			tags: tags
+		);
 	}
 
 	/// <summary>
 	/// Tracks a SQL call dependency activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -480,20 +572,54 @@ public sealed class TelemetryClient
 
 		var success = resultCode >= 0;
 
-		var telemetry = new DependencyTelemetry
+		TrackDependency
+		(
+			time,
+			duration,
+			id,
+			dataFullName,
+			success,
+			resultCodeAsString,
+			commandText,
+			dataFullName,
+			DependencyTypes.SQL,
+			measurements,
+			properties,
+			tags
+		);
+	}
+
+	/// <summary>
+	/// Tracks an event.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the event has occurred.</param>
+	/// <param name="name">The name.</param>
+	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackEvent
+	(
+		DateTime time,
+		String name,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
+		var telemetry = new EventTelemetry
 		{
-			Data = commandText,
-			Duration = duration,
-			Id = id,
 			Measurements = measurements,
-			Name = dataFullName,
-			Operation = Operation,
+			Name = name,
 			Properties = properties,
-			ResultCode = resultCodeAsString,
-			Success = success,
-			Tags = tags,
-			Target = dataFullName,
-			Type = DependencyTypes.SQL,
+			Tags = telemetryTags,
 			Time = time
 		};
 
@@ -504,7 +630,7 @@ public sealed class TelemetryClient
 	/// Tracks an event.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="name">The name.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
@@ -521,13 +647,48 @@ public sealed class TelemetryClient
 	{
 		var time = DateTime.UtcNow;
 
-		var telemetry = new EventTelemetry
+		TrackEvent(time, name, measurements, properties, tags);
+	}
+
+	/// <summary>
+	/// Tracks an exception.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the exception has occurred.</param>
+	/// <param name="exception">The exception to be tracked.</param>
+	/// <param name="problemId">The problem identifier.</param>
+	/// <param name="severityLevel">The severity level of the exception. Is optional.</param>
+	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackException
+	(
+		DateTime time,
+		Exception exception,
+		String? problemId = null,
+		SeverityLevel? severityLevel = null,
+		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
+
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
+		var telemetry = new ExceptionTelemetry
 		{
+			Exceptions = exceptions,
 			Measurements = measurements,
-			Name = name,
-			Operation = Operation,
 			Properties = properties,
-			Tags = tags,
+			ProblemId = problemId,
+			SeverityLevel = severityLevel,
+			Tags = telemetryTags,
 			Time = time
 		};
 
@@ -538,7 +699,7 @@ public sealed class TelemetryClient
 	/// Tracks an exception.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="exception">The exception to be tracked.</param>
 	/// <param name="problemId">The problem identifier.</param>
@@ -559,18 +720,44 @@ public sealed class TelemetryClient
 	{
 		var time = DateTime.UtcNow;
 
-		var exceptions = exception.ConvertExceptionToModel();
+		TrackException(time, exception, problemId, severityLevel, measurements, properties, tags);
+	}
 
-		var telemetry = new ExceptionTelemetry
+	/// <summary>
+	/// Tracks a metric.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the metric was recorded.</param>
+	/// <param name="namespace">The namespace of the metric to be tracked.</param>
+	/// <param name="name">The name of the metric to be tracked.</param>
+	/// <param name="value">The value of the metric to be tracked.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackMetric
+	(
+		DateTime time,
+		String @namespace,
+		String name,
+		Double value,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
+		var telemetry = new MetricTelemetry
 		{
-			Exceptions = exceptions,
-			Measurements = measurements,
-			Operation = Operation,
+			Namespace = @namespace,
+			Name = name,
 			Properties = properties,
-			ProblemId = problemId,
-			SeverityLevel = severityLevel,
-			Tags = tags,
-			Time = time
+			Tags = telemetryTags,
+			Time = time,
+			Value = value
 		};
 
 		Add(telemetry);
@@ -580,7 +767,7 @@ public sealed class TelemetryClient
 	/// Tracks a metric.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="namespace">The namespace of the metric to be tracked.</param>
 	/// <param name="name">The name of the metric to be tracked.</param>
@@ -599,15 +786,58 @@ public sealed class TelemetryClient
 	{
 		var time = DateTime.UtcNow;
 
+		TrackMetric(time, @namespace, name, value, properties, tags);
+	}
+
+	/// <summary>
+	/// Tracks a metric.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the metric was recorded.</param>
+	/// <param name="namespace">The namespace of the metric to be tracked.</param>
+	/// <param name="name">The name of the metric to be tracked.</param>
+	/// <param name="value">The value of the metric to be tracked.</param>
+	/// <param name="count">The number of values in the sample set.</param>
+	/// <param name="max">The max value of the metric across the sample set.</param>
+	/// <param name="min">The min value of the metric across the sample set.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackMetric
+	(
+		DateTime time,
+		String @namespace,
+		String name,
+		Double value,
+		Int32 count,
+		Double max,
+		Double min,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var valueAggregation = new MetricValueAggregation()
+		{
+			Count = count,
+			Max = max,
+			Min = min
+		};
+
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
 		var telemetry = new MetricTelemetry
 		{
 			Namespace = @namespace,
 			Name = name,
-			Operation = Operation,
 			Properties = properties,
-			Tags = tags,
+			Tags = telemetryTags,
 			Time = time,
-			Value = value
+			Value = value,
+			ValueAggregation = valueAggregation
 		};
 
 		Add(telemetry);
@@ -617,7 +847,7 @@ public sealed class TelemetryClient
 	/// Tracks a metric.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="namespace">The namespace of the metric to be tracked.</param>
 	/// <param name="name">The name of the metric to be tracked.</param>
@@ -642,33 +872,14 @@ public sealed class TelemetryClient
 	{
 		var time = DateTime.UtcNow;
 
-		var valueAggregation = new MetricValueAggregation()
-		{
-			Count = count,
-			Max = max,
-			Min = min
-		};
-
-		var telemetry = new MetricTelemetry
-		{
-			Namespace = @namespace,
-			Name = name,
-			Operation = Operation,
-			Properties = properties,
-			Tags = tags,
-			Time = time,
-			Value = value,
-			ValueAggregation = valueAggregation
-		};
-
-		Add(telemetry);
+		TrackMetric(time, @namespace, name, value, count, max, min, properties, tags);
 	}
 
 	/// <summary>
 	/// Tracks a page view activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="PageViewTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="PageViewTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -691,15 +902,18 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
 		var telemetry = new PageViewTelemetry
 		{
 			Duration = duration,
 			Id = id,
 			Measurements = measurements,
 			Name = name,
-			Operation = Operation,
 			Properties = properties,
-			Tags = tags,
+			Tags = telemetryTags,
 			Time = time,
 			Url = url
 		};
@@ -711,7 +925,7 @@ public sealed class TelemetryClient
 	/// Tracks a request activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="RequestTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="RequestTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -738,17 +952,20 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
 		var telemetry = new RequestTelemetry
 		{
 			Duration = duration,
 			Id = id,
 			Measurements = measurements,
 			Name = name,
-			Operation = Operation,
 			Properties = properties,
 			ResponseCode = responseCode,
 			Success = success,
-			Tags = tags,
+			Tags = telemetryTags,
 			Time = time,
 			Url = url
 		};
@@ -760,7 +977,44 @@ public sealed class TelemetryClient
 	/// Tracks a trace.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Operation"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// </remarks>
+	/// <param name="time">The UTC timestamp when the trace has occurred.</param>
+	/// <param name="message">The message.</param>
+	/// <param name="severityLevel">The severity level.</param>
+	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
+	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void TrackTrace
+	(
+		DateTime time,
+		String message,
+		SeverityLevel severityLevel,
+		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+	)
+	{
+		var contextTags = context.Value.AsList;
+
+		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+
+		var telemetry = new TraceTelemetry
+		{
+			Message = message,
+			Properties = properties,
+			SeverityLevel = severityLevel,
+			Tags = telemetryTags,
+			Time = time
+		};
+
+		Add(telemetry);
+	}
+
+	/// <summary>
+	/// Tracks a trace.
+	/// </summary>
+	/// <remarks>
+	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="message">The message.</param>
 	/// <param name="severityLevel">The severity level.</param>
@@ -777,17 +1031,7 @@ public sealed class TelemetryClient
 	{
 		var time = DateTime.UtcNow;
 
-		var telemetry = new TraceTelemetry
-		{
-			Message = message,
-			Operation = Operation,
-			Properties = properties,
-			SeverityLevel = severityLevel,
-			Tags = tags,
-			Time = time
-		};
-
-		Add(telemetry);
+		TrackTrace(time, message, severityLevel, properties, tags);
 	}
 
 	#endregion
