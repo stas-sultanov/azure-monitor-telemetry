@@ -60,7 +60,6 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	private readonly HttpClient httpClient;
 	private readonly Uri ingestionEndpoint;
 	private readonly String instrumentationKey;
-	private readonly IReadOnlyList<KeyValuePair<String, String>>? tags;
 
 	#endregion
 
@@ -73,7 +72,6 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <param name="ingestionEndpoint">The URI endpoint where telemetry data will be sent. Must be an absolute, non-file, non-UNC URI.</param>
 	/// <param name="instrumentationKey">The instrumentation key used to authenticate with the telemetry service. Cannot be an empty GUID.</param>
 	/// <param name="getAccessToken">Function to get a bearer token for authentication. If not provided, no authentication will be used. Is optional.</param>
-	/// <param name="tags">A read-only list of tags to attach to each telemetry item. Is optional.</param>
 	/// <exception cref="ArgumentException">If <paramref name="ingestionEndpoint"/> is not valid absolute uri.</exception>
 	/// <exception cref="ArgumentException">If <paramref name="instrumentationKey"/> is empty.</exception>
 	public HttpTelemetryPublisher
@@ -81,8 +79,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		HttpClient httpClient,
 		Uri ingestionEndpoint,
 		Guid instrumentationKey,
-		Func<CancellationToken, Task<BearerToken>>? getAccessToken = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		Func<CancellationToken, Task<BearerToken>>? getAccessToken = null
 	)
 	{
 		if (!ingestionEndpoint.IsAbsoluteUri || ingestionEndpoint.IsFile || ingestionEndpoint.IsUnc)
@@ -102,8 +99,6 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		this.instrumentationKey = instrumentationKey.ToString();
 
 		this.getAccessToken = getAccessToken;
-
-		this.tags = tags == null ? null : [.. tags];
 	}
 
 	#endregion
@@ -131,7 +126,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 			{
 				var telemetryItem = telemetryItems[index];
 
-				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem, tags, this.tags);
+				JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetryItem, tags);
 			}
 		}
 

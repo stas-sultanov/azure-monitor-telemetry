@@ -102,7 +102,7 @@ public abstract class IntegrationTestsBase : IDisposable
 
 			if (!config.UseAuthentication)
 			{
-				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, tags: publisherTags);
+				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey);
 			}
 			else
 			{
@@ -117,7 +117,7 @@ public abstract class IntegrationTestsBase : IDisposable
 					return Task.FromResult(result);
 				}
 
-				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, getAccessToken, publisherTags);
+				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, getAccessToken);
 			}
 
 			telemetryPublishers.Add(publisher);

@@ -56,11 +56,6 @@ public sealed class JsonTelemetrySerializerTests
 
 	private readonly Uri testUrl = new ("https://gostas.dev");
 
-	private readonly KeyValuePair<String, String> [] publisherTags =
-	[
-		new(TelemetryTagKeys.InternalSdkVersion, "test"),
-	];
-
 	private readonly KeyValuePair<String, String> [] trackerTags =
 	[
 		new(TelemetryTagKeys.CloudRole, "TestMachine"),
@@ -83,10 +78,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_AvailabilityTelemetry_Max("Check");
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -117,10 +112,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_DependencyTelemetry_Max("Storage",  testUrl );
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -155,10 +150,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_EventTelemetry_Max("Check");
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -179,10 +174,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_ExceptionTelemetry_Max();
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -211,10 +206,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_MetricTelemetry_Max("tests", "count", 6, aggregation);
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -245,10 +240,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_PageViewTelemetry_Max("Main", testUrl);
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -275,10 +270,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_RequestTelemetry_Max("GetMain", testUrl);
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -309,10 +304,10 @@ public sealed class JsonTelemetrySerializerTests
 		var telemetry = telemetryFactory.Create_TraceTelemetry_Max("Test");
 
 		// act
-		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags, publisherTags);
+		var rootElement = SerializeAndDeserialize(instrumentationKey, telemetry, trackerTags);
 
 		// assert
-		var expectedTags = GetTags(telemetry, trackerTags, publisherTags);
+		var expectedTags = GetTags(telemetry, trackerTags);
 
 		var jsonElement = DeserializeAndAssertBase(rootElement, expectedName, telemetry.Time, instrumentationKey, expectedTags, expectedType);
 
@@ -335,7 +330,7 @@ public sealed class JsonTelemetrySerializerTests
 
 		using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8, 32768, true))
 		{
-			JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetry, null, null);
+			JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetry, null);
 		}
 
 		// assert
@@ -350,15 +345,14 @@ public sealed class JsonTelemetrySerializerTests
 	(
 		String instrumentationKey,
 		Telemetry telemetry,
-		KeyValuePair<String, String>[] trackerTags,
-		KeyValuePair<String, String>[] publisherTags
+		KeyValuePair<String, String>[] trackerTags
 	)
 	{
 		var memoryStream = new MemoryStream();
 
 		using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8, 32768, true))
 		{
-			JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetry, trackerTags, publisherTags);
+			JsonTelemetrySerializer.Serialize(streamWriter, instrumentationKey, telemetry, trackerTags);
 		}
 
 		memoryStream.Position = 0;
@@ -415,7 +409,7 @@ public sealed class JsonTelemetrySerializerTests
 		return dataElement;
 	}
 
-	private static KeyValuePair<String, String>[] GetTags(Telemetry telemetry, KeyValuePair<String, String>[] trackerTags, KeyValuePair<String, String>[] publisherTags)
+	private static KeyValuePair<String, String>[] GetTags(Telemetry telemetry, KeyValuePair<String, String>[] trackerTags)
 	{
 		var tags = new List<KeyValuePair<String, String>>();
 
@@ -438,8 +432,6 @@ public sealed class JsonTelemetrySerializerTests
 		}
 
 		tags.AddRange(trackerTags);
-
-		tags.AddRange(publisherTags);
 
 		var result = tags.ToArray();
 
