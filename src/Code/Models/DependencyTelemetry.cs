@@ -6,13 +6,6 @@ namespace Azure.Monitor.Telemetry.Models;
 /// <summary>
 /// Represents telemetry of a dependency call in an application.
 /// </summary>
-/// <remarks>
-/// Examples of dependencies include:
-/// - SQL queries
-/// - HTTP calls to external services
-/// - Azure storage operations
-/// - Custom dependencies
-/// </remarks>
 public sealed class DependencyTelemetry : ActivityTelemetry
 {
 	#region Properties
@@ -20,7 +13,7 @@ public sealed class DependencyTelemetry : ActivityTelemetry
 	/// <summary>
 	/// The command initiated by this dependency call.
 	/// </summary>
-	/// <example>SQL statement or HTTP URL with all query parameters.</example>
+	/// <remarks>Maximum length: 8192 characters.</remarks>
 	public String? Data { get; init; }
 
 	/// <inheritdoc/>
@@ -32,24 +25,19 @@ public sealed class DependencyTelemetry : ActivityTelemetry
 	/// <summary>
 	/// A read-only list of measurements.
 	/// </summary>
-	/// <remarks>
-	/// Maximum key length: 150 characters.
-	/// Is null by default.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the command initiated the dependency call.
 	/// </summary>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public required String Name { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <summary>
 	/// This field is the result code of a dependency call.
 	/// </summary>
-	/// <example>SQL error code, HTTP status code.</example>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? ResultCode { get; init; }
 
 	/// <inheritdoc/>
@@ -66,7 +54,7 @@ public sealed class DependencyTelemetry : ActivityTelemetry
 	/// <summary>
 	/// This field is the target site of a dependency call.
 	/// </summary>
-	/// <example>Server name, host address.</example>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? Target { get; init; }
 
 	/// <summary>
@@ -75,10 +63,9 @@ public sealed class DependencyTelemetry : ActivityTelemetry
 	public required DateTime Time { get; init; }
 
 	/// <summary>
-	/// This field is the dependency type name.
-	/// It has a low cardinality value for logical grouping of dependencies and interpretation of other fields like commandName and resultCode.
+	/// The dependency type name.
 	/// </summary>
-	/// <example>SQL, Azure table, HTTP.</example>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? Type { get; init; }
 
 	#endregion

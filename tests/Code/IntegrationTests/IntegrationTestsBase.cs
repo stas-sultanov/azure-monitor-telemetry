@@ -13,19 +13,15 @@ using Azure.Identity;
 using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 public abstract class IntegrationTestsBase : IDisposable
 {
 	#region Types
 
 	public sealed class PublisherConfiguration
 	{
+		public required Boolean Authenticate { get; init; }
+
 		public required String ConfigPrefix { get; init; }
-
-		public Dictionary<String, String> Tags { get; init; } = [];
-
-		public required Boolean UseAuthentication { get; init; }
 	}
 
 	#endregion
@@ -70,7 +66,7 @@ public abstract class IntegrationTestsBase : IDisposable
 	public IntegrationTestsBase
 	(
 		TestContext testContext,
-		params IReadOnlyCollection<PublisherConfiguration> configList
+		params IReadOnlyList<PublisherConfiguration> configList
 	)
 	{
 		TestContext = testContext;
@@ -84,46 +80,7 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		telemetryPublishHttpClient = new HttpClient();
 
-		var telemetryPublishers = new List<TelemetryPublisher>();
-
-		foreach (var config in configList)
-		{
-			var ingestionEndpointParamName = config.ConfigPrefix + "IngestionEndpoint";
-			var ingestionEndpointParam = TestContext.Properties[ingestionEndpointParamName]?.ToString() ?? throw new ArgumentException($"Parameter {ingestionEndpointParamName} has not been provided.");
-			var ingestionEndpoint = new Uri(ingestionEndpointParam);
-
-			var instrumentationKeyParamName = config.ConfigPrefix + "InstrumentationKey";
-			var instrumentationKeyParam = TestContext.Properties[instrumentationKeyParamName]?.ToString() ?? throw new ArgumentException($"Parameter {instrumentationKeyParamName} has not been provided.");
-			var instrumentationKey = new Guid(instrumentationKeyParam);
-
-			var publisherTags = config.Tags.ToArray();
-
-			TelemetryPublisher publisher;
-
-			if (!config.UseAuthentication)
-			{
-				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, tags: publisherTags);
-			}
-			else
-			{
-				Task<BearerToken> getAccessToken(CancellationToken cancellationToken)
-				{
-					var result = new BearerToken
-					{
-						ExpiresOn = token.ExpiresOn,
-						Value = token.Token
-					};
-
-					return Task.FromResult(result);
-				}
-
-				publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, getAccessToken, publisherTags);
-			}
-
-			telemetryPublishers.Add(publisher);
-		}
-
-		TelemetryPublishers = telemetryPublishers.AsReadOnly();
+		TelemetryPublishers = [.. configList.Select(config => InitializePublisherFromConfig(token, config))];
 	}
 
 	#endregion
@@ -140,7 +97,7 @@ public abstract class IntegrationTestsBase : IDisposable
 
 	#endregion
 
-	#region Methods
+	#region Methods: Helpers
 
 	protected static void AssertStandardSuccess(TelemetryPublishResult[] telemetryPublishResults)
 	{
@@ -173,6 +130,41 @@ public abstract class IntegrationTestsBase : IDisposable
 
 			Assert.AreEqual(0, response.Errors.Count, nameof(HttpTelemetryPublishResponse.Errors));
 		}
+	}
+
+	private TelemetryPublisher InitializePublisherFromConfig(AccessToken token, PublisherConfiguration config)
+	{
+		var ingestionEndpointParamName = config.ConfigPrefix + "IngestionEndpoint";
+		var ingestionEndpointParam = TestContext.Properties[ingestionEndpointParamName]?.ToString() ?? throw new ArgumentException($"Parameter {ingestionEndpointParamName} has not been provided.");
+		var ingestionEndpoint = new Uri(ingestionEndpointParam);
+
+		var instrumentationKeyParamName = config.ConfigPrefix + "InstrumentationKey";
+		var instrumentationKeyParam = TestContext.Properties[instrumentationKeyParamName]?.ToString() ?? throw new ArgumentException($"Parameter {instrumentationKeyParamName} has not been provided.");
+		var instrumentationKey = new Guid(instrumentationKeyParam);
+
+		TelemetryPublisher publisher;
+
+		if (config.Authenticate)
+		{
+			Task<BearerToken> getAccessToken(CancellationToken cancellationToken)
+			{
+				var result = new BearerToken
+				{
+					ExpiresOn = token.ExpiresOn,
+					Value = token.Token
+				};
+
+				return Task.FromResult(result);
+			}
+
+			publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey, getAccessToken);
+		}
+		else
+		{
+			publisher = new HttpTelemetryPublisher(telemetryPublishHttpClient, ingestionEndpoint, instrumentationKey);
+		}
+
+		return publisher;
 	}
 
 	#endregion

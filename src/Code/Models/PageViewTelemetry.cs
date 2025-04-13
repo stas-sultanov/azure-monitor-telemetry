@@ -6,9 +6,6 @@ namespace Azure.Monitor.Telemetry.Models;
 /// <summary>
 /// Represents telemetry of a page view.
 /// </summary>
-/// <remarks>
-/// The page is a logical unit that is defined by the developer to be an application tab or a screen.
-/// </remarks>
 public sealed class PageViewTelemetry : ActivityTelemetry
 {
 	#region Properties
@@ -22,19 +19,14 @@ public sealed class PageViewTelemetry : ActivityTelemetry
 	/// <summary>
 	/// A read-only list of measurements.
 	/// </summary>
-	/// <remarks>
-	/// Maximum key length: 150 characters.
-	/// Is null by default.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the page.
 	/// </summary>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public required String Name { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }

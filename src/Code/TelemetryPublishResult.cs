@@ -18,17 +18,17 @@ public interface TelemetryPublishResult
 	public Int32 Count { get; }
 
 	/// <summary>
-	/// The duration of the telemetry transfer operation.
+	/// The duration of the telemetry Publish operation.
 	/// </summary>
 	public TimeSpan Duration { get; }
 
 	/// <summary>
-	/// A boolean value indicating whether the telemetry transfer operation was successful.
+	/// A boolean value indicating whether the telemetry Publish operation was successful.
 	/// </summary>
 	public Boolean Success { get; }
 
 	/// <summary>
-	/// The time when telemetry transfer operation was initiated.
+	/// The time when telemetry Publish operation was initiated.
 	/// </summary>
 	public DateTime Time { get; }
 

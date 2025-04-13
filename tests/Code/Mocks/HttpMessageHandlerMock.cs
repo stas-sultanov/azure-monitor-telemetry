@@ -1,13 +1,15 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.UnitTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using System.Net;
 using System.Net.Http;
 
 internal sealed class HttpMessageHandlerMock : HttpMessageHandler
 {
+	#region Methods
+
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
 		return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
@@ -20,4 +22,6 @@ internal sealed class HttpMessageHandlerMock : HttpMessageHandler
 	{
 		return SendAsync(request, cancellationToken);
 	}
+
+	#endregion
 }

@@ -15,38 +15,35 @@ public sealed class RequestTelemetry : ActivityTelemetry
 	/// </summary>
 	public TimeSpan Duration { get; init; }
 
-	/// <summary>
-	/// The unique identifier.
-	/// </summary>
+	/// <inheritdoc/>
 	public required String Id { get; init; }
 
 	/// <summary>
 	/// A read-only list of measurements.
 	/// </summary>
-	/// <remarks>
-	/// Maximum key length: 150 characters.
-	/// Is null by default.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
 	/// The name of the request.
 	/// </summary>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? Name { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
 
 	/// <summary>
-	/// The result of an operation execution.
-	/// It's the HTTP status code for HTTP requests.
-	/// It might be an HRESULT value or an exception type for other request types.
+	/// The result of an execution.
 	/// </summary>
 	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public required String ResponseCode { get; init; }
+
+	/// <summary>
+	/// The source of the request.
+	/// </summary>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
+	public String? Source { get; init; }
 
 	/// <summary>
 	/// A value indicating whether the operation was successful or unsuccessful.

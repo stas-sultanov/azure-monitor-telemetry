@@ -1,7 +1,7 @@
 // Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.UnitTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using Azure.Monitor.Telemetry.Models;
 
@@ -12,6 +12,29 @@ using Azure.Monitor.Telemetry.Models;
 [TestClass]
 public sealed class TelemetryUtilsTests
 {
+	[TestMethod]
+	public void Method_DetectTypeFromHttp_ShouldReturnNullIfUriInvalid()
+	{
+		{
+			// act
+			var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(null!);
+
+			// assert
+			Assert.IsNull(result);
+		}
+
+		{
+			// arrange
+			var uri = new Uri("exe:urn");
+
+			// act
+			var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
+
+			// assert
+			Assert.IsNull(result);
+		}
+	}
+
 	[TestMethod]
 	public void Method_DetectTypeFromHttp_ShouldReturnAzureBlob()
 	{

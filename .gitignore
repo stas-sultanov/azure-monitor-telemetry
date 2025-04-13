@@ -16,7 +16,6 @@
 
 # publish results
 [Oo]ut/
-[Pp]ublish/
 
 # pack results
 *.nupkg

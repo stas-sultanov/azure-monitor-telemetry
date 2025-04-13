@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.UnitTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 using System.Net;
@@ -48,10 +48,10 @@ public sealed class HttpTelemetryPublishResponseTests
 		};
 
 		// assert
-		Assert.AreEqual(errors, response.Errors, nameof(HttpTelemetryPublishResponse.Errors));
+		AssertHelper.PropertyEqualsTo(response, o => o.Errors, errors);
 
-		Assert.AreEqual(itemsAccepted, response.ItemsAccepted, nameof(HttpTelemetryPublishResponse.ItemsAccepted));
+		AssertHelper.PropertyEqualsTo(response, o => o.ItemsAccepted, itemsAccepted);
 
-		Assert.AreEqual(itemsReceived, response.ItemsReceived, nameof(HttpTelemetryPublishResponse.ItemsReceived));
+		AssertHelper.PropertyEqualsTo(response, o => o.ItemsReceived, itemsReceived);
 	}
 }

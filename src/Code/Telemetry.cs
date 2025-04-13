@@ -11,17 +11,9 @@ public interface Telemetry
 	#region Properties
 
 	/// <summary>
-	/// The associated operation context.
-	/// </summary>
-	public TelemetryOperation Operation { get; }
-
-	/// <summary>
 	/// A read-only list of custom properties.
 	/// </summary>
-	/// <remarks>
-	/// This collection is used to extend standard telemetry data with custom dimensions.
-	/// Maximum key length: 150 characters, Maximum value length: 8192 characters.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters, Maximum value length: 8192 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; }
 
 	/// <summary>

@@ -19,24 +19,20 @@ public sealed class AvailabilityTelemetry : ActivityTelemetry
 	/// <summary>
 	/// A read-only list of measurements.
 	/// </summary>
-	/// <remarks>
-	/// Maximum key length: 150 characters.
-	/// Is null by default.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
 
 	/// <summary>
 	/// The message.
 	/// </summary>
+	/// <remarks>Maximum length: 8192 characters.</remarks>
 	public required String Message { get; init; }
 
 	/// <summary>
 	/// The name.
 	/// </summary>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public required String Name { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }
@@ -44,6 +40,7 @@ public sealed class AvailabilityTelemetry : ActivityTelemetry
 	/// <summary>
 	/// Location from where the test has been performed.
 	/// </summary>
+	/// <remarks>Maximum length: 2048 characters.</remarks>
 	public String? RunLocation { get; init; }
 
 	/// <summary>

@@ -1,7 +1,7 @@
 ﻿// Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.Mocks;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 using System.Collections.Generic;
@@ -13,21 +13,26 @@ using Azure.Monitor.Telemetry.Publish;
 
 internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 {
-	#region fields
+	#region Fields
 
-	public const String MockValidIngestEndpoint = @"https://dc.in.applicationinsights.azure.com/";
+	public const String MockValidIngestEndpoint = "https://dc.in.applicationinsights.azure.com/";
 
 	public static readonly Uri MockValidIngestEndpointUri = new(MockValidIngestEndpoint);
 
 	#endregion
 
+	#region Properties
+
 	public Queue<Telemetry> Buffer { get; } = [];
+
+	#endregion
+
+	#region Methods
 
 	/// <inheritdoc/>
 	public Task<TelemetryPublishResult> PublishAsync
 	(
 		IReadOnlyList<Telemetry> telemetryItems,
-		IReadOnlyList<KeyValuePair<String, String>>? tags,
 		CancellationToken cancellationToken
 	)
 	{
@@ -53,4 +58,6 @@ internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher
 
 		return result;
 	}
+
+	#endregion
 }

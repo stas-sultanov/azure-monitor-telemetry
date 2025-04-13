@@ -1,14 +1,12 @@
 // Created by Stas Sultanov.
 // Copyright © Stas Sultanov.
 
-namespace Azure.Monitor.Telemetry.UnitTests;
+namespace Azure.Monitor.Telemetry.Tests;
 
 using System;
 using System.Net.Http;
 
-using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
-using Azure.Monitor.Telemetry.Tests;
 
 /// <summary>
 /// Tests for <see cref="HttpTelemetryPublisher"/> class.
@@ -19,7 +17,7 @@ public sealed partial class HttpTelemetryPublisherTests
 {
 	#region Constants
 
-	private const String mockValidIngestEndpoint = @"https://dc.in.applicationinsights.azure.com/";
+	private const String mockValidIngestEndpoint = "https://dc.in.applicationinsights.azure.com/";
 
 	#endregion
 
@@ -27,7 +25,7 @@ public sealed partial class HttpTelemetryPublisherTests
 
 	private static readonly Uri ingestionEndpoint = new(mockValidIngestEndpoint);
 	private static readonly Guid instrumentationKey = Guid.NewGuid();
-	private static readonly TelemetryFactory telemetryFactory = new (nameof(HttpTelemetryPublisherTests));
+	private static readonly TelemetryFactory telemetryFactory = new ();
 
 	#endregion
 
@@ -76,24 +74,24 @@ public sealed partial class HttpTelemetryPublisherTests
 		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey);
 		var telemetryList = new[]
 		{
-			telemetryFactory.Create_TraceTelemetry_Min("Test")
+			TelemetryFactory.Create_TraceTelemetry_Min("Test")
 		};
 
 		// act
-		var result = (await publisher.PublishAsync(telemetryList, null, CancellationToken.None)) as HttpTelemetryPublishResult;
+		var result = (await publisher.PublishAsync(telemetryList, CancellationToken.None)) as HttpTelemetryPublishResult;
 
 		// assert
 		Assert.IsNotNull(result);
 
-		Assert.AreEqual(telemetryList.Length, result.Count, nameof(HttpTelemetryPublishResult.Count));
+		AssertHelper.PropertyEqualsTo(result, e => e.Count, telemetryList.Length);
 
-		Assert.IsTrue(result.Duration > TimeSpan.Zero, nameof(HttpTelemetryPublishResult.Duration));
+		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Duration, value => value > TimeSpan.Zero);
 
-		Assert.IsTrue(result.Response.Length > 0, nameof(HttpTelemetryPublishResult.Response));
+		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Response, value => !String.IsNullOrWhiteSpace(value));
 
-		Assert.IsTrue(result.Success, nameof(HttpTelemetryPublishResult.Success));
+		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Success, value => value);
 
-		Assert.IsTrue(result.Time > time, nameof(HttpTelemetryPublishResult.Time));
+		AssertHelper.PropertyEvaluatesToTrue(result, e => e.Time, value => value > time);
 	}
 
 	[TestMethod]
@@ -101,22 +99,20 @@ public sealed partial class HttpTelemetryPublisherTests
 	{
 		// arrange
 		var httpClient = new HttpClient(new HttpMessageHandlerMock());
-
-		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, GetAccessToken, [new (TelemetryTagKeys.SessionId, "test"), new (TelemetryTagKeys.InternalAgentVersion, "test") ]);
-
+		var publisher = new HttpTelemetryPublisher(httpClient, ingestionEndpoint, instrumentationKey, GetAccessToken);
 		var telemetryList = new[]
 		{
-			telemetryFactory.Create_TraceTelemetry_Min("Test")
+			TelemetryFactory.Create_TraceTelemetry_Min("Test")
 		};
 
 		// act 1 - initiate publish, token will expire right after the call
-		var result = await publisher.PublishAsync(telemetryList, null, CancellationToken.None);
+		var result = await publisher.PublishAsync(telemetryList, CancellationToken.None);
 
 		// assert 1
 		Assert.IsTrue(result.Success);
 
 		// act 2 - initiate publish, token will be re-requested
-		result = await publisher.PublishAsync(telemetryList, null, CancellationToken.None);
+		result = await publisher.PublishAsync(telemetryList, CancellationToken.None);
 
 		// assert 2
 		Assert.IsTrue(result.Success);

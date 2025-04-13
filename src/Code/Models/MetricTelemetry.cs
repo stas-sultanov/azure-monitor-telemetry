@@ -13,16 +13,14 @@ public sealed class MetricTelemetry : Telemetry
 	/// <summary>
 	/// The name.
 	/// </summary>
-	/// <remarks>Maximum length: 512 characters.</remarks>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public required String Name { get; init; }
 
 	/// <summary>
 	/// The namespace.
 	/// </summary>
+	/// <remarks>Maximum length: 256 characters.</remarks>
 	public required String Namespace { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <inheritdoc/>
 	public IReadOnlyList<KeyValuePair<String, String>>? Properties { get; init; }

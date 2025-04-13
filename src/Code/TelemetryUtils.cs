@@ -96,10 +96,10 @@ public static class TelemetryUtils
 	/// </summary>
 	/// <param name="exception">The exception to convert.</param>
 	/// <param name="maxStackLength">Maximal number of items to put into the <see cref="ExceptionInfo.ParsedStack"/>.</param>
-	/// <returns>A read-only list of items of  <see cref="ExceptionInfo"/> type.</returns>
+	/// <returns>A read-only list of items of <see cref="ExceptionInfo"/> type.</returns>
 	public static IReadOnlyList<ExceptionInfo> ConvertExceptionToModel
 	(
-		this Exception exception,
+		Exception exception,
 		Int32 maxStackLength = ExceptionMaxStackLength
 	)
 	{

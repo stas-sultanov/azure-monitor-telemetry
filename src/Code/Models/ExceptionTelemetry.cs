@@ -8,10 +8,6 @@ using Azure.Monitor.Telemetry;
 /// <summary>
 /// Represents telemetry of an exception that occurred in an application.
 /// </summary>
-/// <remarks>
-/// This class is used to track and report exceptions in the application, including their stack traces
-/// and other relevant details. The maximum length of the stack trace is limited to 32768 characters.
-/// </remarks>
 public sealed class ExceptionTelemetry : Telemetry
 {
 	#region Properties
@@ -24,18 +20,13 @@ public sealed class ExceptionTelemetry : Telemetry
 	/// <summary>
 	/// A read-only list of measurements.
 	/// </summary>
-	/// <remarks>
-	/// Maximum key length: 150 characters.
-	/// Is null by default.
-	/// </remarks>
+	/// <remarks>Maximum key length: 150 characters.</remarks>
 	public IReadOnlyList<KeyValuePair<String, Double>>? Measurements { get; init; }
-
-	/// <inheritdoc/>
-	public required TelemetryOperation Operation { get; init; }
 
 	/// <summary>
 	/// The problem identifier.
 	/// </summary>
+	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? ProblemId { get; init; }
 
 	/// <inheritdoc/>
