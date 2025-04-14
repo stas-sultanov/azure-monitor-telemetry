@@ -87,7 +87,7 @@ The library provides support for all telemetry types supported by Application In
 
 ## Collecting Telemetry
 
-The `TelemetryClient` class provides a method `TelemetryClient.Add` that adds an instance of a class that implements the `Telemetry` interface into the processing queue.
+The `TelemetryClient` class provides a method `TelemetryClient.Add` that adds an instance of a class that implements the `Telemetry` interface into the queue for publishing.
 
 ```csharp
 // create telemetry item
@@ -104,10 +104,10 @@ telemetryClient.Add(telemetry);
 
 ## Telemetry Publishing
 
+To publish collected telemetry, use the `TelemetryClient.PublishAsync` method to publish telemetry using all configured publishers in parallel.
+
 The library delegates telemetry publishing to the developer.</br>
 No automated telemetry publishing is provided out of the box.
-
-To publish collected telemetry, use the `TelemetryClient.PublishAsync` method to publish telemetry using all configured publishers in parallel.
 
 ```csharp
 // publish collected telemetry
@@ -122,7 +122,7 @@ Tags are key-value pairs of string type.
 
 The list of well-known standard keys of tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
-The library provides special helper class [TelemetryTags](/src/Code/TelemetryTags.cs) to simplify work with collections and dictionaries of telemetry tags.
+The library provides a helper class [TelemetryTags](/src/Code/TelemetryTags.cs) to simplify work with tags.
 
 Tags can be applied in the following ways:
 - Via `Telemetry.Tags` property – Set during creation.

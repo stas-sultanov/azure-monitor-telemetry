@@ -21,16 +21,15 @@ For usage instructions, refer to the [documentation](/doc/readme.md).
 This library has been developed with a strong focus on business adaptability to serve IT solutions of all kinds.<br/>
 The library is guided by the following key design principles:
 
-- **Simplicity** – Minimize the number of classes, relationships, and hierarchies to keep the design as lean as possible.
-- **Transparency** – Gain full visibility into how telemetry is tracked and published, without unnecessary abstraction layers.
 - **Efficiency** – Run faster and consume less memory thanks to minimal code and low complexity.
 - **Responsibility** – Embrace control over how telemetry is tracked and managed, with decisions left to the developer.
-- **Extensibility** – Extend or customize telemetry handling through clearly defined extension points.
+- **Simplicity** – Minimize the number of classes, relationships, and hierarchies to keep the design as lean as possible.
+- **Transparency** – Gain full visibility into how telemetry is tracked and published, without unnecessary abstraction layers.
 - **Versatility** – Use in any type of application, from distributed systems to standalone apps and plugins.
 
 ## Quality Assurance
 
-Strict quality standards are applied throughout the development of this library, reflected in the following safeguards:
+Strict quality standards are applied throughout the development of this library and reflected in the following safeguards:
 
 1. The repository is configured with branch protection [rules][github_docs_rule_sets] targeting the *main* branch, including the following:
     - Require [signed commits][github_docs_verified_commit].
@@ -68,13 +67,13 @@ A comparison of sizes and file counts of libraries when used with Entra-based au
 
 | **Package(s)**                                                      | **NET462**                  | **NET8**                   | **NET9**                   |
 | :------------------------------------------------------------------ | :-------------------------- | :------------------------- | :------------------------- |
-| Stas.Azure.Monitor.Telemetry 1.0.1<br/>                             | Files: 1<br/>Size: 61KB     | Files: 1<br/>Size: 60KB    | Files: 1<br/>Size: 60KB    |
+| Stas.Azure.Monitor.Telemetry 1.1.0                                  | Files: 1<br/>Size: 61KB     | Files: 1<br/>Size: 60KB    | Files: 1<br/>Size: 60KB    |
 | Microsoft.ApplicationInsights 2.23.0<br/>Azure.Core 1.45.0          | Files: 109<br/>Size: 4644KB | Files: 5<br/>Size: 945KB   | Files: 5<br/>Size: 945KB   |
 | OpenTelemetry 1.11.2<br/>Azure.Monitor.OpenTelemetry.Exporter 1.3.0 | Files: 126<br/>Size: 5250KB | Files: 23<br/>Size: 1887KB | Files: 22<br/>Size: 1728KB |
 
 ## Support the Author
 
-Donations help the author know that the time and effort spent on this library is valued.
+Donations express appreciation for the author’s dedication and the substantial effort invested in creating this library.
 
 The author resides in a country affected by ongoing military conflict since February 2022, where finding stable income remains a significant challenge.
 
