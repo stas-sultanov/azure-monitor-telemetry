@@ -1,5 +1,5 @@
 # The workflow to release the library.
-# The workflow allows to include different steps in the process:
+# The workflow allows to option following steps:
 # - Attest the package provenance
 # - Release the package to github.com Feed
 # - Release the package to nuget.org Feed
@@ -16,14 +16,13 @@ on:
         required: true
         type: string
       version:
-        description: Version in format X.Y.Z
+        description: Version in format [major].[minor].[patch]
         required: true
         type: string
-      isPreRelease:
-        default: false
-        description: Is Pre-Release
+      preRelease:
+        description: Pre-Release Postfix
         required: false
-        type: boolean
+        type: string
       attestProvenance:
         default: false
         description: Attest Provenance
@@ -45,7 +44,7 @@ on:
         required: true
         type: boolean
 
-run-name: ${{ format('{0}.{1}{2}', inputs.id, inputs.version, inputs.isPreRelease && '-rc' || '') }}
+run-name: ${{ inputs.preRelease == '' && format('{0}.{1}', inputs.id, inputs.version) || format('{0}.{1}-{2}', inputs.id, inputs.version, inputs.preRelease) }}
 
 jobs:
   run:
@@ -61,32 +60,49 @@ jobs:
       # Required to push the package to GitHub
       packages: write
 
-    # one of target frameworks is net462
+    # One of target frameworks is NET462
     runs-on: windows-latest
 
     env:
-      # Assembly Sign Certificate
+      # Certificate to sign the assembly
       ASSEMBLY_SIGN_CERTIFICATE_FILE_NAME: 'assembly.snk'
-      # Configuration type to build.
+      # Configuration type to build
       BUILD_CONFIGURATION_NAME: Release
-      # Path to the project file relative to the root of the project.
+      # A flag that indicates whether the package is pre-release or not
+      Is_PRE_RELEASE: ${{ inputs.preRelease != '' }}
+      # Path to the project file relative to the root of the project
       MAIN_PROJECT_FILE_PATH: .\src\Azure.Monitor.Telemetry.csproj
       # Package identifier
       PACKAGE_ID: ${{ inputs.id }}
       # Package output directory path
       PACKAGE_OUTPUT_DIRECTORY_PATH: .\out
-      # Package Version
-      PACKAGE_VERSION: ${{ format('{0}{1}', inputs.version, inputs.isPreRelease && '-rc' || '') }}
+      # Package version
+      PACKAGE_VERSION: ${{ inputs.preRelease == '' && inputs.version || format('{0}-{1}', inputs.version, inputs.preRelease) }}
       # Repo url
       REPO_URL: ${{ format('{0}/{1}', github.server_url, github.repository) }}
       # Verbosity level
       VERBOSITY: quiet
 
     steps:
+    - name: Validate Parameter - version 
+      run: |
+        if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then 
+          exit 1
+        fi
+      shell: bash
+
+    - name: Validate Parameter - preRelease
+      if: ${{ inputs.preRelease != '' }}
+      run: |
+        if [[ ! "${{ inputs.preRelease }}" =~ ^[a-z0-9]+$ ]]; then
+          exit 1
+        fi
+      shell: bash
+
     - name: Checkout Sources
       uses: actions/checkout@v4
 
-      # this is bash, this is why slashes should '/'
+      # This is bash, this is why slashes should '/'
     - name: Get Sign Certificate
       run: |
         echo -n $ASSEMBLY_SIGN_CERTIFICATE_SNK_BASE64 | base64 -d >> ./src/${{ env.ASSEMBLY_SIGN_CERTIFICATE_FILE_NAME }}
@@ -140,7 +156,7 @@ jobs:
       run: >-
         gh release create "v${{ env.PACKAGE_VERSION }}"
         --generate-notes
-        --prerelease="${{ inputs.isPreRelease }}"
+        --prerelease="${{ env.Is_PRE_RELEASE }}"
         --repo="${{ github.repository }}"
         --target="${{ github.sha }}"
         --title="${{env.PACKAGE_ID}}.${{ env.PACKAGE_VERSION }}"
