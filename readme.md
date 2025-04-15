@@ -8,9 +8,9 @@
 
 A lightweight library for tracking application telemetry with Azure Monitor.
 
-Created and maintained by [Stas Sultanov][linked_in_profile].
+Authored and maintained by [Stas Sultanov][linked_in_profile].
 
-Consider to [support the author](#support-the-author), if this library benefits your business.
+[Support the author](#support-the-author), if this library benefits your business.
 
 ## Start Using the Library
 
@@ -75,13 +75,14 @@ A comparison of sizes and file counts of libraries when used with Entra-based au
 
 Donations express appreciation for the author’s dedication and the substantial effort invested in creating this library.
 
-The author resides in a country affected by ongoing military conflict since February 2022, where finding stable income remains a significant challenge.
+The author resides in a country affected by ongoing military conflict since February 2022.<br/>
+Due to the war, securing stable income is extremely difficult, and donations provide essential support.
 
-If you’d like to make a donation, please use the button below.
+If you’d like to make a donation, please use the button below:
 
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2DPD6J3DJ2FN)
 
-Thank you for your support!
+Any support is much appreciated!
 
 [app_insights_issue_auth]: https://github.com/microsoft/ApplicationInsights-dotnet/issues/2945
 [dot_net_analyzers]: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/overview
