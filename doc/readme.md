@@ -35,7 +35,7 @@ The library works with Azure [Application Insights][app_insights_info], a featur
 
 ### Prerequisites
 
-To use the library, an [Azure subscription][azure_subscription] and an instance of Application Insights resource are required.
+To use the library, an Azure [Subscription][azure_subscription] and an instance of Application Insights resource are required.
 
 The Application Insights resource can be created using 
 [Bicep][app_insights_create_bicep],
@@ -54,32 +54,32 @@ Application Insights supports secure access via [Entra authentication][app_insig
 
 The `TelemetryClient` class is the core component for tracking and publishing telemetry.
 
-To enable publishing of telemetry to Application Insights, provide the `TelemetryClient` constructor with one or more instance of types that implement the `TelemetryPublisher` interface.
+To enable publishing of telemetry to Application Insights, provide the `TelemetryClient` class constructor with one or more instance of types that implement the `TelemetryPublisher` interface.
 
-The library includes `HttpTelemetryPublisher`, an implementation of `TelemetryPublisher` that uses HTTPS protocol for communication.
+The library includes `HttpTelemetryPublisher` class, an implementation of `TelemetryPublisher` interface that uses HTTPS protocol for communication.
 
 ### Initialization Scenarios
 
 - **Basic (no authentication):**  
-  Initialize `TelemetryClient` with a single `HttpTelemetryPublisher`.<br/>
+  Initialize `TelemetryClient` class with a single instance of type that implements `TelemetryPublisher` interface.<br/>
   Refer to the [example](#initialize) below.
 - **Entra-based authentication:**  
   Configure `HttpTelemetryPublisher` to authenticate using an access token.<br/>
   Refer to the [example](#initialize-with-authentication) below.
 - **Multiple Destinations:**  
-  Provide multiple instances of `HttpTelemetryPublisher` to send data to different Application Insights resources.<br/>
+  Provide multiple instances of types that implement `TelemetryPublisher` interface to send data to different Application Insights resources.<br/>
   Refer to the [example](#initialize-with-multiple-destinations) below.
 
 ## Supported Telemetry Types
 
-The library provides support for all telemetry types supported by Application Insights.
+The library offers full support for all telemetry types provided by Application Insights.
 
-- Point-in-time Telemetry:
+- Point-in-time Telemetry types:
 	- [EventTelemetry](/src/Code/Models/EventTelemetry.cs)
 	- [ExceptionTelemetry](/src/Code/Models/ExceptionTelemetry.cs)
 	- [MetricTelemetry](/src/Code/Models/MetricTelemetry.cs)
 	- [TraceTelemetry](/src/Code/Models/TraceTelemetry.cs)
-- Activity Telemetry:
+- Activity Telemetry types:
 	- [AvailabilityTelemetry](/src/Code/Models/AvailabilityTelemetry.cs)
 	- [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs)
 	- [PageViewTelemetry](/src/Code/Models/PageViewTelemetry.cs)
@@ -87,7 +87,7 @@ The library provides support for all telemetry types supported by Application In
 
 ## Collecting Telemetry
 
-The `TelemetryClient` class provides a method `TelemetryClient.Add` that adds an instance of a class that implements the `Telemetry` interface into the queue for publishing.
+The `TelemetryClient` class provides the `TelemetryClient.Add` method that adds an instance of a class that implements the `Telemetry` interface into the queue for publishing.
 
 ```csharp
 // create telemetry item
@@ -122,18 +122,18 @@ Tags are key-value pairs of string type.
 
 The list of well-known standard keys of tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
-The library provides a helper class [TelemetryTags](/src/Code/TelemetryTags.cs) to simplify work with tags.
+The library provides a helper [TelemetryTags](/src/Code/TelemetryTags.cs) class to simplify work with tags.
 
 Tags can be applied in the following ways:
 - Via `Telemetry.Tags` property – Set during creation.
-- Via `TelemetryClient` constructor – Pass instance of `TelemetryTags` to initialize `TelemetryClient.Context`.
+- Via `TelemetryClient` constructor – Pass instance of `TelemetryTags` class to initialize `TelemetryClient.Context` property.
 - Via `TelemetryClient.Context` Property – Set whenever needed.
 
 ## Tracking Telemetry
 
 The `TelemetryClient` class provides a set of `TelemetryClient.Track*` methods.
 
-When telemetry is tracked with `TelemetryClient.Track*` method, the `TelemetryClient.Tags` property is set to the value of `TelemetryClient.Context` property. 
+When telemetry is tracked with `TelemetryClient.Track*` method, the `Telemetry.Tags` property is set to the value of `TelemetryClient.Context` property. 
 
 ```csharp
 // track event and associate with current distributed operation
@@ -148,7 +148,7 @@ No automated dependency tracking is provided out of the box.
 To track dependencies, either use corresponding `TelemetryClient.TrackDependency*` method or create instance of [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs) class and use `TelemetryClient.Add` method.<br/>
 Refer to the [example](#dependency-tracking) below.
 
-For a well-known dependency types refer to the [DependencyTypes](/src/Code/Models/DependencyTypes.cs).
+For a well-known dependency types take a look on [DependencyTypes](/src/Code/Models/DependencyTypes.cs) class.
 
 The library provides [TelemetryTrackedHttpClientHandler](/src/Code/Dependency/TelemetryTrackedHttpClientHandler.cs) class that helps track HTTP requests.<br/>
 Refer to the [example](#dependency-tracking-via-http-client-handler).
@@ -161,15 +161,15 @@ The library is intentionally designed to support scenarios where a single logica
 - The Application Insights supports following telemetry tags
   - OperationId - the unique identifier of the operation that spans across services or components.
   - OperationParentId - the unique identifier of the operation which is parent to the specific telemetry item.
-- The telemetry types which represents an activity have an `ActivityTelemetry.Id` property - the unique identifier.<br/>The Id property is used as OperationParentId tag for all subsequent telemetries within the activity scope.
+- The telemetry types which represents an activity derives form [ActivityTelemetry](/src/Code/Models/ActivityTelemetry.cs) class.<br/>The `ActivityTelemetry.Id` property is used as OperationParentId tag for all subsequent telemetries within the activity scope.
 - The `TelemetryClient` class provides a `TelemetryClient.Context` property that holds a reference to the set of telemetry tags including OperationId and OperationName.
-- The `TelemetryClient.Context` utilizes [AsyncLocal\<T\>][dot_net_async_local_info], this makes the referenced `TelemetryOperation` available across asynchronous contexts.
+- The `TelemetryClient.Context` property utilizes [AsyncLocal\<T\>][dot_net_async_local_info], this makes the referenced instance of `TelemetryTags` class available across asynchronous contexts.
 
 ### Using Activity Scope
 
-The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with OperationParentId property of `TelemetryClient.Context`.
+The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with OperationParentId property of `TelemetryClient.Context` property.
 
-The `TelemetryClient.ActivityScopeBegin` begins the scope and `TelemetryClient.ActivityScopeEnd` ends the scope accordingly.
+The `TelemetryClient.ActivityScopeBegin` method begins the scope and the `TelemetryClient.ActivityScopeEnd` method ends the scope accordingly.
 
 Any telemetry captured within the scope will have scope's activity id as parent operation id.
 
@@ -183,8 +183,8 @@ Refer to the [example](#dependency-tracking) below.
 All public types and members of this library are **thread-safe** and are safe for concurrent use across multiple threads.
 
 - The `TelemetryClient` class is designed to handle telemetry operations from multiple threads in parallel.
-- Internal telemetry storage is implemented using [ConcurrentQueue\<T\>][dot_net_concurrent_queue_info] to ensure safe concurrent access.
-- The `TelemetryClient.PublishAsync` method can be safely called while telemetry is being added via `TelemetryClient.Add` or `TelemetryClient.Track*` methods.
+- Internal telemetry storage is implemented using [ConcurrentQueue\<T\>][dot_net_concurrent_queue_info] class to ensure safe concurrent access.
+- The `TelemetryClient.PublishAsync` method can be safely called while telemetry is being added via `TelemetryClient.Add` method or `TelemetryClient.Track*` method.
 
 ## Examples
 
@@ -192,7 +192,7 @@ Use this examples to explore functionality of the library.
 
 ### Initialize
 
-The following example demonstrates how to initialize the `TelemetryClient`.
+The following example demonstrates how to initialize the `TelemetryClient` class.
 
 Prerequisite
 ```bash
@@ -234,7 +234,7 @@ _ = await telemetryClient.PublishAsync();
 
 ### Initialize with Authentication
 
-The following example demonstrates how to initialize the `TelemetryClient` with Entra authentication.
+The following example demonstrates how to initialize the `TelemetryClient` class with Entra authentication.
 
 Prerequisite
 ```bash
@@ -285,8 +285,7 @@ _ = await telemetryClient.PublishAsync();
 
 ### Initialize with Multiple Destinations
 
-The following example demonstrates initialization of the `TelemetryClient` for the scenario
-where it is required to publish telemetry data into multiple instances of Application Insights.
+The following example demonstrates initialization of the `TelemetryClient` class for the scenario where it is required to publish telemetry data into multiple instances of Application Insights.
 
 Prerequisite
 ```bash
@@ -391,7 +390,7 @@ var telemetryClient = new TelemetryClient(telemetryPublisher);
 var getActivityId = () => Guid.NewGuid().ToString();
 
 // begin a dependency activity scope
-telemetryClient.ActivityScopeBegin(getActivityId, out var time, out var timestamp, out var activityId, out var actualOperation);
+telemetryClient.ActivityScopeBegin(getActivityId, out var time, out var timestamp, out var activityId, out var context);
 
 // operations that should be tracked
 // ....................................
@@ -400,14 +399,13 @@ telemetryClient.ActivityScopeBegin(getActivityId, out var time, out var timestam
 var success = true;
 
 // end the activity scope
-telemetryClient.ActivityScopeEnd(actualOperation, timestamp, out var duration);
+telemetryClient.ActivityScopeEnd(context, timestamp, out var duration);
 
 // track the dependency as an in-process operation
 telemetryClient.TrackDependencyInProc(time, duration, activityId, "Envelope", success, "Custom");
 
 // publish the collected telemetry data
 _ = await telemetryClient.PublishAsync();
-
 ```
 
 ### Dependency Tracking via HTTP Client Handler
