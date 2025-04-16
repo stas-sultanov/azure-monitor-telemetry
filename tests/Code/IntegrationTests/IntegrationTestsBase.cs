@@ -26,33 +26,18 @@ public abstract class IntegrationTestsBase : IDisposable
 
 	#endregion
 
-	#region Fields
+	#region Static Fields
 
 	private static readonly JsonSerializerOptions jsonSerializerOptions = new()
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 	};
 
-	private readonly HttpClient telemetryPublishHttpClient;
-
 	#endregion
 
-	#region Properties
+	#region Fields
 
-	/// <summary>
-	/// Test context.
-	/// </summary>
-	protected TestContext TestContext { get; }
-
-	/// <summary>
-	/// Collection of telemetry publishers initialized from the configuration.
-	/// </summary>
-	protected IReadOnlyList<TelemetryPublisher> TelemetryPublishers { get; }
-
-	/// <summary>
-	/// The token credential used to authenticate calls to Azure resources.
-	/// </summary>
-	protected DefaultAzureCredential TokenCredential { get; }
+	private readonly HttpClient telemetryPublishHttpClient;
 
 	#endregion
 
@@ -82,6 +67,25 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		TelemetryPublishers = [.. configList.Select(config => InitializePublisherFromConfig(token, config))];
 	}
+
+	#endregion
+
+	#region Properties
+
+	/// <summary>
+	/// Test context.
+	/// </summary>
+	protected TestContext TestContext { get; }
+
+	/// <summary>
+	/// Collection of telemetry publishers initialized from the configuration.
+	/// </summary>
+	protected IReadOnlyList<TelemetryPublisher> TelemetryPublishers { get; }
+
+	/// <summary>
+	/// The token credential used to authenticate calls to Azure resources.
+	/// </summary>
+	protected DefaultAzureCredential TokenCredential { get; }
 
 	#endregion
 

@@ -39,7 +39,7 @@ public sealed class JsonTelemetrySerializerTests
 
 	#endregion
 
-	#region Constructor
+	#region Constructors
 
 	public JsonTelemetrySerializerTests()
 	{

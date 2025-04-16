@@ -8,6 +8,8 @@ namespace Azure.Monitor.Telemetry;
 /// </summary>
 public static class TelemetryTagKeys
 {
+	#region Constants
+
 	/// <summary>
 	/// The version of the application.
 	/// </summary>
@@ -137,4 +139,6 @@ public static class TelemetryTagKeys
 	/// The unique identifier of the anonymous user.
 	/// </summary>
 	public const String UserId = "ai.user.id";
+
+	#endregion
 }

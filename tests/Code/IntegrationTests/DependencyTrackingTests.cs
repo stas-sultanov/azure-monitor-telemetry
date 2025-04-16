@@ -76,6 +76,18 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 	#endregion
 
+	#region Methods: Implementation of IDisposable
+
+	/// <inheritdoc/>
+	public override void Dispose()
+	{
+		queueClientHttpClientTransport.Dispose();
+
+		base.Dispose();
+	}
+
+	#endregion
+
 	#region Methods: Tests
 
 	[TestMethod]
@@ -120,18 +132,6 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		// assert
 		AssertStandardSuccess(result);
-	}
-
-	#endregion
-
-	#region Methods: Implementation of IDisposable
-
-	/// <inheritdoc/>
-	public override void Dispose()
-	{
-		queueClientHttpClientTransport.Dispose();
-
-		base.Dispose();
 	}
 
 	#endregion

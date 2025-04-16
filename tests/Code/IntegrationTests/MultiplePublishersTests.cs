@@ -13,12 +13,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 [TestClass]
 public sealed class MultiplePublishersTests : IntegrationTestsBase
 {
-	#region Data
-
-	private TelemetryClient TelemetryClient { get; }
-
-	#endregion
-
 	#region Constructors
 
 	/// <summary>
@@ -50,6 +44,12 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 			}
 		};
 	}
+
+	#endregion
+
+	#region Properties
+
+	private TelemetryClient TelemetryClient { get; }
 
 	#endregion
 

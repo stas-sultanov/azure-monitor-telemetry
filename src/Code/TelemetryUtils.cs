@@ -13,10 +13,14 @@ using Azure.Monitor.Telemetry.Models;
 /// </summary>
 public static class TelemetryUtils
 {
-	#region Data
+	#region Constants
 
 	private const Int32 ExceptionMaxStackLength = 32768;
 	private const Int32 ExceptionMaxMessageLength = 32768;
+
+	#endregion
+
+	#region Fields
 
 	/// <summary>
 	/// A dictionary mapping well-known domain names to their corresponding dependency types.

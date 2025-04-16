@@ -23,11 +23,16 @@ public sealed class TelemetryClient
 {
 	#region Types
 
-	private readonly struct ContextTuple(TelemetryTags collection)
+	/// <summary>
+	/// A structure that holds the telemetry tags and its representation in list form.
+	/// </summary>
+	/// <remarks>This type allows to reduce number of expensive <see cref="TelemetryTags.ToArray()"/> calls.</remarks>
+	/// <param name="tags">Telmetry tags.</param>
+	private readonly struct ContextTuple(TelemetryTags tags)
 	{
-		public IReadOnlyList<KeyValuePair<String, String>>? AsList { get; } = collection.IsEmpty() ? null : collection.ToArray();
+		public KeyValuePair<String, String>[]? AsArray { get; } = tags.IsEmpty() ? null : tags.ToArray();
 
-		public TelemetryTags Collection { get; } = collection;
+		public TelemetryTags Collection { get; } = tags;
 	}
 
 	#endregion
@@ -353,7 +358,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -409,7 +414,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -610,7 +615,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -677,7 +682,7 @@ public sealed class TelemetryClient
 	{
 		var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
 
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -746,7 +751,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -825,7 +830,7 @@ public sealed class TelemetryClient
 			Min = min
 		};
 
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -902,7 +907,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -954,7 +959,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 
@@ -997,7 +1002,7 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
 		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
 

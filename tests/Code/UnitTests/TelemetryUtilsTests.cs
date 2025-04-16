@@ -12,6 +12,8 @@ using Azure.Monitor.Telemetry.Models;
 [TestClass]
 public sealed class TelemetryUtilsTests
 {
+	#region Methods: Tests
+
 	[TestMethod]
 	public void Method_DetectTypeFromHttp_ShouldReturnNullIfUriInvalid()
 	{
@@ -151,4 +153,6 @@ public sealed class TelemetryUtilsTests
 		// assert
 		Assert.AreEqual(DependencyTypes.HTTP, result);
 	}
+
+	#endregion
 }

@@ -37,7 +37,7 @@ public static class JsonTelemetrySerializer
 
 	#endregion
 
-	#region Data
+	#region Static Fields
 
 	/// <summary>
 	/// <see cref="SeverityLevel"/> to <see cref="String"/> mapping.
@@ -166,6 +166,10 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("}");
 	}
+
+	#endregion
+
+	#region Methods: Write Telemetry Data
 
 	private static void WriteDataAvailability(StreamWriter streamWriter, Telemetry telemetry)
 	{
@@ -468,7 +472,7 @@ public static class JsonTelemetrySerializer
 
 	#endregion
 
-	#region Methods: Write
+	#region Methods: Write Helpers
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteComa

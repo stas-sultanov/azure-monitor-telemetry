@@ -17,6 +17,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 [TestClass]
 public sealed class HttpTelemetryPublishErrorTests
 {
+	#region Methods: Tests
+
 	[TestMethod]
 	public void Constructor()
 	{
@@ -40,4 +42,6 @@ public sealed class HttpTelemetryPublishErrorTests
 
 		AssertHelper.PropertyEqualsTo(error, o => o.StatusCode, statusCode);
 	}
+
+	#endregion
 }

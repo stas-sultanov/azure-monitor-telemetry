@@ -10,7 +10,7 @@ using System.Net;
 /// </summary>
 public sealed class HttpTelemetryPublishError
 {
-	#region Data
+	#region Properties
 
 	/// <summary>
 	/// The zero-based index of the error in a sequence.

@@ -23,7 +23,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Constructor
+	#region Constructors
 
 	/// <param name="testContext">The test context.</param>
 	public TelemetryTypesTests(TestContext testContext) : base
@@ -57,7 +57,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: AvailabilityTelemetry
+	#region Methods: Tests - AvailabilityTelemetry
 
 	/// <summary>
 	/// Tests <see cref="AvailabilityTelemetry"/> with full load.
@@ -97,7 +97,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: DependencyTelemetry
+	#region Methods: Tests - DependencyTelemetry
 
 	/// <summary>
 	/// Tests <see cref="DependencyTelemetry"/> with full load.
@@ -135,7 +135,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: EventTelemetry
+	#region Methods: Tests - EventTelemetry
 
 	/// <summary>
 	/// Tests <see cref="EventTelemetry"/> with full load.
@@ -175,7 +175,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: ExceptionTelemetry
+	#region Methods: Tests - ExceptionTelemetry
 
 	/// <summary>
 	/// Tests <see cref="ExceptionTelemetry"/> with full load.
@@ -215,7 +215,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: MetricTelemetry
+	#region Methods: Tests - MetricTelemetry
 
 	/// <summary>
 	/// Tests <see cref="MetricTelemetry"/> with full load.
@@ -261,7 +261,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: PageViewTelemetry
+	#region Methods: Tests - PageViewTelemetry
 
 	/// <summary>
 	/// Tests <see cref="PageViewTelemetry"/> with full load.
@@ -301,7 +301,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: RequestTelemetry
+	#region Methods: Tests - RequestTelemetry
 
 	/// <summary>
 	/// Tests <see cref="RequestTelemetry"/> with full load.
@@ -341,7 +341,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 
 	#endregion
 
-	#region Tests: TraceTelemetry
+	#region Methods: Tests - TraceTelemetry
 
 	/// <summary>
 	/// Tests <see cref="TraceTelemetry"/> with full load.

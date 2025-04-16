@@ -74,7 +74,7 @@ public sealed class TelemetryClientTests
 
 	#endregion
 
-	#region Methods: Tests Constructors
+	#region Methods: Tests - Constructors
 
 	[TestMethod]
 	public void Constructor_ThrowsArgumentNullException_IfPublisherIsNull()
@@ -175,7 +175,7 @@ public sealed class TelemetryClientTests
 
 	#endregion
 
-	#region Methods: Tests PublishAsync
+	#region Methods: Tests - PublishAsync
 
 	[TestMethod]
 	public async Task Method_PublishAsync_ShouldReturnEmptySuccess_WhenNoItems()
@@ -192,7 +192,7 @@ public sealed class TelemetryClientTests
 
 	#endregion
 
-	#region Methods: Tests Add
+	#region Methods: Tests - Add
 
 	[TestMethod]
 	public async Task Method_Add_ShouldEnqueueTelemetryItem()
@@ -216,7 +216,7 @@ public sealed class TelemetryClientTests
 
 	#endregion
 
-	#region Methods: Tests Activity Scope
+	#region Methods: Tests - Activity Scope
 
 	[TestMethod]
 	public void Method_ActivityScopeBegin()
@@ -305,7 +305,7 @@ public sealed class TelemetryClientTests
 
 	#endregion
 
-	#region Methods: Tests Track
+	#region Methods: Tests - Track
 
 	[TestMethod]
 	public async Task Method_TrackAvailability()
