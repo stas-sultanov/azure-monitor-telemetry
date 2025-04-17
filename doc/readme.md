@@ -61,13 +61,13 @@ The library includes `HttpTelemetryPublisher` class, an implementation of `Telem
 ### Initialization Scenarios
 
 - **Basic (no authentication):**  
-  Initialize `TelemetryClient` class with a single instance of type that implements `TelemetryPublisher` interface.<br/>
+  Initialize instance of `TelemetryClient` class with a single instance of type that implements `TelemetryPublisher` interface.<br/>
   Refer to the [example](#initialize) below.
 - **Entra-based authentication:**  
-  Configure `HttpTelemetryPublisher` to authenticate using an access token.<br/>
+  Configure instance of `HttpTelemetryPublisher` class to authenticate using an access token.<br/>
   Refer to the [example](#initialize-with-authentication) below.
 - **Multiple Destinations:**  
-  Provide multiple instances of types that implement `TelemetryPublisher` interface to send data to different Application Insights resources.<br/>
+  Use multiple instances of types that implement `TelemetryPublisher` interface to send telemetry data to different Application Insights resources.<br/>
   Refer to the [example](#initialize-with-multiple-destinations) below.
 
 ## Supported Telemetry Types
@@ -120,13 +120,13 @@ Telemetry tags enrich telemetry data.
 
 Tags are key-value pairs of string type.
 
-The list of well-known standard keys of tags can be found in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
+The well-known standard keys of tags are specified in [TelemetryTagKeys](/src/Code/TelemetryTagKeys.cs) class.
 
 The library provides a helper [TelemetryTags](/src/Code/TelemetryTags.cs) class to simplify work with tags.
 
 Tags can be applied in the following ways:
 - Via `Telemetry.Tags` property – Set during creation.
-- Via `TelemetryClient` constructor – Pass instance of `TelemetryTags` class to initialize `TelemetryClient.Context` property.
+- Via `TelemetryClient` class constructor – Pass instance of `TelemetryTags` class to initialize `TelemetryClient.Context` property.
 - Via `TelemetryClient.Context` Property – Set whenever needed.
 
 ## Tracking Telemetry
@@ -148,7 +148,7 @@ No automated dependency tracking is provided out of the box.
 To track dependencies, either use corresponding `TelemetryClient.TrackDependency*` method or create instance of [DependencyTelemetry](/src/Code/Models/DependencyTelemetry.cs) class and use `TelemetryClient.Add` method.<br/>
 Refer to the [example](#dependency-tracking) below.
 
-For a well-known dependency types take a look on [DependencyTypes](/src/Code/Models/DependencyTypes.cs) class.
+The well-known dependency types are specified in [DependencyTypes](/src/Code/Models/DependencyTypes.cs) class.
 
 The library provides [TelemetryTrackedHttpClientHandler](/src/Code/Dependency/TelemetryTrackedHttpClientHandler.cs) class that helps track HTTP requests.<br/>
 Refer to the [example](#dependency-tracking-via-http-client-handler).
@@ -159,15 +159,16 @@ The library is intentionally designed to support scenarios where a single logica
 
 ### How It Works
 - The Application Insights supports following telemetry tags
-  - OperationId - the unique identifier of the operation that spans across services or components.
-  - OperationParentId - the unique identifier of the operation which is parent to the specific telemetry item.
+  - **OperationId** - the unique identifier of the operation that spans across services or components.
+  - **OperationParentId** - the unique identifier of the operation which is parent to the specific telemetry item.
+- The `TelemetryTags` class provides `TelemetryTags.OperationId` property and `TelemetryTags.OperationParentId` property.
 - The telemetry types which represents an activity derives form [ActivityTelemetry](/src/Code/Models/ActivityTelemetry.cs) class.<br/>The `ActivityTelemetry.Id` property is used as OperationParentId tag for all subsequent telemetries within the activity scope.
-- The `TelemetryClient` class provides a `TelemetryClient.Context` property that holds a reference to the set of telemetry tags including OperationId and OperationName.
-- The `TelemetryClient.Context` property utilizes [AsyncLocal\<T\>][dot_net_async_local_info], this makes the referenced instance of `TelemetryTags` class available across asynchronous contexts.
+- The `TelemetryClient` class provides a `TelemetryClient.Context` property that holds a reference to the instance of `TelemetryTags` class.
+- The `TelemetryClient.Context` property utilizes [AsyncLocal\<T\>][dot_net_async_local_info] class, this makes the referenced instance of `TelemetryTags` class available across asynchronous contexts.
 
 ### Using Activity Scope
 
-The `TelemetryClient` provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with OperationParentId property of `TelemetryClient.Context` property.
+The `TelemetryClient` class provides a set of `TelemetryClient.ActivityScope*` methods that simplify work with `TelemetryTags.OperationParentId` property of `TelemetryClient.Context` property.
 
 The `TelemetryClient.ActivityScopeBegin` method begins the scope and the `TelemetryClient.ActivityScopeEnd` method ends the scope accordingly.
 
