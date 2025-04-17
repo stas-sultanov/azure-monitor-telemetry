@@ -54,19 +54,19 @@ Application Insights supports secure access via [Entra authentication][app_insig
 
 The `TelemetryClient` class is the core component for tracking and publishing telemetry.
 
-To enable publishing of telemetry to Application Insights, provide the `TelemetryClient` class constructor with one or more instance of types that implement the `TelemetryPublisher` interface.
+To enable publishing of telemetry to Application Insights, initialize the instance of `TelemetryClient` class with one or more instance of types that implement the `TelemetryPublisher` interface.
 
-The library includes `HttpTelemetryPublisher` class, an implementation of `TelemetryPublisher` interface that uses HTTPS protocol for communication.
+The library provides `HttpTelemetryPublisher` class, an implementation of `TelemetryPublisher` interface that uses HTTPS protocol for communication.
 
 ### Initialization Scenarios
 
-- **Basic (no authentication):**  
+- **Basic (no authentication):**
   Initialize instance of `TelemetryClient` class with a single instance of type that implements `TelemetryPublisher` interface.<br/>
   Refer to the [example](#initialize) below.
-- **Entra-based authentication:**  
+- **Entra-based authentication:**
   Configure instance of `HttpTelemetryPublisher` class to authenticate using an access token.<br/>
   Refer to the [example](#initialize-with-authentication) below.
-- **Multiple Destinations:**  
+- **Multiple Destinations:**
   Use multiple instances of types that implement `TelemetryPublisher` interface to send telemetry data to different Application Insights resources.<br/>
   Refer to the [example](#initialize-with-multiple-destinations) below.
 
