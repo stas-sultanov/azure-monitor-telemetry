@@ -121,7 +121,7 @@ public abstract class IntegrationTestsBase : IDisposable
 			var response = JsonSerializer.Deserialize<HttpTelemetryPublishResponse>(result.Response, jsonSerializerOptions);
 
 			// check not null
-			if (response == null)
+			if (response is null)
 			{
 				Assert.Fail("Track response can not be deserialized.");
 

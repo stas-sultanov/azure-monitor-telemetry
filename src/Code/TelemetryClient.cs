@@ -65,7 +65,7 @@ public sealed class TelemetryClient
 		TelemetryTags? tags = null
 	)
 	{
-		if (publisher == null)
+		if (publisher is null)
 		{
 			throw new ArgumentNullException(nameof(publisher));
 		}
@@ -96,7 +96,7 @@ public sealed class TelemetryClient
 		TelemetryTags? tags = null
 	)
 	{
-		if (publishers == null)
+		if (publishers is null)
 		{
 			throw new ArgumentNullException(nameof(publishers));
 		}
@@ -108,7 +108,7 @@ public sealed class TelemetryClient
 
 		for (var index = 0; index < publishers.Count; index++)
 		{
-			if (publishers[index] == null)
+			if (publishers[index] is null)
 			{
 				throw new ArgumentException($"The publisher at index {index} is null.", nameof(publishers));
 			}
@@ -230,7 +230,7 @@ public sealed class TelemetryClient
 		// set current context
 		context = Context;
 
-		Context = context == null
+		Context = context is null
 			? new TelemetryTags()
 			{
 				OperationParentId = activityId
@@ -360,7 +360,7 @@ public sealed class TelemetryClient
 	{
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new AvailabilityTelemetry
 		{
@@ -416,7 +416,7 @@ public sealed class TelemetryClient
 	{
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new DependencyTelemetry
 		{
@@ -617,7 +617,7 @@ public sealed class TelemetryClient
 	{
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new EventTelemetry
 		{
@@ -684,7 +684,7 @@ public sealed class TelemetryClient
 
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new ExceptionTelemetry
 		{
@@ -753,7 +753,7 @@ public sealed class TelemetryClient
 	{
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new MetricTelemetry
 		{
@@ -832,7 +832,7 @@ public sealed class TelemetryClient
 
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new MetricTelemetry
 		{
@@ -909,7 +909,7 @@ public sealed class TelemetryClient
 	{
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new PageViewTelemetry
 		{
@@ -961,7 +961,7 @@ public sealed class TelemetryClient
 	{
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new RequestTelemetry
 		{
@@ -1004,7 +1004,7 @@ public sealed class TelemetryClient
 	{
 		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new TraceTelemetry
 		{

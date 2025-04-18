@@ -31,7 +31,7 @@ public sealed class TelemetryClientTests
 	{
 		var contextTags = telemetryClient.Context.IsEmpty() ? null : telemetryClient.Context.ToArray();
 
-		var result = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var result = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		return result;
 	}

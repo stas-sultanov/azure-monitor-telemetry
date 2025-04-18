@@ -217,7 +217,7 @@ public sealed class JsonTelemetrySerializerTests
 
 			var metricElement = dataElement.GetProperty("metrics")[0];
 
-			if (telemetry.ValueAggregation != null)
+			if (telemetry.ValueAggregation is not null)
 			{
 				DeserializeAndAssert(aggregation, t => t.Count, "count", metricElement);
 				DeserializeAndAssert(aggregation, t => t.Max, "max", metricElement);

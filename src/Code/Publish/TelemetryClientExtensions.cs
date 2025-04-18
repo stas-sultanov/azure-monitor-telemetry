@@ -38,7 +38,7 @@ public static class TelemetryClientExtensions
 	{
 		var countMeasurement = new KeyValuePair<String, Double>(nameof(HttpTelemetryPublishResult.Count), publishResult.Count);
 
-		KeyValuePair<String, Double>[] measurementsWithCount = measurements == null ? [countMeasurement] : [..measurements, countMeasurement];
+		KeyValuePair<String, Double>[] measurementsWithCount = measurements is null ? [countMeasurement] : [..measurements, countMeasurement];
 
 		telemetryClient.TrackDependencyHttp
 		(

@@ -65,7 +65,7 @@ internal static class AssertHelper
 			return;
 		}
 
-		if (expectedValue == null || actualValue == null)
+		if (expectedValue is null || actualValue is null)
 		{
 			throw new AssertFailedException($"{typeName}.{propertyName} expected:{expectedValue} actual:{actualValue}");
 		}
@@ -137,7 +137,7 @@ internal static class AssertHelper
 			return;
 		}
 
-		if (actualValue == null)
+		if (actualValue is null)
 		{
 			throw new AssertFailedException
 			(
