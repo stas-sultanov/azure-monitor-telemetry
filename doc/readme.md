@@ -6,7 +6,7 @@
 	- [Initialization Scenarios](#initialization-scenarios)
 - [Supported Telemetry Types](#supported-telemetry-types)
 - [Collecting Telemetry](#collecting-telemetry)
-- [Telemetry Publishing](#telemetry-publishing)
+- [Publishing Telemetry](#publishing-telemetry)
 - [Using Telemetry Tags](#using-telemetry-tags)
 - [Tracking Telemetry](#tracking-telemetry)
 	- [Dependency Telemetry](#dependency-telemetry)
@@ -102,7 +102,7 @@ var telemetry = new TraceTelemetry
 telemetryClient.Add(telemetry);
 ```
 
-## Telemetry Publishing
+## Publishing Telemetry
 
 To publish collected telemetry, use the `TelemetryClient.PublishAsync` method to publish telemetry using all configured publishers in parallel.
 

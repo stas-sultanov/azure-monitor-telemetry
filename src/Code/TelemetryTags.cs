@@ -11,7 +11,7 @@ using System.Collections.Generic;
 /// </summary>
 public sealed record TelemetryTags
 {
-	#region Static
+	#region Static Properties
 
 	/// <summary>
 	/// The empty instance of <see cref="TelemetryTags"/>.
