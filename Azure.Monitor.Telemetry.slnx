@@ -6,5 +6,5 @@
 		<File Path="readme.md" />
 	</Folder>
 	<Project Path="src/Azure.Monitor.Telemetry.csproj" />
-	<Project Path="tests/Azure.Monitor.Telemetry.Tests.csproj" />
+	<Project Path="tests/Azure.Monitor.TelemetryTests.csproj" Id="9b47966b-6245-c5d0-52e6-2a8a9a1f0927" />
 </Solution>

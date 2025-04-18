@@ -1,7 +1,9 @@
 ﻿// Authored by Stas Sultanov
 // Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
+
+using Azure.Monitor.Telemetry;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -1,7 +1,7 @@
 ﻿// Authored by Stas Sultanov
 // Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Publish;
 
 internal sealed class HttpTelemetryPublisherMock : TelemetryPublisher

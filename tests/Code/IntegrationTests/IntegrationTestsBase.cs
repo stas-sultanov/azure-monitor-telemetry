@@ -1,7 +1,7 @@
 ﻿// Authored by Stas Sultanov
 // Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System.Net;
 using System.Net.Http;

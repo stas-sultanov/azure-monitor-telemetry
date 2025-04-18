@@ -1,13 +1,14 @@
 ﻿// Authored by Stas Sultanov
 // Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Models;
 using Azure.Monitor.Telemetry.Publish;
 
