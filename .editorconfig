@@ -16,7 +16,7 @@ end_of_line = crlf
 insert_final_newline = true
 
 # Header
-file_header_template = Created by Stas Sultanov.\nCopyright © Stas Sultanov.
+file_header_template = Authored by Stas Sultanov\nCopyright © Stas Sultanov
 
 #### .NET Code Actions ####
 

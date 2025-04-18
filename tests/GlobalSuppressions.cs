@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 using System.Diagnostics.CodeAnalysis;
 

@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry.Tests;
 
@@ -70,12 +70,12 @@ internal static class AssertHelper
 			throw new AssertFailedException($"{typeName}.{propertyName} expected:{expectedValue} actual:{actualValue}");
 		}
 
-		var expectedConut = expectedValue.Count();
+		var expectedCount = expectedValue.Count();
 		var actualCount = actualValue.Count();
 
-		if (expectedConut != actualCount)
+		if (expectedCount != actualCount)
 		{
-			throw new AssertFailedException($"{typeName}.{propertyName}.Count expected:{expectedConut} actual:{actualCount}");
+			throw new AssertFailedException($"{typeName}.{propertyName}.Count expected:{expectedCount} actual:{actualCount}");
 		}
 
 		var comparer = itemComparer ?? EqualityComparer<ItemType>.Default;

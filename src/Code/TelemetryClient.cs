@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry;
 
@@ -27,7 +27,7 @@ public sealed class TelemetryClient
 	/// A structure that holds the telemetry tags and its representation in list form.
 	/// </summary>
 	/// <remarks>This type allows to reduce number of expensive <see cref="TelemetryTags.ToArray()"/> calls.</remarks>
-	/// <param name="tags">Telmetry tags.</param>
+	/// <param name="tags">The telemetry tags.</param>
 	private readonly struct ContextTuple(TelemetryTags tags)
 	{
 		public KeyValuePair<String, String>[]? AsArray { get; } = tags.IsEmpty() ? null : tags.ToArray();
@@ -57,7 +57,7 @@ public sealed class TelemetryClient
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publisher">A telemetry publisher to publish the telemetry data.</param>
-	/// <param name="tags">The tags to initalize the context.</param>
+	/// <param name="tags">The tags to initialize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publisher"/> is null.</exception>
 	public TelemetryClient
 	(
@@ -86,7 +86,7 @@ public sealed class TelemetryClient
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publishers">A read only list of telemetry publishers to publish the telemetry data.</param>
-	/// <param name="tags">The tags to initalize the context.</param>
+	/// <param name="tags">The tags to initialize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publishers"/> is null.</exception>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="publishers"/> count is 0.</exception>
 	/// <exception cref="ArgumentException">Thrown if any publisher in <paramref name="publishers"/> is null.</exception>
