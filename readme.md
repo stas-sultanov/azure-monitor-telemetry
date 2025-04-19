@@ -21,7 +21,7 @@ For usage instructions, refer to the [documentation](/doc/readme.md).
 This library has been developed with a strong focus on business adaptability to serve IT solutions of all kinds.<br/>
 The library is guided by the following key design principles:
 
-- **Efficiency** – Run faster and consume less memory thanks to minimal code and low complexity.
+- **Efficiency** – Run fast with minimal memory usage due to lightweight codebase and low complexity.
 - **Responsibility** – Embrace control over how telemetry is tracked and managed, with decisions left to the developer.
 - **Simplicity** – Minimize the number of classes, relationships, and hierarchies to keep the design as lean as possible.
 - **Transparency** – Gain full visibility into how telemetry is tracked and published, without unnecessary abstraction layers.
@@ -31,21 +31,22 @@ The library is guided by the following key design principles:
 
 Strict quality standards are applied throughout the development of this library and reflected in the following safeguards:
 
-1. The repository is configured with branch protection [rules][github_docs_rule_sets] targeting the *main* branch, including the following:
-    - Require [signed commits][github_docs_verified_commit].
-    - Require a pull request before merging, with the allowed method: *Squash*.
-    - Require code scanning results via [CodeQL][github_workflow_code_ql].
-2. The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
-    - Checks that the code builds with no errors.
-    - Executes unit tests with a coverage threshold of 95%.
-    - Executes integration tests with a coverage threshold of 75%, using a temporary Azure environment that is automatically provisioned and disposed.
-3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
-4. The project build is configured to:
-    - Treat all warnings as errors.
-    - Set the warning level to 9999.
-    - Enforce code style in the build via [editorconfig](/.editorconfig).
-    - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
-    - Ensure that all public members are documented.
+- The repository is configured with branch protection [rules][github_docs_rule_sets] targeting the *main* branch, including the following:
+  - Require [signed commits][github_docs_verified_commit].
+  - Require a pull request before merging, with the allowed method: *Squash*.
+  - Require code scanning results via [CodeQL][github_workflow_code_ql].
+- The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
+  - Checks that the code builds with no errors.
+  - Executes unit tests with a coverage threshold of 95%.
+  - Executes integration tests with a coverage threshold of 75%, using a temporary Azure environment that is automatically provisioned and disposed.
+- The workflow [Release][github_workflow_release] is created with
+  -  support of [artifact attestations][github_docs_artifact_attestations].
+- The project build is configured to:
+  - Treat all warnings as errors.
+  - Set the warning level to 9999.
+  - Enforce code style in the build via [editorconfig](/.editorconfig).
+  - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
+  - Ensure that all public members are documented.
 
 ## Why This Library?
 
