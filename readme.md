@@ -35,12 +35,12 @@ Strict quality standards are applied throughout the development of this library 
   - Require [signed commits][github_docs_verified_commit].
   - Require a pull request before merging, with the allowed method: *Squash*.
   - Require code scanning results via [CodeQL][github_workflow_code_ql].
-- The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
+- The workflow [Check][github_workflow_check] is created to run on pull requests to the *main* branch and performs the following:
   - Checks that the code builds with no errors.
   - Executes unit tests with a coverage threshold of 95%.
   - Executes integration tests with a coverage threshold of 75%, using a temporary Azure environment that is automatically provisioned and disposed.
-- The workflow [Release][github_workflow_release] is created with
-  -  support of [artifact attestations][github_docs_artifact_attestations].
+- The workflow [Release][github_workflow_release] is created to:
+  - Perform [artifact attestation][github_docs_artifact_attestations].
 - The project build is configured to:
   - Treat all warnings as errors.
   - Set the warning level to 9999.
