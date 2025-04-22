@@ -40,10 +40,10 @@ Strict quality standards are applied throughout the development of this library 
   - Executes unit tests with a coverage threshold of 95%.
   - Executes integration tests with a coverage threshold of 75%, using a temporary Azure environment that is automatically provisioned and disposed.
 - The workflow [Release][github_workflow_release] is created to:
-  - Perform [artifact attestation][github_docs_artifact_attestations].
+  - Perform [artifacts attestation][github_docs_artifact_attestations].
 - The project build is configured to:
   - Treat all warnings as errors.
-  - Set the warning level to 9999.
+  - Set the warning level to MAX.
   - Enforce code style in the build via [editorconfig](/.editorconfig).
   - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
   - Ensure that all public members are documented.
