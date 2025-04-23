@@ -1,17 +1,19 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System;
 using System.Globalization;
 using System.Net.Http;
 
+using Azure.Monitor.Telemetry;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
 /// The goals of this test:
-/// - test distributed dependency tracking with AvailabiltyTest, PageView, Request and Dependency telemetry.
+/// - test distributed dependency tracking with AvailabilityTest, PageView, Request and Dependency telemetry.
 /// </summary>
 [TestCategory("IntegrationTests")]
 [TestClass]
@@ -111,7 +113,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 		var operationId = TelemetryFactory.GetOperationId();
 		var operationName = "HealthCheck";
 
-		// create telemery client for probe
+		// create telemetry client for probe
 		var probeTelemetryClient = new TelemetryClient(TelemetryPublishers)
 		{
 			Context = probe_ContextTags with
@@ -128,7 +130,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 			"Service A",
 			"West Europe",
 			// service A accepts the call with request processing
-			(parentActivityId, cancellationToken) => Service_PorecessRequest
+			(parentActivityId, cancellationToken) => Service_ProcessRequest
 			(
 				service_A_ContextTags with
 				{
@@ -155,7 +157,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 			"Service B",
 			"West Europe",
 			// service A accepts the call with request processing
-			(parentActivityId, cancellationToken) => Service_PorecessRequest
+			(parentActivityId, cancellationToken) => Service_ProcessRequest
 			(
 				service_B_ContextTags with
 				{
@@ -194,7 +196,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 		var operationName = "ShowMain";
 		var service_A_RequestUrl = new Uri($"https://{service_A_Domain}/data");
 
-		// create telemery client for client
+		// create telemetry client for client
 		var clientTelemetryClient = new TelemetryClient(TelemetryPublishers)
 		{
 			Context = client_ContextTags with
@@ -210,7 +212,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 			clientTelemetryClient,
 			"Main",
 			new Uri("https://www.gostas.dev"),
-			// client makes dependenc calls within the page view
+			// client makes dependency calls within the page view
 			async (parentActivityId, cancellationToken) =>
 			{
 				// call external dependency
@@ -234,7 +236,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 					HttpMethod.Get,
 					service_A_RequestUrl,
 					// service A accepts the call with request processing
-					async (parentActivityId, cancellationToken) => await Service_PorecessRequest
+					async (parentActivityId, cancellationToken) => await Service_ProcessRequest
 					(
 						service_A_ContextTags with
 						{
@@ -271,7 +273,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 		var service_A_RequestUrl = new Uri($"https://{service_A_Domain}/info");
 		var service_B_RequestUrl = new Uri($"https://{service_B_Domain}/exrainfo");
 
-		// create telemery client for client
+		// create telemetry client for client
 		var clientTelemetryClient = new TelemetryClient(TelemetryPublishers)
 		{
 			Context = client_ContextTags with
@@ -287,7 +289,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 			clientTelemetryClient,
 			"Info",
 			new Uri("https://www.gostas.dev/info"),
-			// client makes dependenc calls within the page view
+			// client makes dependency calls within the page view
 			async (parentActivityId, cancellationToken) =>
 			{
 				// call service A
@@ -297,7 +299,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 					HttpMethod.Get,
 					service_A_RequestUrl,
 					// service A accepts the call with request processing
-					async (parentActivityId, cancellationToken) => await Service_PorecessRequest
+					async (parentActivityId, cancellationToken) => await Service_ProcessRequest
 					(
 						service_A_ContextTags with
 						{
@@ -306,7 +308,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 							OperationParentId = parentActivityId
 						},
 						service_A_RequestUrl,
-						// service A makes dependenc calls to service B
+						// service A makes dependency calls to service B
 						async (serviceATelemetryClient, cancellationToken) =>
 						{
 							// call service A
@@ -316,7 +318,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 								HttpMethod.Get,
 								service_B_RequestUrl,
 								// service A accepts the call with request processing
-								async (parentActivityId, cancellationToken) => await Service_PorecessRequest
+								async (parentActivityId, cancellationToken) => await Service_ProcessRequest
 								(
 									service_B_ContextTags with
 									{
@@ -353,7 +355,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 	/// <summary>
 	/// Simulate request processing.
 	/// </summary>
-	private async Task<Boolean> Service_PorecessRequest
+	private async Task<Boolean> Service_ProcessRequest
 	(
 		TelemetryTags initialContext,
 		Uri url,

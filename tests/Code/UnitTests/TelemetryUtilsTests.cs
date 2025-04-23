@@ -1,8 +1,9 @@
-// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
+using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Models;
 
 /// <summary>
@@ -12,6 +13,8 @@ using Azure.Monitor.Telemetry.Models;
 [TestClass]
 public sealed class TelemetryUtilsTests
 {
+	#region Methods: Tests
+
 	[TestMethod]
 	public void Method_DetectTypeFromHttp_ShouldReturnNullIfUriInvalid()
 	{
@@ -151,4 +154,6 @@ public sealed class TelemetryUtilsTests
 		// assert
 		Assert.AreEqual(DependencyTypes.HTTP, result);
 	}
+
+	#endregion
 }

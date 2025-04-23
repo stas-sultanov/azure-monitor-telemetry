@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry.Publish;
 
@@ -94,7 +94,7 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 
 		this.httpClient = httpClient;
 
-		this.ingestionEndpoint = new Uri(ingestionEndpoint, getAccessToken == null ? "v2/track" : "v2.1/track");
+		this.ingestionEndpoint = new Uri(ingestionEndpoint, getAccessToken is null ? "v2/track" : "v2.1/track");
 
 		this.instrumentationKey = instrumentationKey.ToString();
 
@@ -139,10 +139,10 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 		request.Content = new StreamContent(memoryStream);
 
 		// check if authorization is configured
-		if (getAccessToken != null)
+		if (getAccessToken is not null)
 		{
 			// check if token has been ever requested or already has expired
-			if (authorizationHeaderValue == null || DateTimeOffset.UtcNow > authorizationTokenExpiresOn)
+			if (authorizationHeaderValue is null || DateTimeOffset.UtcNow > authorizationTokenExpiresOn)
 			{
 				// get token
 				var token = await getAccessToken(cancellationToken);

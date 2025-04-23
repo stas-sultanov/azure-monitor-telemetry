@@ -1,7 +1,7 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System;
 using System.Net;
@@ -17,6 +17,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 [TestClass]
 public sealed class HttpTelemetryPublishErrorTests
 {
+	#region Methods: Tests
+
 	[TestMethod]
 	public void Constructor()
 	{
@@ -40,4 +42,6 @@ public sealed class HttpTelemetryPublishErrorTests
 
 		AssertHelper.PropertyEqualsTo(error, o => o.StatusCode, statusCode);
 	}
+
+	#endregion
 }

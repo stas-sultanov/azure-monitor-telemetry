@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry;
 
@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 /// </summary>
 public interface TelemetryPublisher
 {
+	#region Methods
+
 	/// <summary>
 	/// Asynchronously publishes telemetry items to the service.
 	/// </summary>
@@ -23,4 +25,6 @@ public interface TelemetryPublisher
 		IReadOnlyList<Telemetry> telemetryItems,
 		CancellationToken cancellationToken
 	);
+
+	#endregion
 }

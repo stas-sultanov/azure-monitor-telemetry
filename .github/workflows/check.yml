@@ -26,7 +26,7 @@ jobs:
       # Path to the project file
       MAIN_PROJECT_FILE_PATH: src/Azure.Monitor.Telemetry.csproj
       # Path to the tests project file
-      TESTS_PROJECT_FILE_PATH: tests/Azure.Monitor.Telemetry.Tests.csproj
+      TESTS_PROJECT_FILE_PATH: tests/Azure.Monitor.TelemetryTests.csproj
       # Path to the test project publish directory.
       TESTS_PROJECT_PUBLISH_DIRECTORY_PATH: out
 
@@ -100,7 +100,7 @@ jobs:
 
     - name: Run Tests
       run: >-
-        dotnet test ./Azure.Monitor.Telemetry.Tests.dll
+        dotnet test ./Azure.Monitor.TelemetryTests.dll
         --collect:"Code Coverage;Format=Cobertura"
         --filter TestCategory=UnitTests
         --logger:"trx"
@@ -201,7 +201,7 @@ jobs:
 
     - name: Run Tests
       run: >-
-        dotnet test ./Azure.Monitor.Telemetry.Tests.dll
+        dotnet test ./Azure.Monitor.TelemetryTests.dll
         --collect:"Code Coverage;Format=Cobertura"
         --filter TestCategory=IntegrationTests
         --logger:"trx"

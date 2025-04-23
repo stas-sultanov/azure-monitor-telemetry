@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry.Models;
 
@@ -8,6 +8,8 @@ namespace Azure.Monitor.Telemetry.Models;
 /// </summary>
 public sealed class MetricValueAggregation
 {
+	#region Properties
+
 	/// <summary>
 	/// The number of values in the sample set.
 	/// </summary>
@@ -22,4 +24,6 @@ public sealed class MetricValueAggregation
 	/// The min value of the metric across the sample set.
 	/// </summary>
 	public Double Min { get; init; }
+
+	#endregion
 }

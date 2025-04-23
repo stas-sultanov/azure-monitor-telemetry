@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry;
 
@@ -13,10 +13,14 @@ using Azure.Monitor.Telemetry.Models;
 /// </summary>
 public static class TelemetryUtils
 {
-	#region Data
+	#region Constants
 
 	private const Int32 ExceptionMaxStackLength = 32768;
 	private const Int32 ExceptionMaxMessageLength = 32768;
+
+	#endregion
+
+	#region Fields
 
 	/// <summary>
 	/// A dictionary mapping well-known domain names to their corresponding dependency types.
@@ -70,7 +74,7 @@ public static class TelemetryUtils
 		Uri uri
 	)
 	{
-		if (uri == null || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+		if (uri is null || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
 		{
 			return null;
 		}
@@ -131,7 +135,7 @@ public static class TelemetryUtils
 			// get frames
 			var frames = stackTrace.GetFrames();
 
-			if (frames == null || frames.Length == 0)
+			if (frames is null || frames.Length == 0)
 			{
 				parsedStack = null;
 			}
@@ -148,7 +152,7 @@ public static class TelemetryUtils
 
 					var methodInfo = frame.GetMethod();
 
-					var method = methodInfo?.DeclaringType == null ? methodInfo?.Name: String.Concat(methodInfo.DeclaringType.FullName, ".", methodInfo.Name);
+					var method = methodInfo?.DeclaringType is null ? methodInfo?.Name: String.Concat(methodInfo.DeclaringType.FullName, ".", methodInfo.Name);
 
 					var line = frame.GetFileLineNumber();
 
@@ -188,7 +192,7 @@ public static class TelemetryUtils
 
 			currentException = currentException.InnerException;
 		}
-		while (currentException != null);
+		while (currentException is not null);
 
 		return result;
 	}

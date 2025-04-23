@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry.Dependency;
 
@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 /// This handler uses a <see cref="TelemetryClient"/> to track details about HTTP requests and responses, including the request URI, method, status code, and duration.
 /// </remarks>
 /// <param name="telemetryClient">The telemetry client.</param>
-/// <param name="getActivityId">A function that returns a unique identifier for the activity.</param>
+/// <param name="getActivityId">The function that returns a unique identifier for the activity.</param>
 public class TelemetryTrackedHttpClientHandler
 (
 	TelemetryClient telemetryClient,
@@ -23,8 +23,10 @@ public class TelemetryTrackedHttpClientHandler
 )
 	: HttpClientHandler
 {
+	#region Fields
+
 	/// <summary>
-	/// A function that returns a unique identifier for the activity.
+	/// The function that returns a unique identifier for the activity.
 	/// </summary>
 	private readonly Func<String> getActivityId = getActivityId;
 
@@ -32,6 +34,10 @@ public class TelemetryTrackedHttpClientHandler
 	/// The telemetry client.
 	/// </summary>
 	private readonly TelemetryClient telemetryClient = telemetryClient;
+
+	#endregion
+
+	#region Methods
 
 	/// <inheritdoc/>
 	protected override async Task<HttpResponseMessage> SendAsync
@@ -73,4 +79,6 @@ public class TelemetryTrackedHttpClientHandler
 
 		return result;
 	}
+
+	#endregion
 }

@@ -1,7 +1,9 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
+
+using Azure.Monitor.Telemetry;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,12 +15,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 [TestClass]
 public sealed class MultiplePublishersTests : IntegrationTestsBase
 {
-	#region Data
-
-	private TelemetryClient TelemetryClient { get; }
-
-	#endregion
-
 	#region Constructors
 
 	/// <summary>
@@ -50,6 +46,12 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 			}
 		};
 	}
+
+	#endregion
+
+	#region Properties
+
+	private TelemetryClient TelemetryClient { get; }
 
 	#endregion
 

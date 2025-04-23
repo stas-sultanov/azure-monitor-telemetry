@@ -1,7 +1,7 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System;
 using System.Linq.Expressions;
@@ -65,17 +65,17 @@ internal static class AssertHelper
 			return;
 		}
 
-		if (expectedValue == null || actualValue == null)
+		if (expectedValue is null || actualValue is null)
 		{
 			throw new AssertFailedException($"{typeName}.{propertyName} expected:{expectedValue} actual:{actualValue}");
 		}
 
-		var expectedConut = expectedValue.Count();
+		var expectedCount = expectedValue.Count();
 		var actualCount = actualValue.Count();
 
-		if (expectedConut != actualCount)
+		if (expectedCount != actualCount)
 		{
-			throw new AssertFailedException($"{typeName}.{propertyName}.Count expected:{expectedConut} actual:{actualCount}");
+			throw new AssertFailedException($"{typeName}.{propertyName}.Count expected:{expectedCount} actual:{actualCount}");
 		}
 
 		var comparer = itemComparer ?? EqualityComparer<ItemType>.Default;
@@ -137,7 +137,7 @@ internal static class AssertHelper
 			return;
 		}
 
-		if (actualValue == null)
+		if (actualValue is null)
 		{
 			throw new AssertFailedException
 			(

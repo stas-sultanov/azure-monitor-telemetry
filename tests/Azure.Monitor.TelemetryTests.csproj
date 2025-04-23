@@ -2,11 +2,11 @@
 
 	<PropertyGroup>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
-		<AssemblyName>Azure.Monitor.Telemetry.Tests</AssemblyName>
+		<AssemblyName>Azure.Monitor.TelemetryTests</AssemblyName>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>latest</LangVersion>
+		<LangVersion>13.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<TargetFramework>net9.0</TargetFramework>
 		<TestingExtensionsProfile>None</TestingExtensionsProfile>

@@ -1,11 +1,12 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System.Diagnostics;
 
 using Azure.Core.Pipeline;
+using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Dependency;
 using Azure.Storage.Queues;
 
@@ -76,6 +77,18 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 	#endregion
 
+	#region Methods: Implementation of IDisposable
+
+	/// <inheritdoc/>
+	public override void Dispose()
+	{
+		queueClientHttpClientTransport.Dispose();
+
+		base.Dispose();
+	}
+
+	#endregion
+
 	#region Methods: Tests
 
 	[TestMethod]
@@ -120,18 +133,6 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 
 		// assert
 		AssertStandardSuccess(result);
-	}
-
-	#endregion
-
-	#region Methods: Implementation of IDisposable
-
-	/// <inheritdoc/>
-	public override void Dispose()
-	{
-		queueClientHttpClientTransport.Dispose();
-
-		base.Dispose();
 	}
 
 	#endregion

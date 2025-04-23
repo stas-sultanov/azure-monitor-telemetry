@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry.Publish;
 
@@ -37,7 +37,7 @@ public static class JsonTelemetrySerializer
 
 	#endregion
 
-	#region Data
+	#region Static Fields
 
 	/// <summary>
 	/// <see cref="SeverityLevel"/> to <see cref="String"/> mapping.
@@ -129,7 +129,7 @@ public static class JsonTelemetrySerializer
 
 		writeData(streamWriter, telemetry);
 
-		if (!propertiesOnTop && telemetry.Properties != null)
+		if (!propertiesOnTop && telemetry.Properties is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "properties", telemetry.Properties);
@@ -149,13 +149,13 @@ public static class JsonTelemetrySerializer
 		WriteProperty(streamWriter, "name", name);
 
 		// serialize properties
-		if (propertiesOnTop && telemetry.Properties != null)
+		if (propertiesOnTop && telemetry.Properties is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "properties", telemetry.Properties);
 		}
 
-		if (telemetry.Tags != null)
+		if (telemetry.Tags is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "tags", telemetry.Tags);
@@ -167,6 +167,10 @@ public static class JsonTelemetrySerializer
 		streamWriter.Write("}");
 	}
 
+	#endregion
+
+	#region Methods: Write Telemetry Data
+
 	private static void WriteDataAvailability(StreamWriter streamWriter, Telemetry telemetry)
 	{
 		var availabilityTelemetry = (AvailabilityTelemetry) telemetry;
@@ -176,7 +180,7 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "id", availabilityTelemetry.Id);
 
-		if (availabilityTelemetry.Measurements != null)
+		if (availabilityTelemetry.Measurements is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "measurements", availabilityTelemetry.Measurements);
@@ -188,7 +192,7 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "name", availabilityTelemetry.Name);
 
-		if (availabilityTelemetry.RunLocation != null)
+		if (availabilityTelemetry.RunLocation is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "runLocation", availabilityTelemetry.RunLocation);
@@ -202,7 +206,7 @@ public static class JsonTelemetrySerializer
 	{
 		var dependencyTelemetry = (DependencyTelemetry) telemetry;
 
-		if (dependencyTelemetry.Data != null)
+		if (dependencyTelemetry.Data is not null)
 		{
 			WriteProperty(streamWriter, "data", dependencyTelemetry.Data!);
 
@@ -214,7 +218,7 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "id", dependencyTelemetry.Id);
 
-		if (dependencyTelemetry.Measurements != null)
+		if (dependencyTelemetry.Measurements is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "measurements", dependencyTelemetry.Measurements);
@@ -223,7 +227,7 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "name", dependencyTelemetry.Name);
 
-		if (dependencyTelemetry.ResultCode != null)
+		if (dependencyTelemetry.ResultCode is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "resultCode", dependencyTelemetry.ResultCode);
@@ -232,13 +236,13 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "success", dependencyTelemetry.Success);
 
-		if (dependencyTelemetry.Target != null)
+		if (dependencyTelemetry.Target is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "target", dependencyTelemetry.Target);
 		}
 
-		if (dependencyTelemetry.Type != null)
+		if (dependencyTelemetry.Type is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "type", dependencyTelemetry.Type);
@@ -249,7 +253,7 @@ public static class JsonTelemetrySerializer
 	{
 		var eventTelemetry = (EventTelemetry) telemetry;
 
-		if (eventTelemetry.Measurements != null)
+		if (eventTelemetry.Measurements is not null)
 		{
 			WriteProperty(streamWriter, "measurements", eventTelemetry.Measurements);
 
@@ -288,7 +292,7 @@ public static class JsonTelemetrySerializer
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "outerId", exceptionInfo.OuterId);
 
-			if (exceptionInfo.ParsedStack != null)
+			if (exceptionInfo.ParsedStack is not null)
 			{
 				streamWriter.Write(",\"parsedStack\":[");
 
@@ -305,7 +309,7 @@ public static class JsonTelemetrySerializer
 
 					WriteProperty(streamWriter, "assembly", frame.Assembly);
 
-					if (frame.FileName != null)
+					if (frame.FileName is not null)
 					{
 						WriteComa(streamWriter);
 						WriteProperty(streamWriter, "fileName", frame.FileName);
@@ -317,7 +321,7 @@ public static class JsonTelemetrySerializer
 					WriteComa(streamWriter);
 					WriteProperty(streamWriter, "line", frame.Line);
 
-					if (frame.Method != null)
+					if (frame.Method is not null)
 					{
 						WriteComa(streamWriter);
 						WriteProperty(streamWriter, "method", frame.Method);
@@ -337,13 +341,13 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("]");
 
-		if (exceptionTelemetry.Measurements != null)
+		if (exceptionTelemetry.Measurements is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "measurements", exceptionTelemetry.Measurements);
 		}
 
-		if (exceptionTelemetry.ProblemId != null)
+		if (exceptionTelemetry.ProblemId is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "problemId", exceptionTelemetry.ProblemId);
@@ -364,7 +368,7 @@ public static class JsonTelemetrySerializer
 
 		streamWriter.Write("\"metrics\":[{");
 
-		if (metricTelemetry.ValueAggregation != null)
+		if (metricTelemetry.ValueAggregation is not null)
 		{
 			WriteProperty(streamWriter, "count", metricTelemetry.ValueAggregation.Count);
 
@@ -397,7 +401,7 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "id", pageViewTelemetry.Id);
 
-		if (pageViewTelemetry.Measurements != null)
+		if (pageViewTelemetry.Measurements is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "measurements", pageViewTelemetry.Measurements);
@@ -406,7 +410,7 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "name", pageViewTelemetry.Name);
 
-		if (pageViewTelemetry.Url != null)
+		if (pageViewTelemetry.Url is not null)
 		{
 			var urlAsString = pageViewTelemetry.Url.ToString();
 
@@ -426,13 +430,13 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "duration", requestTelemetry.Duration);
 
-		if (requestTelemetry.Measurements != null)
+		if (requestTelemetry.Measurements is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "measurements", requestTelemetry.Measurements);
 		}
 
-		if (requestTelemetry.Name != null)
+		if (requestTelemetry.Name is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "name", requestTelemetry.Name!);
@@ -441,7 +445,7 @@ public static class JsonTelemetrySerializer
 		WriteComa(streamWriter);
 		WriteProperty(streamWriter, "responseCode", requestTelemetry.ResponseCode);
 
-		if (requestTelemetry.Name != null)
+		if (requestTelemetry.Name is not null)
 		{
 			WriteComa(streamWriter);
 			WriteProperty(streamWriter, "source", requestTelemetry.Source!);
@@ -468,7 +472,7 @@ public static class JsonTelemetrySerializer
 
 	#endregion
 
-	#region Methods: Write
+	#region Methods: Write Helpers
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteComa

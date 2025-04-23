@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry;
 
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 /// </summary>
 public sealed record TelemetryTags
 {
-	#region Static
+	#region Static Properties
 
 	/// <summary>
 	/// The empty instance of <see cref="TelemetryTags"/>.
@@ -46,7 +46,7 @@ public sealed record TelemetryTags
 		IReadOnlyDictionary<String, String> source
 	)
 	{
-		if (source == null)
+		if (source is null)
 		{
 			throw new ArgumentNullException(nameof(source));
 		}
@@ -85,7 +85,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.ApplicationVer] = value;
 			}
@@ -102,7 +102,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.CloudRole] = value;
 			}
@@ -119,7 +119,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.CloudRoleInstance] = value;
 			}
@@ -136,7 +136,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.DeviceId] = value;
 			}
@@ -153,7 +153,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.DeviceLocale] = value;
 			}
@@ -170,7 +170,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.DeviceModel] = value;
 			}
@@ -187,7 +187,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.DeviceOEMName] = value;
 			}
@@ -204,7 +204,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.DeviceOSVersion] = value;
 			}
@@ -221,7 +221,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.DeviceType] = value;
 			}
@@ -238,7 +238,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.InternalAgentVersion] = value;
 			}
@@ -255,7 +255,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.InternalNodeName] = value;
 			}
@@ -272,7 +272,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.InternalSdkVersion] = value;
 			}
@@ -289,7 +289,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.LocationCity] = value;
 			}
@@ -306,7 +306,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.LocationCountry] = value;
 			}
@@ -323,7 +323,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.LocationIp] = value;
 			}
@@ -340,7 +340,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.LocationProvince] = value;
 			}
@@ -357,7 +357,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.OperationCorrelationVector] = value;
 			}
@@ -374,7 +374,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.OperationId] = value;
 			}
@@ -391,7 +391,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.OperationName] = value;
 			}
@@ -408,7 +408,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.OperationParentId] = value;
 			}
@@ -425,7 +425,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.OperationSyntheticSource] = value;
 			}
@@ -442,7 +442,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.SessionId] = value;
 			}
@@ -459,7 +459,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.SessionIsFirst] = value;
 			}
@@ -476,7 +476,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.UserAccountId] = value;
 			}
@@ -493,7 +493,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.UserAuthUserId] = value;
 			}
@@ -510,7 +510,7 @@ public sealed record TelemetryTags
 
 		init
 		{
-			if (value != null)
+			if (value is not null)
 			{
 				collection[TelemetryTagKeys.UserId] = value;
 			}

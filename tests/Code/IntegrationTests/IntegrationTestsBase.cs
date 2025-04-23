@@ -1,7 +1,7 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System.Net;
 using System.Net.Http;
@@ -26,33 +26,18 @@ public abstract class IntegrationTestsBase : IDisposable
 
 	#endregion
 
-	#region Fields
+	#region Static Fields
 
 	private static readonly JsonSerializerOptions jsonSerializerOptions = new()
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 	};
 
-	private readonly HttpClient telemetryPublishHttpClient;
-
 	#endregion
 
-	#region Properties
+	#region Fields
 
-	/// <summary>
-	/// Test context.
-	/// </summary>
-	protected TestContext TestContext { get; }
-
-	/// <summary>
-	/// Collection of telemetry publishers initialized from the configuration.
-	/// </summary>
-	protected IReadOnlyList<TelemetryPublisher> TelemetryPublishers { get; }
-
-	/// <summary>
-	/// The token credential used to authenticate calls to Azure resources.
-	/// </summary>
-	protected DefaultAzureCredential TokenCredential { get; }
+	private readonly HttpClient telemetryPublishHttpClient;
 
 	#endregion
 
@@ -82,6 +67,25 @@ public abstract class IntegrationTestsBase : IDisposable
 
 		TelemetryPublishers = [.. configList.Select(config => InitializePublisherFromConfig(token, config))];
 	}
+
+	#endregion
+
+	#region Properties
+
+	/// <summary>
+	/// Test context.
+	/// </summary>
+	protected TestContext TestContext { get; }
+
+	/// <summary>
+	/// Collection of telemetry publishers initialized from the configuration.
+	/// </summary>
+	protected IReadOnlyList<TelemetryPublisher> TelemetryPublishers { get; }
+
+	/// <summary>
+	/// The token credential used to authenticate calls to Azure resources.
+	/// </summary>
+	protected DefaultAzureCredential TokenCredential { get; }
 
 	#endregion
 
@@ -117,7 +121,7 @@ public abstract class IntegrationTestsBase : IDisposable
 			var response = JsonSerializer.Deserialize<HttpTelemetryPublishResponse>(result.Response, jsonSerializerOptions);
 
 			// check not null
-			if (response == null)
+			if (response is null)
 			{
 				Assert.Fail("Track response can not be deserialized.");
 

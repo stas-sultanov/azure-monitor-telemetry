@@ -1,10 +1,11 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System.Net.Http;
 
+using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Dependency;
 using Azure.Monitor.Telemetry.Models;
 

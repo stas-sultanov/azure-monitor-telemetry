@@ -8,9 +8,9 @@
 
 A lightweight library for tracking application telemetry with Azure Monitor.
 
-Created and maintained by [Stas Sultanov][linked_in_profile].
+Authored and maintained by [Stas Sultanov][linked_in_profile].
 
-Consider to [support the author](#support-the-author), if this library benefits your business.
+[Support the author](#support-the-author), if this library benefits your business.
 
 ## Start Using the Library
 
@@ -21,32 +21,32 @@ For usage instructions, refer to the [documentation](/doc/readme.md).
 This library has been developed with a strong focus on business adaptability to serve IT solutions of all kinds.<br/>
 The library is guided by the following key design principles:
 
+- **Efficiency** – Run fast with minimal memory usage due to lightweight codebase and low complexity.
+- **Responsibility** – Embrace control over how telemetry is tracked and managed, with decisions left to the developer.
 - **Simplicity** – Minimize the number of classes, relationships, and hierarchies to keep the design as lean as possible.
 - **Transparency** – Gain full visibility into how telemetry is tracked and published, without unnecessary abstraction layers.
-- **Efficiency** – Run faster and consume less memory thanks to minimal code and low complexity.
-- **Responsibility** – Embrace control over how telemetry is tracked and managed, with decisions left to the developer.
-- **Extensibility** – Extend or customize telemetry handling through clearly defined extension points.
 - **Versatility** – Use in any type of application, from distributed systems to standalone apps and plugins.
 
 ## Quality Assurance
 
-Strict quality standards are applied throughout the development of this library, reflected in the following safeguards:
+Strict quality standards are applied throughout the development of this library and reflected in the following safeguards:
 
-1. The repository is configured with branch protection [rules][github_docs_rule_sets] targeting the *main* branch, including the following:
-    - Require [signed commits][github_docs_verified_commit].
-    - Require a pull request before merging, with the allowed method: *Squash*.
-    - Require code scanning results via [CodeQL][github_workflow_code_ql].
-2. The workflow [Check][github_workflow_check] is configured to run on pull requests to the *main* branch and performs the following:
-    - Checks that the code builds with no errors.
-    - Executes unit tests with a coverage threshold of 95%.
-    - Executes integration tests with a coverage threshold of 75%, using a temporary Azure environment that is automatically provisioned and disposed.
-3. The workflow [Release][github_workflow_release] is created with support for [artifact attestations][github_docs_artifact_attestations].
-4. The project build is configured to:
-    - Treat all warnings as errors.
-    - Set the warning level to 9999.
-    - Enforce code style in the build via [editorconfig](/.editorconfig).
-    - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
-    - Ensure that all public members are documented.
+- The repository is configured with branch protection [rules][github_docs_rule_sets] targeting the *main* branch, including the following:
+  - Require [signed commits][github_docs_verified_commit].
+  - Require a pull request before merging, with the allowed method: *Squash*.
+  - Require code scanning results via [CodeQL][github_workflow_code_ql].
+- The workflow [Check][github_workflow_check] is created to run on pull requests to the *main* branch and performs the following:
+  - Checks that the code builds with no errors.
+  - Executes unit tests with a coverage threshold of 95%.
+  - Executes integration tests with a coverage threshold of 75%, using a temporary Azure environment that is automatically provisioned and disposed.
+- The workflow [Release][github_workflow_release] is created to:
+  - Perform [artifacts attestation][github_docs_artifact_attestations].
+- The project build is configured to:
+  - Treat all warnings as errors.
+  - Set the warning level to MAX.
+  - Enforce code style in the build via [editorconfig](/.editorconfig).
+  - Use [dotNet analyzers][dot_net_analyzers] with analysis level **latest-all**.
+  - Ensure that all public members are documented.
 
 ## Why This Library?
 
@@ -68,21 +68,22 @@ A comparison of sizes and file counts of libraries when used with Entra-based au
 
 | **Package(s)**                                                      | **NET462**                  | **NET8**                   | **NET9**                   |
 | :------------------------------------------------------------------ | :-------------------------- | :------------------------- | :------------------------- |
-| Stas.Azure.Monitor.Telemetry 1.0.1<br/>                             | Files: 1<br/>Size: 61KB     | Files: 1<br/>Size: 60KB    | Files: 1<br/>Size: 60KB    |
+| Stas.Azure.Monitor.Telemetry 1.1.0                                  | Files: 1<br/>Size: 61KB     | Files: 1<br/>Size: 60KB    | Files: 1<br/>Size: 60KB    |
 | Microsoft.ApplicationInsights 2.23.0<br/>Azure.Core 1.45.0          | Files: 109<br/>Size: 4644KB | Files: 5<br/>Size: 945KB   | Files: 5<br/>Size: 945KB   |
 | OpenTelemetry 1.11.2<br/>Azure.Monitor.OpenTelemetry.Exporter 1.3.0 | Files: 126<br/>Size: 5250KB | Files: 23<br/>Size: 1887KB | Files: 22<br/>Size: 1728KB |
 
 ## Support the Author
 
-Donations help the author know that the time and effort spent on this library is valued.
+Donations express appreciation for the author’s dedication and the substantial effort invested in creating this library.
 
-The author resides in a country affected by ongoing military conflict since February 2022, where finding stable income remains a significant challenge.
+The author resides in a country affected by ongoing military conflict since February 2022.<br/>
+Due to the war, securing stable income is extremely difficult, and donations provide essential support.
 
-If you’d like to make a donation, please use the button below.
+If you’d like to make a donation, please use the button below:
 
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K2DPD6J3DJ2FN)
 
-Thank you for your support!
+Any support is much appreciated!
 
 [app_insights_issue_auth]: https://github.com/microsoft/ApplicationInsights-dotnet/issues/2945
 [dot_net_analyzers]: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/overview

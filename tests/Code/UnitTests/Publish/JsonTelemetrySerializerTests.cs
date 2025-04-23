@@ -1,13 +1,14 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
-namespace Azure.Monitor.Telemetry.Tests;
+namespace Azure.Monitor.TelemetryTests;
 
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Azure.Monitor.Telemetry;
 using Azure.Monitor.Telemetry.Models;
 using Azure.Monitor.Telemetry.Publish;
 
@@ -39,7 +40,7 @@ public sealed class JsonTelemetrySerializerTests
 
 	#endregion
 
-	#region Constructor
+	#region Constructors
 
 	public JsonTelemetrySerializerTests()
 	{
@@ -217,7 +218,7 @@ public sealed class JsonTelemetrySerializerTests
 
 			var metricElement = dataElement.GetProperty("metrics")[0];
 
-			if (telemetry.ValueAggregation != null)
+			if (telemetry.ValueAggregation is not null)
 			{
 				DeserializeAndAssert(aggregation, t => t.Count, "count", metricElement);
 				DeserializeAndAssert(aggregation, t => t.Max, "max", metricElement);

@@ -1,5 +1,5 @@
-﻿// Created by Stas Sultanov.
-// Copyright © Stas Sultanov.
+﻿// Authored by Stas Sultanov
+// Copyright © Stas Sultanov
 
 namespace Azure.Monitor.Telemetry;
 
@@ -23,11 +23,16 @@ public sealed class TelemetryClient
 {
 	#region Types
 
-	private readonly struct ContextTuple(TelemetryTags collection)
+	/// <summary>
+	/// A structure that holds the telemetry tags and its representation in list form.
+	/// </summary>
+	/// <remarks>This type allows to reduce number of expensive <see cref="TelemetryTags.ToArray()"/> calls.</remarks>
+	/// <param name="tags">The telemetry tags.</param>
+	private readonly struct ContextTuple(TelemetryTags tags)
 	{
-		public IReadOnlyList<KeyValuePair<String, String>>? AsList { get; } = collection.IsEmpty() ? null : collection.ToArray();
+		public KeyValuePair<String, String>[]? AsArray { get; } = tags.IsEmpty() ? null : tags.ToArray();
 
-		public TelemetryTags Collection { get; } = collection;
+		public TelemetryTags Collection { get; } = tags;
 	}
 
 	#endregion
@@ -52,7 +57,7 @@ public sealed class TelemetryClient
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publisher">A telemetry publisher to publish the telemetry data.</param>
-	/// <param name="tags">The tags to initalize the context.</param>
+	/// <param name="tags">The tags to initialize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publisher"/> is null.</exception>
 	public TelemetryClient
 	(
@@ -60,7 +65,7 @@ public sealed class TelemetryClient
 		TelemetryTags? tags = null
 	)
 	{
-		if (publisher == null)
+		if (publisher is null)
 		{
 			throw new ArgumentNullException(nameof(publisher));
 		}
@@ -81,7 +86,7 @@ public sealed class TelemetryClient
 	/// Initializes a new instance of the <see cref="TelemetryClient"/> class.
 	/// </summary>
 	/// <param name="publishers">A read only list of telemetry publishers to publish the telemetry data.</param>
-	/// <param name="tags">The tags to initalize the context.</param>
+	/// <param name="tags">The tags to initialize the context.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publishers"/> is null.</exception>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="publishers"/> count is 0.</exception>
 	/// <exception cref="ArgumentException">Thrown if any publisher in <paramref name="publishers"/> is null.</exception>
@@ -91,7 +96,7 @@ public sealed class TelemetryClient
 		TelemetryTags? tags = null
 	)
 	{
-		if (publishers == null)
+		if (publishers is null)
 		{
 			throw new ArgumentNullException(nameof(publishers));
 		}
@@ -103,7 +108,7 @@ public sealed class TelemetryClient
 
 		for (var index = 0; index < publishers.Count; index++)
 		{
-			if (publishers[index] == null)
+			if (publishers[index] is null)
 			{
 				throw new ArgumentException($"The publisher at index {index} is null.", nameof(publishers));
 			}
@@ -225,7 +230,7 @@ public sealed class TelemetryClient
 		// set current context
 		context = Context;
 
-		Context = context == null
+		Context = context is null
 			? new TelemetryTags()
 			{
 				OperationParentId = activityId
@@ -353,9 +358,9 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new AvailabilityTelemetry
 		{
@@ -409,9 +414,9 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new DependencyTelemetry
 		{
@@ -610,9 +615,9 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new EventTelemetry
 		{
@@ -677,9 +682,9 @@ public sealed class TelemetryClient
 	{
 		var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
 
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new ExceptionTelemetry
 		{
@@ -746,9 +751,9 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new MetricTelemetry
 		{
@@ -825,9 +830,9 @@ public sealed class TelemetryClient
 			Min = min
 		};
 
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new MetricTelemetry
 		{
@@ -902,9 +907,9 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new PageViewTelemetry
 		{
@@ -954,9 +959,9 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new RequestTelemetry
 		{
@@ -997,9 +1002,9 @@ public sealed class TelemetryClient
 		IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsList;
+		var contextTags = localContext.Value.AsArray;
 
-		var telemetryTags = tags == null ? contextTags : (contextTags == null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
 
 		var telemetry = new TraceTelemetry
 		{
