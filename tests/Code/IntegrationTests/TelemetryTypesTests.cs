@@ -29,7 +29,7 @@ public sealed class TelemetryTypesTests : IntegrationTestsBase
 	/// <param name="testContext">The test context.</param>
 	public TelemetryTypesTests
 	(
-		in TestContext testContext
+		TestContext testContext
 	)
 		: base
 	(

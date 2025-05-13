@@ -38,7 +38,7 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 	/// <param name="testContext">The test context.</param>
 	public DependencyTrackingTests
 	(
-		in TestContext testContext
+		TestContext testContext
 	)
 		: base
 		(

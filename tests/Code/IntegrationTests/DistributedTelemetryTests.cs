@@ -47,7 +47,7 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 	/// <param name="testContext">The test context.</param>
 	public DistributedTelemetryTests
 	(
-		in TestContext testContext
+		TestContext testContext
 	)
 		: base
 		(

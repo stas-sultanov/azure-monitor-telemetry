@@ -23,7 +23,7 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 	/// <param name="testContext">The test context.</param>
 	public MultiplePublishersTests
 	(
-		in TestContext testContext
+		TestContext testContext
 	)
 		: base
 		(
