@@ -76,10 +76,10 @@ public sealed class HttpTelemetryPublisher : TelemetryPublisher
 	/// <exception cref="ArgumentException">If <paramref name="instrumentationKey"/> is empty.</exception>
 	public HttpTelemetryPublisher
 	(
-		HttpClient httpClient,
-		Uri ingestionEndpoint,
-		Guid instrumentationKey,
-		Func<CancellationToken, Task<BearerToken>>? getAccessToken = null
+		in HttpClient httpClient,
+		in Uri ingestionEndpoint,
+		in Guid instrumentationKey,
+		in Func<CancellationToken, Task<BearerToken>>? getAccessToken = null
 	)
 	{
 		if (!ingestionEndpoint.IsAbsoluteUri || ingestionEndpoint.IsFile || ingestionEndpoint.IsUnc)

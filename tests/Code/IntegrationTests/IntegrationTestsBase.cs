@@ -50,7 +50,7 @@ public abstract class IntegrationTestsBase : IDisposable
 	/// <param name="configList">List of configurations.</param>
 	public IntegrationTestsBase
 	(
-		TestContext testContext,
+		in TestContext testContext,
 		params IReadOnlyList<PublisherConfiguration> configList
 	)
 	{
@@ -103,7 +103,10 @@ public abstract class IntegrationTestsBase : IDisposable
 
 	#region Methods: Helpers
 
-	protected static void AssertStandardSuccess(TelemetryPublishResult[] telemetryPublishResults)
+	protected static void AssertStandardSuccess
+	(
+		in TelemetryPublishResult[] telemetryPublishResults
+	)
 	{
 		foreach (var telemetryPublishResult in telemetryPublishResults)
 		{
@@ -136,7 +139,11 @@ public abstract class IntegrationTestsBase : IDisposable
 		}
 	}
 
-	private TelemetryPublisher InitializePublisherFromConfig(AccessToken token, PublisherConfiguration config)
+	private TelemetryPublisher InitializePublisherFromConfig
+	(
+		AccessToken token,
+		in PublisherConfiguration config
+	)
 	{
 		var ingestionEndpointParamName = config.ConfigPrefix + "IngestionEndpoint";
 		var ingestionEndpointParam = TestContext.Properties[ingestionEndpointParamName]?.ToString() ?? throw new ArgumentException($"Parameter {ingestionEndpointParamName} has not been provided.");

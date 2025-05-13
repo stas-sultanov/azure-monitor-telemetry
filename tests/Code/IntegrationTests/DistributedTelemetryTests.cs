@@ -45,7 +45,10 @@ public sealed class DistributedTelemetryTests : IntegrationTestsBase
 	/// Initializes a new instance of the <see cref="DependencyTrackingTests"/> class.
 	/// </summary>
 	/// <param name="testContext">The test context.</param>
-	public DistributedTelemetryTests(TestContext testContext)
+	public DistributedTelemetryTests
+	(
+		TestContext testContext
+	)
 		: base
 		(
 			testContext,

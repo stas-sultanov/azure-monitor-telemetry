@@ -68,7 +68,7 @@ A comparison of sizes and file counts of libraries when used with Entra-based au
 
 | **Package(s)**                                                      | **NET462**                  | **NET8**                   | **NET9**                   |
 | :------------------------------------------------------------------ | :-------------------------- | :------------------------- | :------------------------- |
-| Stas.Azure.Monitor.Telemetry 1.1.0                                  | Files: 1<br/>Size: 61KB     | Files: 1<br/>Size: 60KB    | Files: 1<br/>Size: 60KB    |
+| Stas.Azure.Monitor.Telemetry 1.2.0                                  | Files: 1<br/>Size: 64KB     | Files: 1<br/>Size: 63KB    | Files: 1<br/>Size: 63KB    |
 | Microsoft.ApplicationInsights 2.23.0<br/>Azure.Core 1.45.0          | Files: 109<br/>Size: 4644KB | Files: 5<br/>Size: 945KB   | Files: 5<br/>Size: 945KB   |
 | OpenTelemetry 1.11.2<br/>Azure.Monitor.OpenTelemetry.Exporter 1.3.0 | Files: 126<br/>Size: 5250KB | Files: 23<br/>Size: 1887KB | Files: 22<br/>Size: 1728KB |
 

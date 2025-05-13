@@ -16,6 +16,12 @@ using Azure.Monitor.Telemetry.Models;
 /// <remarks>Uses version 2 of the HTTP API of the Azure Monitor service.</remarks>
 public static class JsonTelemetrySerializer
 {
+	#region Types
+
+	private delegate void WriteData(in StreamWriter streamWriter, in Telemetry telemetry);
+
+	#endregion
+
 	#region Constants
 
 	private const String Name_Availability = "AppAvailabilityResults";
@@ -56,16 +62,16 @@ public static class JsonTelemetrySerializer
 	/// <param name="telemetry">The telemetry data to be serialized.</param>
 	public static void Serialize
 	(
-		StreamWriter streamWriter,
-		String instrumentationKey,
-		Telemetry telemetry
+		in StreamWriter streamWriter,
+		in String instrumentationKey,
+		in Telemetry telemetry
 	)
 	{
 		String name;
 
 		String baseType;
 
-		Action<StreamWriter, Telemetry> writeData;
+		WriteData writeData;
 
 		// MS Engineers are not familiar with the term "CONSISTENCY" and it's meaning.
 		// for Availability and TelemetryMetric, Properties are in the other place of the data structure...
@@ -171,7 +177,11 @@ public static class JsonTelemetrySerializer
 
 	#region Methods: Write Telemetry Data
 
-	private static void WriteDataAvailability(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataAvailability
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var availabilityTelemetry = (AvailabilityTelemetry) telemetry;
 
@@ -202,7 +212,11 @@ public static class JsonTelemetrySerializer
 		WriteProperty(streamWriter, "success", availabilityTelemetry.Success);
 	}
 
-	private static void WriteDataDependency(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataDependency
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var dependencyTelemetry = (DependencyTelemetry) telemetry;
 
@@ -249,7 +263,11 @@ public static class JsonTelemetrySerializer
 		}
 	}
 
-	private static void WriteDataEvent(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataEvent
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var eventTelemetry = (EventTelemetry) telemetry;
 
@@ -263,7 +281,11 @@ public static class JsonTelemetrySerializer
 		WriteProperty(streamWriter, "name", eventTelemetry.Name);
 	}
 
-	private static void WriteDataException(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataException
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var exceptionTelemetry = (ExceptionTelemetry) telemetry;
 
@@ -362,7 +384,11 @@ public static class JsonTelemetrySerializer
 		}
 	}
 
-	private static void WriteDataMetric(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataMetric
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var metricTelemetry = (MetricTelemetry) telemetry;
 
@@ -392,7 +418,11 @@ public static class JsonTelemetrySerializer
 		streamWriter.Write("}]");
 	}
 
-	private static void WriteDataPageView(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataPageView
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var pageViewTelemetry = (PageViewTelemetry) telemetry;
 
@@ -419,7 +449,11 @@ public static class JsonTelemetrySerializer
 		}
 	}
 
-	private static void WriteDataRequest(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataRequest
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var requestTelemetry = (RequestTelemetry) telemetry;
 
@@ -458,7 +492,11 @@ public static class JsonTelemetrySerializer
 		WriteProperty(streamWriter, "url", urlAsString);
 	}
 
-	private static void WriteDataTrace(StreamWriter streamWriter, Telemetry telemetry)
+	private static void WriteDataTrace
+	(
+		in StreamWriter streamWriter,
+		in Telemetry telemetry
+	)
 	{
 		var traceTelemetry = (TraceTelemetry) telemetry;
 
@@ -477,7 +515,7 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteComa
 	(
-		StreamWriter streamWriter
+		in StreamWriter streamWriter
 	)
 	{
 		streamWriter.Write(",");
@@ -486,9 +524,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		String value
+		in StreamWriter streamWriter,
+		in String name,
+		in String value
 	)
 	{
 		streamWriter.Write("\"");
@@ -505,9 +543,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		Boolean value
+		in StreamWriter streamWriter,
+		in String name,
+		in Boolean value
 	)
 	{
 		streamWriter.Write("\"");
@@ -524,9 +562,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		Double value
+		in StreamWriter streamWriter,
+		in String name,
+		in Double value
 	)
 	{
 		streamWriter.Write("\"");
@@ -541,9 +579,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		Int32 value
+		in StreamWriter streamWriter,
+		in String name,
+		in Int32 value
 	)
 	{
 		streamWriter.Write("\"");
@@ -558,9 +596,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		DateTime value
+		in StreamWriter streamWriter,
+		in String name,
+		in DateTime value
 	)
 	{
 		var valueAsString = value.ToString("O");
@@ -571,9 +609,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		TimeSpan value
+		in StreamWriter streamWriter,
+		in String name,
+		in TimeSpan value
 	)
 	{
 		var valueAsString = value.ToString(null, streamWriter.FormatProvider);
@@ -584,9 +622,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		IReadOnlyList<KeyValuePair<String, Double>> value
+		in StreamWriter streamWriter,
+		in String name,
+		in IReadOnlyList<KeyValuePair<String, Double>> value
 	)
 	{
 		streamWriter.Write("\"");
@@ -613,9 +651,9 @@ public static class JsonTelemetrySerializer
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static void WriteProperty
 	(
-		StreamWriter streamWriter,
-		String name,
-		IReadOnlyList<KeyValuePair<String, String>> value
+		in StreamWriter streamWriter,
+		in String name,
+		in IReadOnlyList<KeyValuePair<String, String>> value
 	)
 	{
 		streamWriter.Write("\"");

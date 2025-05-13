@@ -28,7 +28,10 @@ public sealed class TelemetryClient
 	/// </summary>
 	/// <remarks>This type allows to reduce number of expensive <see cref="TelemetryTags.ToArray()"/> calls.</remarks>
 	/// <param name="tags">The telemetry tags.</param>
-	private readonly struct ContextTuple(TelemetryTags tags)
+	private readonly struct ContextTuple
+	(
+		in TelemetryTags tags
+	)
 	{
 		public KeyValuePair<String, String>[]? AsArray { get; } = tags.IsEmpty() ? null : tags.ToArray();
 
@@ -61,8 +64,8 @@ public sealed class TelemetryClient
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="publisher"/> is null.</exception>
 	public TelemetryClient
 	(
-		TelemetryPublisher publisher,
-		TelemetryTags? tags = null
+		in TelemetryPublisher publisher,
+		in TelemetryTags? tags = null
 	)
 	{
 		if (publisher is null)
@@ -70,11 +73,9 @@ public sealed class TelemetryClient
 			throw new ArgumentNullException(nameof(publisher));
 		}
 
-		tags ??= TelemetryTags.Empty;
-
 		localContext = new()
 		{
-			Value = new(tags)
+			Value = new(tags ?? TelemetryTags.Empty)
 		};
 
 		items = new();
@@ -92,8 +93,8 @@ public sealed class TelemetryClient
 	/// <exception cref="ArgumentException">Thrown if any publisher in <paramref name="publishers"/> is null.</exception>
 	public TelemetryClient
 	(
-		IReadOnlyList<TelemetryPublisher> publishers,
-		TelemetryTags? tags = null
+		in IReadOnlyList<TelemetryPublisher> publishers,
+		in TelemetryTags? tags = null
 	)
 	{
 		if (publishers is null)
@@ -114,11 +115,9 @@ public sealed class TelemetryClient
 			}
 		}
 
-		tags ??= TelemetryTags.Empty;
-
 		localContext = new()
 		{
-			Value = new(tags)
+			Value = new(tags ?? TelemetryTags.Empty)
 		};
 
 		items = new();
@@ -151,7 +150,7 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Add
 	(
-		Telemetry telemetry
+		in Telemetry telemetry
 	)
 	{
 		items.Enqueue(telemetry);
@@ -223,7 +222,7 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeBegin
 	(
-		String activityId,
+		in String activityId,
 		out TelemetryTags context
 	)
 	{
@@ -256,7 +255,7 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeBegin
 	(
-		Func<String> getActivityId,
+		in Func<String> getActivityId,
 		out DateTime time,
 		out Int64 timestamp,
 		out String activityId,
@@ -286,7 +285,7 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeEnd
 	(
-		TelemetryTags context
+		in TelemetryTags context
 	)
 	{
 		// bring back context
@@ -305,8 +304,8 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ActivityScopeEnd
 	(
-		TelemetryTags context,
-		Int64 timestamp,
+		in TelemetryTags context,
+		in Int64 timestamp,
 		out TimeSpan duration
 	)
 	{
@@ -331,7 +330,7 @@ public sealed class TelemetryClient
 	/// Tracks an availability test activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="AvailabilityTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="AvailabilityTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -346,16 +345,16 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackAvailability
 	(
-		DateTime time,
-		TimeSpan duration,
-		String id,
-		String name,
-		String message,
-		Boolean success,
-		String? runLocation = null,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in TimeSpan duration,
+		in String id,
+		in String name,
+		in String message,
+		in Boolean success,
+		in String? runLocation = null,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var contextTags = localContext.Value.AsArray;
@@ -383,7 +382,7 @@ public sealed class TelemetryClient
 	/// Tracks a dependency activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -400,18 +399,18 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackDependency
 	(
-		DateTime time,
-		TimeSpan duration,
-		String id,
-		String name,
-		Boolean success,
-		String? resultCode = null,
-		String? data = null,
-		String? target = null,
-		String? type = null,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in TimeSpan duration,
+		in String id,
+		in String name,
+		in Boolean success,
+		in String? resultCode = null,
+		in String? data = null,
+		in String? target = null,
+		in String? type = null,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var contextTags = localContext.Value.AsArray;
@@ -441,7 +440,7 @@ public sealed class TelemetryClient
 	/// Tracks an HTTP dependency call activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -456,16 +455,16 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackDependencyHttp
 	(
-		DateTime time,
-		TimeSpan duration,
-		String id,
-		HttpMethod httpMethod,
-		Uri uri,
-		HttpStatusCode statusCode,
-		Boolean success,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in TimeSpan duration,
+		in String id,
+		in HttpMethod httpMethod,
+		in Uri uri,
+		in HttpStatusCode statusCode,
+		in Boolean success,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var data = uri.ToString();
@@ -499,7 +498,7 @@ public sealed class TelemetryClient
 	/// Tracks an in-proc dependency activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -513,15 +512,15 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackDependencyInProc
 	(
-		DateTime time,
-		TimeSpan duration,
-		String id,
-		String name,
-		Boolean success,
-		String? typeName = null,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in TimeSpan duration,
+		in String id,
+		in String name,
+		in Boolean success,
+		in String? typeName = null,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var type = String.IsNullOrWhiteSpace(typeName) ? DependencyTypes.InProc : DependencyTypes.InProc + " | " + typeName;
@@ -544,7 +543,7 @@ public sealed class TelemetryClient
 	/// Tracks a SQL call dependency activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="DependencyTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -559,16 +558,16 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackDependencySql
 	(
-		DateTime time,
-		TimeSpan duration,
-		String id,
-		String dataSource,
-		String database,
-		String commandText,
-		Int32 resultCode,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in TimeSpan duration,
+		in String id,
+		in String dataSource,
+		in String database,
+		in String commandText,
+		in Int32 resultCode,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var dataFullName = String.Concat(dataSource, " | ", database);
@@ -598,7 +597,7 @@ public sealed class TelemetryClient
 	/// Tracks an event.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the event has occurred.</param>
 	/// <param name="name">The name.</param>
@@ -608,11 +607,11 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackEvent
 	(
-		DateTime time,
-		String name,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in String name,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var contextTags = localContext.Value.AsArray;
@@ -635,7 +634,7 @@ public sealed class TelemetryClient
 	/// Tracks an event.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="EventTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="name">The name.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
@@ -644,10 +643,10 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackEvent
 	(
-		String name,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in String name,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -659,7 +658,7 @@ public sealed class TelemetryClient
 	/// Tracks an exception.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the exception has occurred.</param>
 	/// <param name="exception">The exception to be tracked.</param>
@@ -671,13 +670,13 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackException
 	(
-		DateTime time,
-		Exception exception,
-		String? problemId = null,
-		SeverityLevel? severityLevel = null,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in Exception exception,
+		in String? problemId = null,
+		in SeverityLevel? severityLevel = null,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
@@ -704,7 +703,7 @@ public sealed class TelemetryClient
 	/// Tracks an exception.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="ExceptionTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="exception">The exception to be tracked.</param>
 	/// <param name="problemId">The problem identifier.</param>
@@ -715,12 +714,12 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackException
 	(
-		Exception exception,
-		String? problemId = null,
-		SeverityLevel? severityLevel = null,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in Exception exception,
+		in String? problemId = null,
+		in SeverityLevel? severityLevel = null,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -732,7 +731,7 @@ public sealed class TelemetryClient
 	/// Tracks a metric.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the metric was recorded.</param>
 	/// <param name="namespace">The namespace of the metric to be tracked.</param>
@@ -743,12 +742,12 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackMetric
 	(
-		DateTime time,
-		String @namespace,
-		String name,
-		Double value,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in String @namespace,
+		in String name,
+		in Double value,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var contextTags = localContext.Value.AsArray;
@@ -772,7 +771,7 @@ public sealed class TelemetryClient
 	/// Tracks a metric.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="namespace">The namespace of the metric to be tracked.</param>
 	/// <param name="name">The name of the metric to be tracked.</param>
@@ -782,11 +781,11 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackMetric
 	(
-		String @namespace,
-		String name,
-		Double value,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in String @namespace,
+		in String name,
+		in Double value,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -798,7 +797,7 @@ public sealed class TelemetryClient
 	/// Tracks a metric.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the metric was recorded.</param>
 	/// <param name="namespace">The namespace of the metric to be tracked.</param>
@@ -852,7 +851,7 @@ public sealed class TelemetryClient
 	/// Tracks a metric.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="MetricTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="namespace">The namespace of the metric to be tracked.</param>
 	/// <param name="name">The name of the metric to be tracked.</param>
@@ -865,14 +864,14 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackMetric
 	(
-		String @namespace,
-		String name,
-		Double value,
-		Int32 count,
-		Double max,
-		Double min,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in String @namespace,
+		in String name,
+		in Double value,
+		in Int32 count,
+		in Double max,
+		in Double min,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;
@@ -884,7 +883,7 @@ public sealed class TelemetryClient
 	/// Tracks a page view activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="PageViewTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="PageViewTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -897,14 +896,14 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackPageView
 	(
-		DateTime time,
-		TimeSpan duration,
-		String id,
-		String name,
-		Uri url,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in TimeSpan duration,
+		in String id,
+		in String name,
+		in Uri url,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var contextTags = localContext.Value.AsArray;
@@ -930,7 +929,7 @@ public sealed class TelemetryClient
 	/// Tracks a request activity.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="RequestTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="RequestTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the activity was initiated.</param>
 	/// <param name="duration">The time taken to complete the activity.</param>
@@ -946,17 +945,17 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackRequest
 	(
-		DateTime time,
-		TimeSpan duration,
-		String id,
-		Uri url,
-		String responseCode,
-		Boolean success,
-		String? name = null,
-		String? source = null,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in TimeSpan duration,
+		in String id,
+		in Uri url,
+		in String responseCode,
+		in Boolean success,
+		in String? name = null,
+		in String? source = null,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var contextTags = localContext.Value.AsArray;
@@ -985,7 +984,7 @@ public sealed class TelemetryClient
 	/// Tracks a trace.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="time">The UTC timestamp when the trace has occurred.</param>
 	/// <param name="message">The message.</param>
@@ -995,11 +994,11 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackTrace
 	(
-		DateTime time,
-		String message,
-		SeverityLevel severityLevel,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in DateTime time,
+		in String message,
+		in SeverityLevel severityLevel,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var contextTags = localContext.Value.AsArray;
@@ -1022,7 +1021,7 @@ public sealed class TelemetryClient
 	/// Tracks a trace.
 	/// </summary>
 	/// <remarks>
-	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(Telemetry)"/> method.
+	/// Creates an instance of <see cref="TraceTelemetry"/> using <see cref="Context"/> and calls the <see cref="Add(in Telemetry)"/> method.
 	/// </remarks>
 	/// <param name="message">The message.</param>
 	/// <param name="severityLevel">The severity level.</param>
@@ -1031,10 +1030,10 @@ public sealed class TelemetryClient
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void TrackTrace
 	(
-		String message,
-		SeverityLevel severityLevel,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in String message,
+		in SeverityLevel severityLevel,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var time = DateTime.UtcNow;

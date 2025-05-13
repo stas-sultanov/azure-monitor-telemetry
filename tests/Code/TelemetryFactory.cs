@@ -28,8 +28,8 @@ internal sealed class TelemetryFactory
 
 	internal static TimeSpan GetRandomDuration
 	(
-		Int32 millisecondsMin,
-		Int32 millisecondsMax
+		in Int32 millisecondsMin,
+		in Int32 millisecondsMax
 	)
 	{
 		var milliseconds = Random.Shared.Next(millisecondsMin, millisecondsMax);
@@ -39,7 +39,7 @@ internal sealed class TelemetryFactory
 
 	internal static void Simulate_ExceptionThrow
 	(
-		String? param1
+		in String? param1
 	)
 	{
 		throw new ArgumentNullException(nameof(param1), "L1");
@@ -47,7 +47,7 @@ internal sealed class TelemetryFactory
 
 	internal static void Simulate_ExceptionThrow_WithInnerException
 	(
-		String? paramL2
+		in String? paramL2
 	)
 	{
 		try
@@ -69,8 +69,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public static AvailabilityTelemetry Create_AvailabilityTelemetry_Min
 	(
-		String name,
-		String message = "Passed"
+		in String name,
+		in String message = "Passed"
 	)
 	{
 		var id = GetActivityId();
@@ -93,7 +93,7 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public static DependencyTelemetry Create_DependencyTelemetry_Min
 	(
-		String name
+		in String name
 	)
 	{
 		var id = GetActivityId();
@@ -113,7 +113,7 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public static EventTelemetry Create_EventTelemetry_Min
 	(
-		String name
+		in String name
 	)
 	{
 		var result = new EventTelemetry
@@ -155,9 +155,9 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public static MetricTelemetry Create_MetricTelemetry_Min
 	(
-		String @namespace,
-		String name,
-		Double value
+		in String @namespace,
+		in String name,
+		in Double value
 	)
 	{
 		var result = new MetricTelemetry
@@ -176,7 +176,7 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public static PageViewTelemetry Create_PageViewTelemetry_Min
 	(
-		String name
+		in String name
 	)
 	{
 		var id = GetActivityId();
@@ -196,8 +196,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public static RequestTelemetry Create_RequestTelemetry_Min
 	(
-		String responseCode,
-		Uri url
+		in String responseCode,
+		in Uri url
 	)
 	{
 		var id = GetActivityId();
@@ -246,8 +246,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public AvailabilityTelemetry Create_AvailabilityTelemetry_Max
 	(
-		String name,
-		String message = "Passed"
+		in String name,
+		in String message = "Passed"
 	)
 	{
 		var id = GetActivityId();
@@ -276,8 +276,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public DependencyTelemetry Create_DependencyTelemetry_Max
 	(
-		String name,
-		Uri url
+		in String name,
+		in Uri url
 	)
 	{
 		var id = GetActivityId();
@@ -310,7 +310,7 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public EventTelemetry Create_EventTelemetry_Max
 	(
-		String name
+		in String name
 	)
 	{
 		var result = new EventTelemetry
@@ -330,8 +330,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public ExceptionTelemetry Create_ExceptionTelemetry_Max
 	(
-		String problemId,
-		SeverityLevel severityLevel
+		in String problemId,
+		in SeverityLevel severityLevel
 	)
 	{
 		try
@@ -364,10 +364,10 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public MetricTelemetry Create_MetricTelemetry_Max
 	(
-		String @namespace,
-		String name,
-		Double value,
-		MetricValueAggregation aggregation
+		in String @namespace,
+		in String name,
+		in Double value,
+		in MetricValueAggregation aggregation
 	)
 	{
 		var result = new MetricTelemetry
@@ -389,8 +389,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public PageViewTelemetry Create_PageViewTelemetry_Max
 	(
-		String name,
-		Uri url
+		in String name,
+		in Uri url
 	)
 	{
 		var id = GetActivityId();
@@ -417,8 +417,8 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public RequestTelemetry Create_RequestTelemetry_Max
 	(
-		String name,
-		Uri url
+		in String name,
+		in Uri url
 	)
 	{
 		var id = GetActivityId();
@@ -446,7 +446,7 @@ internal sealed class TelemetryFactory
 	/// </summary>
 	public TraceTelemetry Create_TraceTelemetry_Max
 	(
-		String message
+		in String message
 	)
 	{
 		var result = new TraceTelemetry

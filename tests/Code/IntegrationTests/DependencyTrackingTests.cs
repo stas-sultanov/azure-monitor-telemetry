@@ -36,7 +36,10 @@ public sealed class DependencyTrackingTests : IntegrationTestsBase
 	/// Initializes a new instance of the <see cref="DependencyTrackingTests"/> class.
 	/// </summary>
 	/// <param name="testContext">The test context.</param>
-	public DependencyTrackingTests(TestContext testContext)
+	public DependencyTrackingTests
+	(
+		TestContext testContext
+	)
 		: base
 		(
 			testContext,

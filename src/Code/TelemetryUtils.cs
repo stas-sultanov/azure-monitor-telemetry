@@ -71,7 +71,7 @@ public static class TelemetryUtils
 	/// <returns>The detected dependency type, or "Http" if the host is not recognized.</returns>
 	public static String? DetectDependencyTypeFromHttpUri
 	(
-		Uri uri
+		in Uri uri
 	)
 	{
 		if (uri is null || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
@@ -103,8 +103,8 @@ public static class TelemetryUtils
 	/// <returns>A read-only list of items of <see cref="ExceptionInfo"/> type.</returns>
 	public static IReadOnlyList<ExceptionInfo> ConvertExceptionToModel
 	(
-		Exception exception,
-		Int32 maxStackLength = ExceptionMaxStackLength
+		in Exception exception,
+		in Int32 maxStackLength = ExceptionMaxStackLength
 	)
 	{
 		var result = new List<ExceptionInfo>();

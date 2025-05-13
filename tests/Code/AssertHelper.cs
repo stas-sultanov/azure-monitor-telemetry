@@ -26,9 +26,9 @@ internal static class AssertHelper
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
 	public static void PropertyEqualsTo<ObjectType, ValueType>
 	(
-		ObjectType actualObject,
-		Expression<Func<ObjectType, ValueType>> propertySelector,
-		ValueType expectedValue
+		in ObjectType actualObject,
+		in Expression<Func<ObjectType, ValueType>> propertySelector,
+		in ValueType expectedValue
 	)
 	{
 		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
@@ -52,10 +52,10 @@ internal static class AssertHelper
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
 	public static void PropertyEqualsTo<ObjectType, ItemType>
 	(
-		ObjectType actualObject,
-		Expression<Func<ObjectType, IEnumerable<ItemType>?>> propertySelector,
-		IEnumerable<ItemType>? expectedValue,
-		IEqualityComparer<ItemType>? itemComparer
+		in ObjectType actualObject,
+		in Expression<Func<ObjectType, IEnumerable<ItemType>?>> propertySelector,
+		in IEnumerable<ItemType>? expectedValue,
+		in IEqualityComparer<ItemType>? itemComparer
 	)
 	{
 		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
@@ -101,9 +101,9 @@ internal static class AssertHelper
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
 	public static void PropertyEqualsTo<ObjectType, KeyType, ValueType>
 	(
-		ObjectType actualObject,
-		Expression<Func<ObjectType, IEnumerable<KeyValuePair<KeyType, ValueType>>?>> propertySelector,
-		IEnumerable<KeyValuePair<KeyType, ValueType>>? expectedValue
+		in ObjectType actualObject,
+		in Expression<Func<ObjectType, IEnumerable<KeyValuePair<KeyType, ValueType>>?>> propertySelector,
+		in IEnumerable<KeyValuePair<KeyType, ValueType>>? expectedValue
 	)
 	{
 		var comparer = new KeyValuePairEqualityComparer<KeyType, ValueType>
@@ -125,9 +125,9 @@ internal static class AssertHelper
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="expectedValue"/> is not equal to property value.</exception>
 	public static void PropertyEqualsTo<ObjectType>
 	(
-		ObjectType actualObject,
-		Expression<Func<ObjectType, MetricValueAggregation?>> propertySelector,
-		MetricValueAggregation expectedValue
+		in ObjectType actualObject,
+		in Expression<Func<ObjectType, MetricValueAggregation?>> propertySelector,
+		in MetricValueAggregation expectedValue
 	)
 	{
 		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actualValue, out var typeName, out var propertyName);
@@ -163,9 +163,9 @@ internal static class AssertHelper
 	/// <exception cref="AssertFailedException">Thrown if <paramref name="evaluate"/> returns <c>false</c>.</exception>
 	public static void PropertyEvaluatesToTrue<ObjectType, ValueType>
 	(
-		ObjectType actualObject,
-		Expression<Func<ObjectType, ValueType>> propertySelector,
-		Func<ValueType, Boolean> evaluate
+		in ObjectType actualObject,
+		in Expression<Func<ObjectType, ValueType>> propertySelector,
+		in Func<ValueType, Boolean> evaluate
 	)
 	{
 		GetPropertyValueAndMetadata(actualObject, propertySelector, out var actual, out var typeName, out var propertyName);
@@ -189,8 +189,8 @@ internal static class AssertHelper
 
 	public static void GetPropertyValueAndMetadata<ObjectType, PropertyType>
 	(
-		ObjectType actualObject,
-		Expression<Func<ObjectType, PropertyType>> propertySelector,
+		in ObjectType actualObject,
+		in Expression<Func<ObjectType, PropertyType>> propertySelector,
 		out PropertyType propertyValue,
 		out String typeName,
 		out String propertyName
