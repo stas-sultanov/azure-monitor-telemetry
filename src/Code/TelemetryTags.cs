@@ -65,7 +65,7 @@ public sealed record TelemetryTags
 	/// <param name="source">The instance of <see cref="TelemetryTags"/> to copy.</param>
 	private TelemetryTags
 	(
-		in TelemetryTags source
+		TelemetryTags source
 	)
 	{
 		collection = new Dictionary<String, String>(source.collection);

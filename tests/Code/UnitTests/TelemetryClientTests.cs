@@ -25,8 +25,8 @@ public sealed class TelemetryClientTests
 
 	private static IEnumerable<KeyValuePair<String, String>>? GetExpectedTags
 	(
-		TelemetryClient telemetryClient,
-		IReadOnlyCollection<KeyValuePair<String, String>>? tags
+		in TelemetryClient telemetryClient,
+		in IReadOnlyCollection<KeyValuePair<String, String>>? tags
 	)
 	{
 		var contextTags = telemetryClient.Context.IsEmpty() ? null : telemetryClient.Context.ToArray();

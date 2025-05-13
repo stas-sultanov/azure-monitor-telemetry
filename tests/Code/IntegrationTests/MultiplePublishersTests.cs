@@ -21,7 +21,10 @@ public sealed class MultiplePublishersTests : IntegrationTestsBase
 	/// Initializes a new instance of the <see cref="DependencyTrackingTests"/> class.
 	/// </summary>
 	/// <param name="testContext">The test context.</param>
-	public MultiplePublishersTests(TestContext testContext)
+	public MultiplePublishersTests
+	(
+		in TestContext testContext
+	)
 		: base
 		(
 			testContext,

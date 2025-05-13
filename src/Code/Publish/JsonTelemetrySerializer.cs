@@ -18,7 +18,7 @@ public static class JsonTelemetrySerializer
 {
 	#region Types
 
-	delegate void WriteData(in StreamWriter streamWriter, in Telemetry telemetry);
+	private delegate void WriteData(in StreamWriter streamWriter, in Telemetry telemetry);
 
 	#endregion
 
