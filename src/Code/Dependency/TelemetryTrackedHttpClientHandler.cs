@@ -18,8 +18,8 @@ using System.Threading.Tasks;
 /// <param name="getActivityId">The function that returns a unique identifier for the activity.</param>
 public class TelemetryTrackedHttpClientHandler
 (
-	TelemetryClient telemetryClient,
-	Func<String> getActivityId
+	in TelemetryClient telemetryClient,
+	in Func<String> getActivityId
 )
 	: HttpClientHandler
 {

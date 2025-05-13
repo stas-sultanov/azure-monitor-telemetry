@@ -43,7 +43,7 @@ public sealed record TelemetryTags
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is null.</exception>
 	public TelemetryTags
 	(
-		IReadOnlyDictionary<String, String> source
+		in IReadOnlyDictionary<String, String> source
 	)
 	{
 		if (source is null)
@@ -65,7 +65,7 @@ public sealed record TelemetryTags
 	/// <param name="source">The instance of <see cref="TelemetryTags"/> to copy.</param>
 	private TelemetryTags
 	(
-		TelemetryTags source
+		in TelemetryTags source
 	)
 	{
 		collection = new Dictionary<String, String>(source.collection);

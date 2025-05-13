@@ -29,11 +29,11 @@ public static class TelemetryClientExtensions
 	public static void TrackDependency
 	(
 		this TelemetryClient telemetryClient,
-		String id,
-		HttpTelemetryPublishResult publishResult,
-		IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
-		IReadOnlyList<KeyValuePair<String, String>>? properties = null,
-		IReadOnlyList<KeyValuePair<String, String>>? tags = null
+		in String id,
+		in HttpTelemetryPublishResult publishResult,
+		in IReadOnlyList<KeyValuePair<String, Double>>? measurements = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? properties = null,
+		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
 		var countMeasurement = new KeyValuePair<String, Double>(nameof(HttpTelemetryPublishResult.Count), publishResult.Count);
