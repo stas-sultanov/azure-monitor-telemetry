@@ -106,7 +106,7 @@ telemetryClient.Add(telemetry);
 
 To publish collected telemetry, use the `TelemetryClient.PublishAsync` method to publish telemetry using all configured publishers in parallel.
 
-The library delegates telemetry publishing to the developer.</br>
+The library delegates telemetry publishing to the developer.<br/>
 No automated telemetry publishing is provided out of the box.
 
 ```csharp
