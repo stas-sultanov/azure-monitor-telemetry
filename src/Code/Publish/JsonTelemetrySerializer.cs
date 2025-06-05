@@ -137,37 +137,37 @@ public static class JsonTelemetrySerializer
 
 		if (!propertiesOnTop && telemetry.Properties is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "properties", telemetry.Properties);
 		}
 
 		streamWriter.Write("}");
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "baseType", baseType);
 
 		streamWriter.Write("}");
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "iKey", instrumentationKey);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "name", name);
 
 		// serialize properties
 		if (propertiesOnTop && telemetry.Properties is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "properties", telemetry.Properties);
 		}
 
 		if (telemetry.Tags is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "tags", telemetry.Tags);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "time", telemetry.Time);
 
 		streamWriter.Write("}");
@@ -187,28 +187,28 @@ public static class JsonTelemetrySerializer
 
 		WriteProperty(streamWriter, "duration", availabilityTelemetry.Duration);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "id", availabilityTelemetry.Id);
 
 		if (availabilityTelemetry.Measurements is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "measurements", availabilityTelemetry.Measurements);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "message", availabilityTelemetry.Message);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "name", availabilityTelemetry.Name);
 
 		if (availabilityTelemetry.RunLocation is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "runLocation", availabilityTelemetry.RunLocation);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "success", availabilityTelemetry.Success);
 	}
 
@@ -224,41 +224,41 @@ public static class JsonTelemetrySerializer
 		{
 			WriteProperty(streamWriter, "data", dependencyTelemetry.Data!);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 		}
 
 		WriteProperty(streamWriter, "duration", dependencyTelemetry.Duration);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "id", dependencyTelemetry.Id);
 
 		if (dependencyTelemetry.Measurements is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "measurements", dependencyTelemetry.Measurements);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "name", dependencyTelemetry.Name);
 
 		if (dependencyTelemetry.ResultCode is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "resultCode", dependencyTelemetry.ResultCode);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "success", dependencyTelemetry.Success);
 
 		if (dependencyTelemetry.Target is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "target", dependencyTelemetry.Target);
 		}
 
 		if (dependencyTelemetry.Type is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "type", dependencyTelemetry.Type);
 		}
 	}
@@ -275,7 +275,7 @@ public static class JsonTelemetrySerializer
 		{
 			WriteProperty(streamWriter, "measurements", eventTelemetry.Measurements);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 		}
 
 		WriteProperty(streamWriter, "name", eventTelemetry.Name);
@@ -298,20 +298,20 @@ public static class JsonTelemetrySerializer
 
 			if (exceptionInfoIndex != 0)
 			{
-				WriteComa(streamWriter);
+				WriteComma(streamWriter);
 			}
 
 			streamWriter.Write("{");
 
 			WriteProperty(streamWriter, "hasFullStack", exceptionInfo.HasFullStack);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "id", exceptionInfo.Id);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "message", exceptionInfo.Message);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "outerId", exceptionInfo.OuterId);
 
 			if (exceptionInfo.ParsedStack is not null)
@@ -333,19 +333,19 @@ public static class JsonTelemetrySerializer
 
 					if (frame.FileName is not null)
 					{
-						WriteComa(streamWriter);
+						WriteComma(streamWriter);
 						WriteProperty(streamWriter, "fileName", frame.FileName);
 					}
 
-					WriteComa(streamWriter);
+					WriteComma(streamWriter);
 					WriteProperty(streamWriter, "level", frame.Level);
 
-					WriteComa(streamWriter);
+					WriteComma(streamWriter);
 					WriteProperty(streamWriter, "line", frame.Line);
 
 					if (frame.Method is not null)
 					{
-						WriteComa(streamWriter);
+						WriteComma(streamWriter);
 						WriteProperty(streamWriter, "method", frame.Method);
 					}
 
@@ -355,7 +355,7 @@ public static class JsonTelemetrySerializer
 				streamWriter.Write("]");
 			}
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "typeName", exceptionInfo.TypeName);
 
 			streamWriter.Write("}");
@@ -365,13 +365,13 @@ public static class JsonTelemetrySerializer
 
 		if (exceptionTelemetry.Measurements is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "measurements", exceptionTelemetry.Measurements);
 		}
 
 		if (exceptionTelemetry.ProblemId is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "problemId", exceptionTelemetry.ProblemId);
 		}
 
@@ -379,7 +379,7 @@ public static class JsonTelemetrySerializer
 		{
 			var severityLevelAsString = severityLevelToString[(Int32)exceptionTelemetry.SeverityLevel.Value];
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "severityLevel", severityLevelAsString);
 		}
 	}
@@ -398,21 +398,21 @@ public static class JsonTelemetrySerializer
 		{
 			WriteProperty(streamWriter, "count", metricTelemetry.ValueAggregation.Count);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "max", metricTelemetry.ValueAggregation.Max);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "min", metricTelemetry.ValueAggregation.Min);
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 		}
 
 		WriteProperty(streamWriter, "name", metricTelemetry.Name);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "ns", metricTelemetry.Namespace);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "value", metricTelemetry.Value);
 
 		streamWriter.Write("}]");
@@ -428,23 +428,23 @@ public static class JsonTelemetrySerializer
 
 		WriteProperty(streamWriter, "duration", pageViewTelemetry.Duration);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "id", pageViewTelemetry.Id);
 
 		if (pageViewTelemetry.Measurements is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "measurements", pageViewTelemetry.Measurements);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "name", pageViewTelemetry.Name);
 
 		if (pageViewTelemetry.Url is not null)
 		{
 			var urlAsString = pageViewTelemetry.Url.ToString();
 
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "url", urlAsString!);
 		}
 	}
@@ -461,34 +461,34 @@ public static class JsonTelemetrySerializer
 
 		WriteProperty(streamWriter, "id", requestTelemetry.Id);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "duration", requestTelemetry.Duration);
 
 		if (requestTelemetry.Measurements is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "measurements", requestTelemetry.Measurements);
 		}
 
 		if (requestTelemetry.Name is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "name", requestTelemetry.Name!);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "responseCode", requestTelemetry.ResponseCode);
 
 		if (requestTelemetry.Name is not null)
 		{
-			WriteComa(streamWriter);
+			WriteComma(streamWriter);
 			WriteProperty(streamWriter, "source", requestTelemetry.Source!);
 		}
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "success", requestTelemetry.Success);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "url", urlAsString);
 	}
 
@@ -504,7 +504,7 @@ public static class JsonTelemetrySerializer
 
 		WriteProperty(streamWriter, "message", traceTelemetry.Message);
 
-		WriteComa(streamWriter);
+		WriteComma(streamWriter);
 		WriteProperty(streamWriter, "severityLevel", severityLevelAsString);
 	}
 
@@ -513,7 +513,7 @@ public static class JsonTelemetrySerializer
 	#region Methods: Write Helpers
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void WriteComa
+	private static void WriteComma
 	(
 		in StreamWriter streamWriter
 	)
@@ -639,7 +639,7 @@ public static class JsonTelemetrySerializer
 
 			if (index != 0)
 			{
-				WriteComa(streamWriter);
+				WriteComma(streamWriter);
 			}
 
 			WriteProperty(streamWriter, pair.Key, pair.Value);
@@ -668,7 +668,7 @@ public static class JsonTelemetrySerializer
 
 			if (index != 0)
 			{
-				WriteComa(streamWriter);
+				WriteComma(streamWriter);
 			}
 
 			WriteProperty(streamWriter, pair.Key, pair.Value);

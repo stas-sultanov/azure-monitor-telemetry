@@ -357,9 +357,7 @@ public sealed class TelemetryClient
 		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new AvailabilityTelemetry
 		{
@@ -389,10 +387,10 @@ public sealed class TelemetryClient
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="name">The name of the command initiated the dependency call.</param>
 	/// <param name="success">A value indicating whether the operation was successful or unsuccessful.</param>
-	/// <param name="data">The command initiated by this dependency call.</param>
-	/// <param name="target">This field is the target site of a dependency call.</param>
+	/// <param name="data">The command initiated by the dependency call.</param>
+	/// <param name="target">The target site of the dependency call.</param>
 	/// <param name="type">The dependency type name.</param>
-	/// <param name="resultCode">The result of executing SQL command.</param>
+	/// <param name="resultCode">The result of executing the SQL command.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
 	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
 	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
@@ -413,9 +411,7 @@ public sealed class TelemetryClient
 		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new DependencyTelemetry
 		{
@@ -446,9 +442,9 @@ public sealed class TelemetryClient
 	/// <param name="duration">The time taken to complete the activity.</param>
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="httpMethod">The HTTP method used in the operation.</param>
-	/// <param name="uri">The URI of the dependency.</param>
-	/// <param name="statusCode">The HTTP status code returned by the dependency.</param>
-	/// <param name="success">Indicates whether the dependency call was successful.</param>
+	/// <param name="uri">The URI used in the operation.</param>
+	/// <param name="statusCode">The HTTP status code returned by the call.</param>
+	/// <param name="success">Indicates whether the HTTP call was successful.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
 	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
 	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
@@ -550,8 +546,8 @@ public sealed class TelemetryClient
 	/// <param name="id">The unique identifier of the activity.</param>
 	/// <param name="dataSource">The name of the instance of SQL Server. Often FQDN of the server.</param>
 	/// <param name="database">The name of the database.</param>
-	/// <param name="commandText">The text of SQL command.</param>
-	/// <param name="resultCode">The result of executing SQL command.</param>
+	/// <param name="commandText">The text of the SQL command.</param>
+	/// <param name="resultCode">The result of executing the SQL command.</param>
 	/// <param name="measurements">A read-only list of measurements associated with the telemetry. Is optional.</param>
 	/// <param name="properties">A read-only list of properties associated with the telemetry. Is optional.</param>
 	/// <param name="tags">A read-only list of tags associated with the telemetry. Is optional.</param>
@@ -614,9 +610,7 @@ public sealed class TelemetryClient
 		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new EventTelemetry
 		{
@@ -681,9 +675,7 @@ public sealed class TelemetryClient
 	{
 		var exceptions = TelemetryUtils.ConvertExceptionToModel(exception);
 
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new ExceptionTelemetry
 		{
@@ -750,9 +742,7 @@ public sealed class TelemetryClient
 		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new MetricTelemetry
 		{
@@ -829,9 +819,7 @@ public sealed class TelemetryClient
 			Min = min
 		};
 
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new MetricTelemetry
 		{
@@ -906,9 +894,7 @@ public sealed class TelemetryClient
 		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new PageViewTelemetry
 		{
@@ -958,9 +944,7 @@ public sealed class TelemetryClient
 		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new RequestTelemetry
 		{
@@ -1001,9 +985,7 @@ public sealed class TelemetryClient
 		in IReadOnlyList<KeyValuePair<String, String>>? tags = null
 	)
 	{
-		var contextTags = localContext.Value.AsArray;
-
-		var telemetryTags = tags is null ? contextTags : (contextTags is null ? tags : [..contextTags, ..tags]);
+		var telemetryTags = MergeContextTags(tags);
 
 		var telemetry = new TraceTelemetry
 		{
@@ -1039,6 +1021,24 @@ public sealed class TelemetryClient
 		var time = DateTime.UtcNow;
 
 		TrackTrace(time, message, severityLevel, properties, tags);
+	}
+
+	#endregion
+
+	#region Methods: Helpers
+
+	/// <summary>
+	/// Merges context tags with the provided tags.
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private IReadOnlyList<KeyValuePair<String, String>>? MergeContextTags
+	(
+		in IReadOnlyList<KeyValuePair<String, String>>? tags
+	)
+	{
+		var contextTags = localContext.Value.AsArray;
+
+		return tags is null ? contextTags : (contextTags is null ? tags : [.. contextTags, .. tags]);
 	}
 
 	#endregion

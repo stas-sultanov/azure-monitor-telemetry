@@ -25,7 +25,7 @@ public static class TelemetryUtils
 	/// <summary>
 	/// A dictionary mapping well-known domain names to their corresponding dependency types.
 	/// </summary>
-	internal static IReadOnlyDictionary<String, String> WellKnownDomainToDependencyType { get; } = new Dictionary<String, String>()
+	internal static IReadOnlyDictionary<String, String> WellKnownDomainToDependencyType { get; } = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase)
 	{
 	// Azure Blob
 		{ ".blob.core.windows.net", DependencyTypes.AzureBlob },
@@ -81,11 +81,14 @@ public static class TelemetryUtils
 
 		var dotIndex = uri.Host.IndexOf('.');
 
-		var domain = uri.Host.Substring(dotIndex);
-
-		if (WellKnownDomainToDependencyType.TryGetValue(domain, out var type))
+		if (dotIndex > 0)
 		{
-			return type;
+			var domain = uri.Host.Substring(dotIndex);
+
+			if (WellKnownDomainToDependencyType.TryGetValue(domain, out var type))
+			{
+				return type;
+			}
 		}
 
 		return DependencyTypes.HTTP;
@@ -155,11 +158,6 @@ public static class TelemetryUtils
 					var method = methodInfo?.DeclaringType is null ? methodInfo?.Name: String.Concat(methodInfo.DeclaringType.FullName, ".", methodInfo.Name);
 
 					var line = frame.GetFileLineNumber();
-
-					if (line is > (-1000000) and < 1000000)
-					{
-						line = 0;
-					}
 
 					var fileName = frame.GetFileName()?.Replace(@"\", @"\\");
 
