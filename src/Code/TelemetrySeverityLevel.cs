@@ -4,7 +4,7 @@
 namespace Azure.Monitor.Telemetry;
 
 /// <summary>
-/// This enumeration severity levels which is used by the service.
+/// The enumeration defines severity levels used by the service.
 /// </summary>
 public enum SeverityLevel : Int32
 {

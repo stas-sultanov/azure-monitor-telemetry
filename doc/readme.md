@@ -31,7 +31,7 @@ The following core concepts define the architecture and behavior of this library
 
 ## Getting Started
 
-The library works with Azure [Application Insights][app_insights_info], a feature of Azure [Monitor][azure_montior_info].
+The library works with Azure [Application Insights][app_insights_info], a feature of Azure [Monitor][azure_monitor_info].
 
 ### Prerequisites
 
@@ -471,7 +471,7 @@ _ = await telemetryClient.PublishAsync();
 ```
 
 [azure_monitor]: https://docs.microsoft.com/azure/azure-monitor/overview
-[azure_montior_info]: https://learn.microsoft.com/azure/azure-monitor/fundamentals/overview
+[azure_monitor_info]: https://learn.microsoft.com/azure/azure-monitor/fundamentals/overview
 [azure_subscription]: https://azure.microsoft.com/free/dotnet/
 [azure_resource_app_insights]: https://learn.microsoft.com/azure/templates/microsoft.insights/components
 [azure_rbac_monitoring_metrics_publisher]: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher

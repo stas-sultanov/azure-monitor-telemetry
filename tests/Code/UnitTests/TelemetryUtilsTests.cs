@@ -155,5 +155,18 @@ public sealed class TelemetryUtilsTests
 		Assert.AreEqual(DependencyTypes.HTTP, result);
 	}
 
+	[TestMethod]
+	public void Method_DetectTypeFromHttp_ShouldReturnHttp_EdgeCase()
+	{
+		// arrange
+		var uri = new Uri("https://a");
+
+		// act
+		var result = TelemetryUtils.DetectDependencyTypeFromHttpUri(uri);
+
+		// assert
+		Assert.AreEqual(DependencyTypes.HTTP, result);
+	}
+
 	#endregion
 }

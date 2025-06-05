@@ -11,7 +11,7 @@ public sealed class DependencyTelemetry : ActivityTelemetry
 	#region Properties
 
 	/// <summary>
-	/// The command initiated by this dependency call.
+	/// The command initiated by the dependency call.
 	/// </summary>
 	/// <remarks>Maximum length: 8192 characters.</remarks>
 	public String? Data { get; init; }
@@ -35,7 +35,7 @@ public sealed class DependencyTelemetry : ActivityTelemetry
 	public required String Name { get; init; }
 
 	/// <summary>
-	/// This field is the result code of a dependency call.
+	/// The result code of the dependency call.
 	/// </summary>
 	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? ResultCode { get; init; }
@@ -52,7 +52,7 @@ public sealed class DependencyTelemetry : ActivityTelemetry
 	public IReadOnlyList<KeyValuePair<String, String>>? Tags { get; init; }
 
 	/// <summary>
-	/// This field is the target site of a dependency call.
+	/// The target site of the dependency call.
 	/// </summary>
 	/// <remarks>Maximum length: 1024 characters.</remarks>
 	public String? Target { get; init; }
